@@ -45,7 +45,7 @@ export default function IntegrityAlerts() {
     };
 
     return (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-md px-4 pointer-events-none">
+        <div className="fixed top-2 md:top-6 left-1/2 -translate-x-1/2 z-[100] w-[95%] sm:w-full max-w-sm md:max-w-md px-2 md:px-4 pointer-events-none">
             <AnimatePresence>
                 {alerts.map(alert => (
                     <motion.div
@@ -53,10 +53,10 @@ export default function IntegrityAlerts() {
                         initial={{ opacity: 0, y: -50, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
-                        className="pointer-events-auto bg-rose-500/10 backdrop-blur-xl border border-rose-500/50 rounded-2xl shadow-[0_10px_40px_rgba(225,29,72,0.3)] p-4 flex items-start space-x-4 mb-4"
+                        className="pointer-events-auto bg-rose-500/10 backdrop-blur-xl border border-rose-500/50 rounded-2xl shadow-[0_10px_40px_rgba(225,29,72,0.3)] p-3 md:p-4 flex items-start space-x-3 md:space-x-4 mb-3 md:mb-4"
                     >
-                        <div className="bg-rose-500/20 text-rose-400 p-2 rounded-xl flex-shrink-0 animate-pulse">
-                            <ShieldAlert className="w-6 h-6" />
+                        <div className="bg-rose-500/20 text-rose-400 p-1.5 md:p-2 rounded-xl flex-shrink-0 animate-pulse">
+                            <ShieldAlert className="w-5 h-5 md:w-6 md:h-6" />
                         </div>
                         <div className="flex-1">
                             <div className="flex justify-between items-center mb-1">

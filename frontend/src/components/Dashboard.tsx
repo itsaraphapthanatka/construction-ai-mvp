@@ -104,8 +104,26 @@ export default function Dashboard() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
+  // Default sidebar open on desktop, closed on mobile
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Handle responsive sidebar behavior on mount and resize
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setSidebarOpen(false);
+      else setSidebarOpen(true);
+    };
+
+    // Initial check
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -177,15 +195,32 @@ export default function Dashboard() {
   return (
     <div className="flex h-screen bg-[#0B1120] text-slate-200 overflow-hidden font-sans selection:bg-blue-500/30">
 
+      {/* Mobile Sidebar Overlay Background */}
+      <AnimatePresence>
+        {isMobile && sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-40 md:hidden"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Premium Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ width: sidebarOpen ? 280 : 80 }}
-        className="relative z-20 flex-shrink-0 border-r border-white/5 bg-slate-900/50 backdrop-blur-xl flex flex-col"
+        animate={{
+          width: sidebarOpen ? 280 : (isMobile ? 0 : 80),
+          x: isMobile && !sidebarOpen ? -280 : 0
+        }}
+        className={`relative z-50 flex-shrink-0 border-r border-white/5 bg-slate-900/95 backdrop-blur-xl flex flex-col h-full ${isMobile ? 'fixed inset-y-0 left-0 shadow-2xl overflow-hidden' : ''
+          }`}
       >
-        <div className="p-6 flex items-center justify-between">
+        <div className="p-6 flex items-center justify-between min-w-[280px]">
           <AnimatePresence mode="wait">
-            {sidebarOpen && (
+            {(sidebarOpen || isMobile) && (
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -202,19 +237,32 @@ export default function Dashboard() {
               </motion.div>
             )}
           </AnimatePresence>
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 ml-auto rounded-lg hover:bg-white/5 transition-colors text-slate-400 hover:text-white"
-          >
-            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          {!isMobile && (
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 absolute right-4 rounded-lg hover:bg-white/5 transition-colors text-slate-400 hover:text-white"
+            >
+              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          )}
+          {isMobile && (
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-2 rounded-lg hover:bg-white/5 transition-colors text-slate-400 hover:text-white ml-auto"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          )}
         </div>
 
-        <nav className="flex-1 mt-6 px-4 space-y-2">
+        <nav className="flex-1 mt-6 px-4 space-y-2 overflow-y-auto min-w-[280px]">
           {navItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                setActiveTab(item.id);
+                if (isMobile) setSidebarOpen(false);
+              }}
               className={`w-full flex items-center px-4 py-3.5 rounded-xl transition-all duration-300 group ${activeTab === item.id
                 ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)]'
                 : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent'
@@ -222,7 +270,7 @@ export default function Dashboard() {
             >
               <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
               <AnimatePresence>
-                {sidebarOpen && (
+                {(sidebarOpen || isMobile) && (
                   <motion.span
                     initial={{ opacity: 0, width: 0 }}
                     animate={{ opacity: 1, width: 'auto' }}
@@ -233,7 +281,7 @@ export default function Dashboard() {
                   </motion.span>
                 )}
               </AnimatePresence>
-              {sidebarOpen && activeTab === item.id && (
+              {(sidebarOpen || isMobile) && activeTab === item.id && (
                 <motion.div layoutId="activeNav" className="ml-auto">
                   <ChevronRight className="h-4 w-4" />
                 </motion.div>
@@ -243,12 +291,12 @@ export default function Dashboard() {
         </nav>
 
         {/* User Profile Mini */}
-        <div className="p-4 mt-auto border-t border-white/5">
+        <div className="p-4 mt-auto border-t border-white/5 min-w-[280px]">
           <div className="flex items-center px-2 py-2 cursor-pointer hover:bg-white/5 rounded-xl transition-colors">
             <div className="h-10 w-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center flex-shrink-0">
               <span className="text-sm font-bold text-slate-300">CEO</span>
             </div>
-            {sidebarOpen && (
+            {(sidebarOpen || isMobile) && (
               <div className="ml-3 overflow-hidden">
                 <p className="text-sm font-medium text-white truncate">Executive View</p>
                 <p className="text-xs text-slate-500 truncate">Premium Access</p>
@@ -259,20 +307,38 @@ export default function Dashboard() {
       </motion.aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto relative">
+      <main className="flex-1 overflow-y-auto relative w-full">
         {/* Background glow effects */}
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/10 blur-[120px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/10 blur-[120px] pointer-events-none" />
 
-        <div className="p-8 max-w-7xl mx-auto relative z-10 space-y-8">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto relative z-10 space-y-6 md:space-y-8">
+
+          {/* Mobile Topbar */}
+          {isMobile && (
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
+              <div className="flex items-center space-x-3">
+                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                  <Building2 className="h-4 w-4 text-white" />
+                </div>
+                <span className="font-bold text-lg text-white">Construction AI</span>
+              </div>
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 rounded-lg hover:bg-white/5 transition-colors text-slate-300"
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+            </div>
+          )}
 
           {/* Header */}
           <motion.header
             initial="hidden" animate="visible" variants={fadeUp}
-            className="flex flex-col md:flex-row md:items-end justify-between gap-4"
+            className="flex flex-col sm:flex-row sm:items-end justify-between gap-4"
           >
             <div>
-              <h1 className="text-4xl font-light text-white tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-light text-white tracking-tight">
                 {activeTab === 'overview' && <>Executive <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Overview</span></>}
                 {activeTab === 'projects' && <>Project <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Portfolio</span></>}
                 {activeTab === 'ai-predict' && <>AI <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Analytics</span></>}
@@ -451,26 +517,26 @@ export default function Dashboard() {
               <motion.div key="projects" initial="hidden" animate="visible" exit={{ opacity: 0, scale: 0.95 }} variants={{ visible: { transition: { staggerChildren: 0.05 } } }} className="space-y-4">
                 {projects.map((project) => (
                   <motion.div key={project.id} variants={fadeUp} className="glass-card hover:bg-white/10 transition-colors group cursor-pointer border border-white/5 hover:border-white/10">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                       <div className="flex items-center space-x-4">
                         <div className={`p-3 rounded-xl border ${getRiskColor(project.riskLevel)}`}>
                           <Building2 className="w-6 h-6" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-lg text-white group-hover:text-blue-400 transition-colors">{project.name}</h3>
+                          <h3 className="font-semibold text-base md:text-lg text-white group-hover:text-blue-400 transition-colors line-clamp-1">{project.name}</h3>
                           <div className="flex items-center space-x-3 text-sm text-slate-400 mt-1">
-                            <span className="font-mono text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-300">{project.id}</span>
+                            <span className="font-mono text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-300 hidden sm:inline-block">{project.id}</span>
                             <span>{formatCurrency(project.budget)}</span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-8">
-                        <div className="text-right">
+                      <div className="flex flex-wrap items-center gap-4 lg:gap-8 border-t border-slate-800 lg:border-t-0 pt-4 lg:pt-0">
+                        <div className="text-left lg:text-right flex-1 sm:flex-none">
                           <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">AI Forecast</p>
-                          <p className="text-xl font-bold text-emerald-400">{project.predictedProfit}% Margin</p>
+                          <p className="text-lg md:text-xl font-bold text-emerald-400">{project.predictedProfit}% Margin</p>
                         </div>
-                        <div className="h-10 w-px bg-slate-700 hidden md:block"></div>
-                        <div className="hidden md:flex flex-col space-y-1 w-32">
+                        <div className="h-10 w-px bg-slate-700 hidden lg:block"></div>
+                        <div className="flex flex-col space-y-1 w-full sm:w-32 flex-1 sm:flex-none">
                           <div className="flex justify-between text-xs font-medium">
                             <span className="text-slate-400">Carbon</span>
                             <span className="text-emerald-400">-{project.esg?.carbonReduction || 0}%</span>
@@ -479,7 +545,7 @@ export default function Dashboard() {
                             <div className="bg-emerald-500 h-1 rounded-full" style={{ width: `${(project.esg?.carbonReduction || 0) * 5}%` }}></div>
                           </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-slate-300 transition-colors hidden sm:block" />
+                        <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-slate-300 transition-colors hidden sm:block ml-auto" />
                       </div>
                     </div>
 
@@ -514,28 +580,28 @@ export default function Dashboard() {
                 </motion.div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <motion.div variants={fadeUp} className="glass-card flex flex-col items-center justify-center text-center p-8 border-t-2 border-t-emerald-500">
+                  <motion.div variants={fadeUp} className="glass-card flex flex-col items-center justify-center text-center p-6 md:p-8 border-t-2 border-t-emerald-500">
                     <div className="p-4 rounded-full bg-emerald-500/10 mb-4 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
                       <Leaf className="h-8 w-8 text-emerald-400" />
                     </div>
-                    <h3 className="text-4xl font-bold text-white mb-1">23<span className="text-xl text-emerald-400 ml-1">Tons</span></h3>
-                    <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">Carbon Mitigated</p>
+                    <h3 className="text-3xl md:text-4xl font-bold text-white mb-1">23<span className="text-lg md:text-xl text-emerald-400 ml-1">Tons</span></h3>
+                    <p className="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-wider">Carbon Mitigated</p>
                   </motion.div>
 
-                  <motion.div variants={fadeUp} className="glass-card flex flex-col items-center justify-center text-center p-8 border-t-2 border-t-blue-500">
+                  <motion.div variants={fadeUp} className="glass-card flex flex-col items-center justify-center text-center p-6 md:p-8 border-t-2 border-t-blue-500">
                     <div className="p-4 rounded-full bg-blue-500/10 mb-4 shadow-[0_0_30px_rgba(59,130,246,0.2)]">
                       <ShieldCheck className="h-8 w-8 text-blue-400" />
                     </div>
-                    <h3 className="text-4xl font-bold text-white mb-1">365<span className="text-xl text-blue-400 ml-1">Days</span></h3>
-                    <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">Zero Incidents</p>
+                    <h3 className="text-3xl md:text-4xl font-bold text-white mb-1">365<span className="text-lg md:text-xl text-blue-400 ml-1">Days</span></h3>
+                    <p className="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-wider">Zero Incidents</p>
                   </motion.div>
 
-                  <motion.div variants={fadeUp} className="glass-card flex flex-col items-center justify-center text-center p-8 border-t-2 border-t-violet-500">
+                  <motion.div variants={fadeUp} className="glass-card flex flex-col items-center justify-center text-center p-6 md:p-8 border-t-2 border-t-violet-500">
                     <div className="p-4 rounded-full bg-violet-500/10 mb-4 shadow-[0_0_30px_rgba(139,92,246,0.2)]">
                       <Users className="h-8 w-8 text-violet-400" />
                     </div>
-                    <h3 className="text-4xl font-bold text-white mb-1">4.5<span className="text-xl text-violet-400 text-slate-500 ml-1">/ 5.0</span></h3>
-                    <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">Happiness Index</p>
+                    <h3 className="text-3xl md:text-4xl font-bold text-white mb-1">4.5<span className="text-lg md:text-xl text-violet-400 text-slate-500 ml-1">/ 5.0</span></h3>
+                    <p className="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-wider">Happiness Index</p>
                   </motion.div>
                 </div>
               </motion.div>

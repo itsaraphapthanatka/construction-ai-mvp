@@ -13,26 +13,26 @@ export default function FloatingAIEsgWidget() {
     });
 
     return (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
                         initial={{ opacity: 0, y: 20, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.9 }}
-                        className="mb-4 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden w-72"
+                        className="mb-3 md:mb-4 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden w-64 md:w-72"
                     >
-                        <div className="bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border-b border-white/5 p-3 flex justify-between items-center">
-                            <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 tracking-wider">LIVE AI INSIGHTS</span>
+                        <div className="bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border-b border-white/5 p-2.5 md:p-3 flex justify-between items-center">
+                            <span className="text-[10px] md:text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 tracking-wider">LIVE AI INSIGHTS</span>
                             <div className="flex space-x-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                             </div>
                         </div>
 
-                        <div className="p-4 space-y-4">
+                        <div className="p-3 md:p-4 space-y-3 md:space-y-4">
                             {/* Profit Insight */}
                             <div className="flex items-center space-x-3">
-                                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+                                <div className="p-1.5 md:p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
                                     <TrendingUp className="w-4 h-4" />
                                 </div>
                                 <div>
@@ -43,7 +43,7 @@ export default function FloatingAIEsgWidget() {
 
                             {/* ESG - Carbon */}
                             <div className="flex items-center space-x-3">
-                                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+                                <div className="p-1.5 md:p-2 rounded-lg bg-blue-500/10 text-blue-400">
                                     <Leaf className="w-4 h-4" />
                                 </div>
                                 <div>
@@ -54,7 +54,7 @@ export default function FloatingAIEsgWidget() {
 
                             {/* Happiness */}
                             <div className="flex items-center space-x-3">
-                                <div className="p-2 rounded-lg bg-violet-500/10 text-violet-400">
+                                <div className="p-1.5 md:p-2 rounded-lg bg-violet-500/10 text-violet-400">
                                     <Users className="w-4 h-4" />
                                 </div>
                                 <div>
@@ -69,7 +69,7 @@ export default function FloatingAIEsgWidget() {
 
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="ml-auto flex items-center justify-center w-12 h-12 bg-slate-800 border border-white/10 hover:border-blue-500/50 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-all duration-300 group"
+                className="ml-auto flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-slate-800 border border-white/10 hover:border-blue-500/50 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-all duration-300 group"
             >
                 {isOpen ? (
                     <ChevronDown className="w-5 h-5 text-slate-400 group-hover:text-white" />
