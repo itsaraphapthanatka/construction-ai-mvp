@@ -17,8 +17,14 @@ import {
   ChevronRight,
   TrendingDown,
   DollarSign,
-  Bot
+  Bot,
+  Target,
+  CheckCircle2,
+  XCircle,
+  HelpCircle,
+  Briefcase
 } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 import {
   AreaChart,
   Area,
@@ -101,6 +107,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function Dashboard() {
+  const { t, language, setLanguage } = useLanguage();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
@@ -144,6 +151,49 @@ export default function Dashboard() {
     }
   };
 
+  const mockCSuiteIntel = {
+    macroFinancials: {
+      totalRevenue: '฿42.5B',
+      revenueGrowth: '+14.2%',
+      ebitdaMargin: '18.5%',
+      ebitdaGrowth: '+2.1%',
+      cashRunway: '34 Months',
+      debtToEquity: '0.8x'
+    },
+    aiStrategicDirectives: [
+      {
+        id: 1,
+        category: 'M&A / Market Share',
+        directive: 'Aggressively bid Eastern region contracts at 5% discount.',
+        rationale: 'Competitor SCC Construction margin compression detected due to supply chain overexposure. Capturing this market share now yields long-term pricing power.',
+        impact: 'Est. +฿2.1B Revenue YoY',
+        action: 'Authorize Aggressive Bidding'
+      },
+      {
+        id: 2,
+        category: 'Capital Allocation',
+        directive: 'Lock in fixed-rate financing for "The Riverfront Condo" immediately.',
+        rationale: 'Macro models predict a 50 bps interest rate hike within 45 days. Delaying financing will erode project margins by 1.2%.',
+        impact: 'Est. ฿12M Cost Savings',
+        action: 'Execute Financing Swap'
+      },
+      {
+        id: 3,
+        category: 'Resource Optimization',
+        directive: 'Invest ฿150M in robotic bricklaying & automated tying machines.',
+        rationale: 'Subcontractor labor costs are projected to rise 12% YoY. Capital investment payback period is only 14 months at current burn rates.',
+        impact: '-18% Reliance on Manual Labor',
+        action: 'Approve CapEx'
+      }
+    ],
+    marketDominance: [
+      { competitor: 'TopBuild.AI (Us)', marketShare: 34, growth: 15, winRate: 68 },
+      { competitor: 'Legacy Corp', marketShare: 28, growth: -2, winRate: 42 },
+      { competitor: 'FastConstruct', marketShare: 15, growth: 8, winRate: 55 },
+      { competitor: 'EcoBuilders', marketShare: 12, growth: 22, winRate: 60 },
+    ]
+  };
+
   const getRiskColor = (level: string) => {
     switch (level) {
       case 'green': return 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30';
@@ -185,11 +235,13 @@ export default function Dashboard() {
   }
 
   const navItems = [
-    { id: 'overview', label: 'Executive Overview', icon: Activity },
-    { id: 'projects', label: 'Portfolio', icon: Building2 },
-    { id: 'ai-predict', label: 'AI Analytics', icon: TrendingUp },
-    { id: 'esg', label: 'ESG Impact', icon: Leaf },
-    { id: 'alerts', label: 'Command Center', icon: AlertTriangle },
+    { id: 'overview', label: t('nav.overview'), icon: Activity },
+    { id: 'projects', label: t('nav.projects'), icon: Building2 },
+    { id: 'bidding', label: t('nav.bidding'), icon: Target },
+    { id: 'c-suite', label: t('nav.cSuiteBoardroom'), icon: Briefcase },
+    { id: 'ai-predict', label: t('nav.aiAnalytics'), icon: TrendingUp },
+    { id: 'esg', label: t('nav.esg'), icon: Leaf },
+    { id: 'alerts', label: t('nav.alerts'), icon: AlertTriangle },
   ];
 
   return (
@@ -294,12 +346,12 @@ export default function Dashboard() {
         <div className="p-4 mt-auto border-t border-white/5 min-w-[280px]">
           <div className="flex items-center px-2 py-2 cursor-pointer hover:bg-white/5 rounded-xl transition-colors">
             <div className="h-10 w-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center flex-shrink-0">
-              <span className="text-sm font-bold text-slate-300">CEO</span>
+              <span className="text-sm font-bold text-slate-300">{t('user.role')}</span>
             </div>
             {(sidebarOpen || isMobile) && (
               <div className="ml-3 overflow-hidden">
-                <p className="text-sm font-medium text-white truncate">Executive View</p>
-                <p className="text-xs text-slate-500 truncate">Premium Access</p>
+                <p className="text-sm font-medium text-white truncate">{t('user.view')}</p>
+                <p className="text-xs text-slate-500 truncate">{t('user.access')}</p>
               </div>
             )}
           </div>
@@ -611,6 +663,106 @@ export default function Dashboard() {
             {activeTab === 'ai-predict' && (
               <motion.div key="ai" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="max-w-5xl mx-auto mt-4">
                 <AIConsultant />
+              </motion.div>
+            )}
+
+            {/* ----------------- C-SUITE BOARDROOM TAB ----------------- */}
+            {activeTab === 'c-suite' && (
+              <motion.div key="c-suite" initial="hidden" animate="visible" exit="hidden" variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="space-y-6">
+
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="p-2 bg-purple-500/20 rounded-lg text-purple-400"><Briefcase className="w-6 h-6" /></div>
+                  <h2 className="text-2xl font-bold text-white tracking-tight">{t('nav.cSuiteBoardroom')}</h2>
+                </div>
+
+                {/* Macro Financials Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-purple-500">
+                    <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Total Revenue (FY)</p>
+                    <h3 className="text-3xl font-bold text-white mb-1">{mockCSuiteIntel.macroFinancials.totalRevenue}</h3>
+                    <p className="text-xs text-emerald-400 font-medium">{mockCSuiteIntel.macroFinancials.revenueGrowth} YoY</p>
+                  </motion.div>
+                  <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-blue-500">
+                    <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">EBITDA Margin</p>
+                    <h3 className="text-3xl font-bold text-white mb-1">{mockCSuiteIntel.macroFinancials.ebitdaMargin}</h3>
+                    <p className="text-xs text-emerald-400 font-medium">{mockCSuiteIntel.macroFinancials.ebitdaGrowth} Expansion</p>
+                  </motion.div>
+                  <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-emerald-500">
+                    <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Cash Runway</p>
+                    <h3 className="text-3xl font-bold text-white mb-1">{mockCSuiteIntel.macroFinancials.cashRunway}</h3>
+                    <p className="text-xs text-slate-400 font-medium">Optimal Liquidity</p>
+                  </motion.div>
+                  <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-rose-500">
+                    <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Debt-to-Equity</p>
+                    <h3 className="text-3xl font-bold text-white mb-1">{mockCSuiteIntel.macroFinancials.debtToEquity}</h3>
+                    <p className="text-xs text-emerald-400 font-medium">Healthy Leverage</p>
+                  </motion.div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Strategic Directives */}
+                  <motion.div variants={fadeUp} className="lg:col-span-2 space-y-4">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                      <Bot className="w-5 h-5 mr-2 text-indigo-400" /> AI Strategic Directives
+                    </h3>
+                    {mockCSuiteIntel.aiStrategicDirectives.map((directive) => (
+                      <div key={directive.id} className="glass-card p-6 relative overflow-hidden group">
+                        <div className="absolute right-0 top-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-[40px] -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
+                        <div className="relative z-10 flex flex-col md:flex-row gap-6">
+                          <div className="flex-1">
+                            <span className="inline-block px-3 py-1 bg-indigo-500/20 text-indigo-400 text-xs font-bold rounded-full mb-3 uppercase tracking-wider">
+                              {directive.category}
+                            </span>
+                            <h4 className="text-xl font-bold text-white mb-2">{directive.directive}</h4>
+                            <p className="text-sm text-slate-400 leading-relaxed mb-4">{directive.rationale}</p>
+                            <div className="flex items-center space-x-2 text-emerald-400 font-medium bg-emerald-500/10 px-3 py-2 rounded-lg inline-flex">
+                              <TrendingUp className="w-4 h-4" />
+                              <span className="text-sm">{directive.impact}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center md:items-start justify-end md:w-48 pt-2">
+                            <button className="w-full py-3 px-4 bg-white hover:bg-slate-200 text-slate-900 font-bold rounded-xl transition-all shadow-lg hover:shadow-white/20 flex flex-col items-center justify-center space-y-1">
+                              <span>{directive.action}</span>
+                              <span className="text-[10px] text-slate-500 uppercase font-mono">1-Click Execution</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </motion.div>
+
+                  {/* Market Dominance Radar */}
+                  <motion.div variants={fadeUp} className="glass-card p-6 flex flex-col">
+                    <h3 className="text-lg font-bold text-white mb-6 flex items-center">
+                      <Target className="w-5 h-5 mr-2 text-blue-400" /> Competitor Dominance
+                    </h3>
+                    <div className="flex-1 space-y-6">
+                      {mockCSuiteIntel.marketDominance.map((comp, idx) => (
+                        <div key={idx} className="relative">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className={`font-semibold ${idx === 0 ? 'text-blue-400 text-lg' : 'text-slate-300'}`}>{comp.competitor}</span>
+                            <span className="text-sm font-mono text-slate-400 mt-1">{comp.marketShare}% Share</span>
+                          </div>
+                          <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${comp.marketShare}%` }}
+                              transition={{ duration: 1, delay: idx * 0.2 }}
+                              className={`h-full rounded-full ${idx === 0 ? 'bg-gradient-to-r from-blue-500 to-indigo-500' : 'bg-slate-600'}`}
+                            />
+                          </div>
+                          <div className="flex justify-between items-center mt-2 text-xs">
+                            <span className={comp.growth > 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                              {comp.growth > 0 ? '+' : ''}{comp.growth}% Growth
+                            </span>
+                            <span className="text-slate-500">Win Rate: {comp.winRate}%</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                </div>
+
               </motion.div>
             )}
 

@@ -235,6 +235,110 @@ app.get('/api/alerts', (req, res) => {
   res.json(allAlerts);
 });
 
+// Bidding Opportunities (Opportunity Scanner)
+const biddingOpportunities = [
+  {
+    id: 'BID-001',
+    name: 'สปอร์ตคลับครบวงจร ภูเก็ต',
+    client: 'Phuket Health & Wellness Co., Ltd.',
+    estimatedBudget: 350000000,
+    estimatedDuration: 12, // months
+    aiRiskScore: 25, // 0-100 (Lower is better)
+    aiExpectedMargin: 18.5,
+    historicalConfidence: 92,
+    recommendation: 'GO',
+    factors: [
+      { name: 'ประวัติเจ้าของโครงการ (Client History)', impact: 'positive', description: 'จ่ายเงินตรงเวลาใน 3 โครงการที่ผ่านมา' },
+      { name: 'ความเชี่ยวชาญ (Domain Expertise)', impact: 'positive', description: 'บริษัทมีผลงานเทียบเท่า 5 โครงการในพื้นที่' },
+      { name: 'สภาพอากาศ (Weather Risk)', impact: 'negative', description: 'เริ่มงานหน้าฝน มีสถิติล่าช้า 15%' }
+    ]
+  },
+  {
+    id: 'BID-002',
+    name: 'ส่วนต่อขยายทางด่วน พระราม 2',
+    client: 'กระทรวงคมนาคม',
+    estimatedBudget: 2500000000,
+    estimatedDuration: 36, // months
+    aiRiskScore: 78, // 0-100
+    aiExpectedMargin: 4.2,
+    historicalConfidence: 85,
+    recommendation: 'NO-GO',
+    factors: [
+      { name: 'การเบิกจ่ายภาครัฐ (Payment Cycle)', impact: 'negative', description: 'ประวัติการเบิกจ่ายล่าช้าเฉลี่ย 45 วัน' },
+      { name: 'ต้นทุนวัสดุผันผวน (Material Volatility)', impact: 'negative', description: 'แนวโน้มเหล็กเส้นราคาขึ้น 10% ในปีหน้า' },
+      { name: 'ผลงานอ้างอิง (Portfolio Value)', impact: 'positive', description: 'ช่วยเพิ่มมูลค่าแบรนด์พอร์ตโฟลิโอ 40%' }
+    ]
+  },
+  {
+    id: 'BID-003',
+    name: 'โกดังสินค้าอัตโนมัติ (Automated Warehouse)',
+    client: 'Global Logistics Supply Chain',
+    estimatedBudget: 850000000,
+    estimatedDuration: 14, // months
+    aiRiskScore: 45, // 0-100
+    aiExpectedMargin: 11.0,
+    historicalConfidence: 78,
+    recommendation: 'REVIEW',
+    factors: [
+      { name: 'เทคโนโลยีใหม่ (New Tech Risk)', impact: 'negative', description: 'ต้องการผู้รับเหมาช่วง (Sub-contractor) เฉพาะทาง' },
+      { name: 'ระยะเวลา (Timeline Pressure)', impact: 'negative', description: 'ค่าปรับ (Penalty) สูงถึง 0.1% ต่อวัน' },
+      { name: 'งบประมาณ (Budget)', impact: 'positive', description: 'งบประมาณตั้งไว้สูงกว่าราคากลางตลาด 12%' }
+    ]
+  }
+];
+
+app.get('/api/bidding-opportunities', (req, res) => {
+  res.json(biddingOpportunities);
+});
+
+// Mock C-Suite Intelligence
+const mockCSuiteIntel = {
+  macroFinancials: {
+    totalRevenue: '฿42.5B',
+    revenueGrowth: '+14.2%',
+    ebitdaMargin: '18.5%',
+    ebitdaGrowth: '+2.1%',
+    cashRunway: '34 Months',
+    debtToEquity: '0.8x'
+  },
+  aiStrategicDirectives: [
+    {
+      id: 1,
+      category: 'M&A / Market Share',
+      directive: 'Aggressively bid Eastern region contracts at 5% discount.',
+      rationale: 'Competitor SCC Construction margin compression detected due to supply chain overexposure. Capturing this market share now yields long-term pricing power.',
+      impact: 'Est. +฿2.1B Revenue YoY',
+      action: 'Authorize Aggressive Bidding'
+    },
+    {
+      id: 2,
+      category: 'Capital Allocation',
+      directive: 'Lock in fixed-rate financing for "The Riverfront Condo" immediately.',
+      rationale: 'Macro models predict a 50 bps interest rate hike within 45 days. Delaying financing will erode project margins by 1.2%.',
+      impact: 'Est. ฿12M Cost Savings',
+      action: 'Execute Financing Swap'
+    },
+    {
+      id: 3,
+      category: 'Resource Optimization',
+      directive: 'Invest ฿150M in robotic bricklaying & automated tying machines.',
+      rationale: 'Subcontractor labor costs are projected to rise 12% YoY. Capital investment payback period is only 14 months at current burn rates.',
+      impact: '-18% Reliance on Manual Labor',
+      action: 'Approve CapEx'
+    }
+  ],
+  marketDominance: [
+    { competitor: 'TopBuild.AI (Us)', marketShare: 34, growth: 15, winRate: 68 },
+    { competitor: 'Legacy Corp', marketShare: 28, growth: -2, winRate: 42 },
+    { competitor: 'FastConstruct', marketShare: 15, growth: 8, winRate: 55 },
+    { competitor: 'EcoBuilders', marketShare: 12, growth: 22, winRate: 60 },
+  ]
+};
+
+app.get('/api/c-suite-intel', (req, res) => {
+  res.json(mockCSuiteIntel);
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Backend running on http://localhost:${PORT}`);
 });

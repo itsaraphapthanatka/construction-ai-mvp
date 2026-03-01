@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -10,10 +11,11 @@ interface Message {
 }
 
 export default function AIConsultant() {
+    const { t } = useLanguage();
     const [messages, setMessages] = useState<Message[]>([
         {
             role: 'assistant',
-            content: 'สวัสดีครับท่านผู้บริหาร ผมคือ AI Consultant ประจำแพลตฟอร์มนี้ มีโครงการหรือการวิเคราะห์ข้อมูลส่วนไหนที่ต้องการให้ผมช่วยดูไหมครับ?'
+            content: t('ai.greeting')
         }
     ]);
     const [input, setInput] = useState('');
@@ -53,12 +55,12 @@ export default function AIConsultant() {
 
             const data = await response.json();
 
-            const aiResponse = data.choices?.[0]?.message?.content || "ขออภัยครับ ไม่สามารถติดต่อระบบจัดการ AI ได้ในขณะนี้";
+            const aiResponse = data.choices?.[0]?.message?.content || t('ai.errorBackend');
 
             setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
         } catch (error) {
             console.error(error);
-            setMessages(prev => [...prev, { role: 'assistant', content: "เกิดข้อผิดพลาดในการเชื่อมต่อกับ OpenClaw Engine ครับ โปรดตรวจสอบสถานะเซิร์ฟเวอร์" }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: t('ai.errorConnection') }]);
         } finally {
             setIsLoading(false);
         }
@@ -72,10 +74,10 @@ export default function AIConsultant() {
                     <Bot className="w-5 h-5" />
                 </div>
                 <div>
-                    <h2 className="text-white font-semibold">AI Executive Consultant</h2>
+                    <h2 className="text-white font-semibold">{t('ai.title')}</h2>
                     <p className="text-xs text-blue-400 flex items-center mt-0.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse mr-1"></span>
-                        Connected to OpenClaw Engine (kimi 2.5)
+                        {t('ai.connected')}
                     </p>
                 </div>
             </div>
@@ -95,8 +97,8 @@ export default function AIConsultant() {
                                 {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                             </div>
                             <div className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
-                                    ? 'bg-indigo-600/20 border border-indigo-500/30 text-indigo-50 rounded-tr-sm'
-                                    : 'bg-slate-800/80 border border-slate-700 text-slate-200 rounded-tl-sm'
+                                ? 'bg-indigo-600/20 border border-indigo-500/30 text-indigo-50 rounded-tr-sm'
+                                : 'bg-slate-800/80 border border-slate-700 text-slate-200 rounded-tl-sm'
                                 }`}>
                                 <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                             </div>
@@ -107,7 +109,7 @@ export default function AIConsultant() {
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
                         <div className="flex bg-slate-800/80 border border-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 ml-11">
                             <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
-                            <span className="ml-2 text-sm text-slate-400">Analyzing data...</span>
+                            <span className="ml-2 text-sm text-slate-400">{t('ai.analyzing')}</span>
                         </div>
                     </motion.div>
                 )}
@@ -122,7 +124,7 @@ export default function AIConsultant() {
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         disabled={isLoading}
-                        placeholder="ตั้งคำถามเพื่อวิเคราะห์โครงการ หรือความเสี่ยง..."
+                        placeholder={t('ai.inputPlaceholder')}
                         className="w-full bg-slate-800/50 border border-slate-700 rounded-full px-6 py-3.5 pr-14 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all disabled:opacity-50"
                     />
                     <button
