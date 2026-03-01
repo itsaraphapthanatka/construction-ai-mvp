@@ -55,6 +55,23 @@ interface Project {
   };
 }
 
+interface BiddingOpportunity {
+  id: string;
+  name: string;
+  client: string;
+  estimatedBudget: number;
+  estimatedDuration: number;
+  aiRiskScore: number;
+  aiExpectedMargin: number;
+  historicalConfidence: number;
+  recommendation: 'GO' | 'NO-GO' | 'REVIEW';
+  factors: Array<{
+    name: string;
+    impact: 'positive' | 'negative';
+    description: string;
+  }>;
+}
+
 interface DashboardSummary {
   totalProjects: number;
   activeProjects: number;
@@ -107,9 +124,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function Dashboard() {
-  const { t, language, setLanguage } = useLanguage();
+  const { t } = useLanguage();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [biddingOps, setBiddingOps] = useState<BiddingOpportunity[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
   // Default sidebar open on desktop, closed on mobile
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -138,12 +156,14 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     try {
-      const [summaryRes, projectsRes] = await Promise.all([
+      const [summaryRes, projectsRes, biddingRes] = await Promise.all([
         axios.get('/api/dashboard/summary'),
-        axios.get('/api/projects')
+        axios.get('/api/projects'),
+        axios.get('/api/bidding-opportunities')
       ]);
       setSummary(summaryRes.data);
       setProjects(projectsRes.data);
+      setBiddingOps(biddingRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -666,6 +686,101 @@ export default function Dashboard() {
               </motion.div>
             )}
 
+            {/* ----------------- OPPORTUNITY SCANNER (BIDDING) TAB ----------------- */}
+            {activeTab === 'bidding' && (
+              <motion.div key="bidding" initial="hidden" animate="visible" exit={{ opacity: 0, y: -20 }} variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="space-y-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400"><Target className="w-6 h-6" /></div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white tracking-tight">{t('nav.bidding')}</h2>
+                    <p className="text-sm text-slate-400 mt-1">AI-driven risk assessment and margin prediction for upcoming tenders.</p>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  {biddingOps.map((op) => (
+                    <motion.div key={op.id} variants={fadeUp} className="glass-card relative overflow-hidden group border border-white/5 hover:border-indigo-500/30 transition-all p-6">
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[80px] -mr-20 -mt-20 group-hover:bg-indigo-500/10 transition-colors"></div>
+                      <div className="relative z-10">
+                        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                          <div className="flex-1 space-y-4">
+                            <div className="flex items-center space-x-3">
+                              <span className="px-3 py-1 bg-slate-800 text-slate-300 text-xs font-mono rounded border border-slate-700">{op.id}</span>
+                              <h3 className="text-xl font-bold text-white">{op.name}</h3>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              <div>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Client</p>
+                                <p className="text-sm text-slate-300 font-medium">{op.client}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Est. Value</p>
+                                <p className="text-sm text-slate-300 font-medium">{formatCurrency(op.estimatedBudget)}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Duration</p>
+                                <p className="text-sm text-slate-300 font-medium">{op.estimatedDuration} Months</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Historical Win Rate</p>
+                                <div className="flex items-center space-x-2">
+                                  <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${op.historicalConfidence}%` }}></div>
+                                  </div>
+                                  <span className="text-sm text-blue-400 font-bold">{op.historicalConfidence}%</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mt-6 pt-6 border-t border-slate-800 focus-within:ring space-y-3">
+                              <p className="text-sm font-semibold text-slate-300 flex items-center"><Activity className="w-4 h-4 mr-2 text-indigo-400" /> Evaluation Factors</p>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                {op.factors.map((factor, idx) => (
+                                  <div key={idx} className={`p-3 rounded-lg border flex items-start space-x-3 ${factor.impact === 'positive' ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-rose-500/10 border-rose-500/20'}`}>
+                                    {factor.impact === 'positive' ? <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" /> : <XCircle className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />}
+                                    <div>
+                                      <p className={`text-xs font-bold leading-tight mb-1 ${factor.impact === 'positive' ? 'text-emerald-400' : 'text-rose-400'}`}>{factor.name}</p>
+                                      <p className="text-xs text-slate-400 leading-snug">{factor.description}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="lg:w-72 bg-slate-900/80 rounded-2xl p-6 border border-slate-700/50 flex flex-col items-center text-center">
+                            <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6">AI Decision Matrix</h4>
+
+                            <div className="relative w-32 h-32 mb-6">
+                              <svg className="w-full h-full transform -rotate-90">
+                                <circle cx="64" cy="64" r="56" className="text-slate-800" strokeWidth="12" stroke="currentColor" fill="transparent" />
+                                <circle cx="64" cy="64" r="56" className={`${op.aiRiskScore > 50 ? 'text-rose-500' : 'text-emerald-500'}`} strokeWidth="12" strokeDasharray="351.8" strokeDashoffset={351.8 - (351.8 * op.aiRiskScore) / 100} strokeLinecap="round" stroke="currentColor" fill="transparent" />
+                              </svg>
+                              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className="text-3xl font-black text-white leading-none">{op.aiRiskScore}</span>
+                                <span className="text-[10px] text-slate-500 font-bold uppercase mt-1">Risk Score</span>
+                              </div>
+                            </div>
+
+                            <div className="w-full bg-slate-800 rounded-lg p-3 mb-6">
+                              <p className="text-xs text-slate-400 uppercase mb-1">Expected Margin</p>
+                              <p className="text-2xl font-bold text-emerald-400">{op.aiExpectedMargin}%</p>
+                            </div>
+
+                            <div className={`w-full py-3 rounded-xl font-bold text-center uppercase tracking-widest text-sm shadow-xl ${op.recommendation === 'GO' ? 'bg-emerald-500 text-slate-900 shadow-emerald-500/20' :
+                                op.recommendation === 'NO-GO' ? 'bg-rose-500 text-white shadow-rose-500/20' :
+                                  'bg-amber-500 text-slate-900 shadow-amber-500/20'
+                              }`}>
+                              {op.recommendation}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
             {/* ----------------- C-SUITE BOARDROOM TAB ----------------- */}
             {activeTab === 'c-suite' && (
               <motion.div key="c-suite" initial="hidden" animate="visible" exit="hidden" variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="space-y-6">
@@ -675,94 +790,107 @@ export default function Dashboard() {
                   <h2 className="text-2xl font-bold text-white tracking-tight">{t('nav.cSuiteBoardroom')}</h2>
                 </div>
 
-                {/* Macro Financials Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                  <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-purple-500">
-                    <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Total Revenue (FY)</p>
-                    <h3 className="text-3xl font-bold text-white mb-1">{mockCSuiteIntel.macroFinancials.totalRevenue}</h3>
-                    <p className="text-xs text-emerald-400 font-medium">{mockCSuiteIntel.macroFinancials.revenueGrowth} YoY</p>
-                  </motion.div>
-                  <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-blue-500">
-                    <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">EBITDA Margin</p>
-                    <h3 className="text-3xl font-bold text-white mb-1">{mockCSuiteIntel.macroFinancials.ebitdaMargin}</h3>
-                    <p className="text-xs text-emerald-400 font-medium">{mockCSuiteIntel.macroFinancials.ebitdaGrowth} Expansion</p>
-                  </motion.div>
-                  <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-emerald-500">
-                    <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Cash Runway</p>
-                    <h3 className="text-3xl font-bold text-white mb-1">{mockCSuiteIntel.macroFinancials.cashRunway}</h3>
-                    <p className="text-xs text-slate-400 font-medium">Optimal Liquidity</p>
-                  </motion.div>
-                  <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-rose-500">
-                    <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Debt-to-Equity</p>
-                    <h3 className="text-3xl font-bold text-white mb-1">{mockCSuiteIntel.macroFinancials.debtToEquity}</h3>
-                    <p className="text-xs text-emerald-400 font-medium">Healthy Leverage</p>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                  {/* Macro Financials Grid (Left 2 columns) */}
+                  <div className="lg:col-span-2 grid grid-cols-2 gap-4">
+                    <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-purple-500 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-4 opacity-5"><DollarSign className="w-20 h-20" /></div>
+                      <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Total Revenue (FY)</p>
+                      <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.totalRevenue}</h3>
+                      <p className="text-sm text-emerald-400 font-medium flex items-center"><TrendingUp className="w-4 h-4 mr-1" /> {mockCSuiteIntel.macroFinancials.revenueGrowth} YoY</p>
+                    </motion.div>
+                    <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-blue-500 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-4 opacity-5"><TrendingUp className="w-20 h-20" /></div>
+                      <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">EBITDA Margin</p>
+                      <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.ebitdaMargin}</h3>
+                      <p className="text-sm text-emerald-400 font-medium flex items-center"><TrendingUp className="w-4 h-4 mr-1" /> {mockCSuiteIntel.macroFinancials.ebitdaGrowth} Expansion</p>
+                    </motion.div>
+                    <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-emerald-500 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-4 opacity-5"><Activity className="w-20 h-20" /></div>
+                      <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Cash Runway</p>
+                      <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.cashRunway}</h3>
+                      <p className="text-sm text-slate-400 font-medium flex items-center"><CheckCircle2 className="w-4 h-4 mr-1" /> Optimal Liquidity</p>
+                    </motion.div>
+                    <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-rose-500 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-4 opacity-5"><AlertTriangle className="w-20 h-20" /></div>
+                      <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Debt-to-Equity</p>
+                      <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.debtToEquity}</h3>
+                      <p className="text-sm text-emerald-400 font-medium flex items-center"><ShieldCheck className="w-4 h-4 mr-1" /> Healthy Leverage</p>
+                    </motion.div>
+                  </div>
+
+                  {/* Market Dominance Radar (Neon Donut Graph) */}
+                  <motion.div variants={fadeUp} className="glass-card p-6 flex flex-col relative overflow-hidden items-center justify-center">
+                    <h3 className="text-lg font-bold text-white mb-2 w-full text-left flex items-center">
+                      <Target className="w-5 h-5 mr-2 text-blue-400" /> Market Dominance
+                    </h3>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-blue-500/20 blur-[60px] rounded-full pointer-events-none"></div>
+                    <div className="h-48 w-full relative z-10 my-4 text-xs font-medium">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={mockCSuiteIntel.marketDominance}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={85}
+                            paddingAngle={5}
+                            dataKey="marketShare"
+                            stroke="none"
+                          >
+                            {mockCSuiteIntel.marketDominance.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={index === 0 ? '#3b82f6' : `hsl(215, 25%, ${40 - index * 10}%)`} />
+                            ))}
+                          </Pie>
+                          <RechartsTooltip content={<CustomTooltip />} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span className="text-3xl font-black text-white drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">34%</span>
+                        <span className="text-[10px] text-blue-300 font-bold uppercase tracking-widest mt-1">Us</span>
+                      </div>
+                    </div>
+                    <div className="w-full flex justify-between px-2 text-xs">
+                      <div className="flex items-center text-slate-300"><div className="w-3 h-3 bg-blue-500 rounded-sm mr-2 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>TopBuild.AI</div>
+                      <div className="flex items-center text-slate-500"><div className="w-3 h-3 bg-slate-600 rounded-sm mr-2"></div>Legacy Corp</div>
+                    </div>
                   </motion.div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6">
                   {/* Strategic Directives */}
-                  <motion.div variants={fadeUp} className="lg:col-span-2 space-y-4">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                      <Bot className="w-5 h-5 mr-2 text-indigo-400" /> AI Strategic Directives
+                  <motion.div variants={fadeUp} className="space-y-4">
+                    <h3 className="text-2xl font-bold text-white mb-6 flex items-center bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">
+                      <Bot className="w-6 h-6 mr-3 text-indigo-400" /> The Genius Insights: Strategic Directives
                     </h3>
-                    {mockCSuiteIntel.aiStrategicDirectives.map((directive) => (
-                      <div key={directive.id} className="glass-card p-6 relative overflow-hidden group">
-                        <div className="absolute right-0 top-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-[40px] -mr-10 -mt-10 transition-transform group-hover:scale-110"></div>
-                        <div className="relative z-10 flex flex-col md:flex-row gap-6">
-                          <div className="flex-1">
-                            <span className="inline-block px-3 py-1 bg-indigo-500/20 text-indigo-400 text-xs font-bold rounded-full mb-3 uppercase tracking-wider">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {mockCSuiteIntel.aiStrategicDirectives.map((directive) => (
+                        <div key={directive.id} className="glass-card flex flex-col relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-[40px] -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
+
+                          <div className="p-6 flex-1 relative z-10">
+                            <span className="inline-flex items-center px-3 py-1 bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-[10px] font-black rounded-full mb-4 uppercase tracking-widest">
                               {directive.category}
                             </span>
-                            <h4 className="text-xl font-bold text-white mb-2">{directive.directive}</h4>
-                            <p className="text-sm text-slate-400 leading-relaxed mb-4">{directive.rationale}</p>
-                            <div className="flex items-center space-x-2 text-emerald-400 font-medium bg-emerald-500/10 px-3 py-2 rounded-lg inline-flex">
-                              <TrendingUp className="w-4 h-4" />
-                              <span className="text-sm">{directive.impact}</span>
-                            </div>
+                            <h4 className="text-lg font-bold text-white mb-3 leading-snug">{directive.directive}</h4>
+                            <p className="text-sm text-slate-400 leading-relaxed">{directive.rationale}</p>
                           </div>
-                          <div className="flex items-center md:items-start justify-end md:w-48 pt-2">
-                            <button className="w-full py-3 px-4 bg-white hover:bg-slate-200 text-slate-900 font-bold rounded-xl transition-all shadow-lg hover:shadow-white/20 flex flex-col items-center justify-center space-y-1">
-                              <span>{directive.action}</span>
-                              <span className="text-[10px] text-slate-500 uppercase font-mono">1-Click Execution</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </motion.div>
 
-                  {/* Market Dominance Radar */}
-                  <motion.div variants={fadeUp} className="glass-card p-6 flex flex-col">
-                    <h3 className="text-lg font-bold text-white mb-6 flex items-center">
-                      <Target className="w-5 h-5 mr-2 text-blue-400" /> Competitor Dominance
-                    </h3>
-                    <div className="flex-1 space-y-6">
-                      {mockCSuiteIntel.marketDominance.map((comp, idx) => (
-                        <div key={idx} className="relative">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className={`font-semibold ${idx === 0 ? 'text-blue-400 text-lg' : 'text-slate-300'}`}>{comp.competitor}</span>
-                            <span className="text-sm font-mono text-slate-400 mt-1">{comp.marketShare}% Share</span>
-                          </div>
-                          <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${comp.marketShare}%` }}
-                              transition={{ duration: 1, delay: idx * 0.2 }}
-                              className={`h-full rounded-full ${idx === 0 ? 'bg-gradient-to-r from-blue-500 to-indigo-500' : 'bg-slate-600'}`}
-                            />
-                          </div>
-                          <div className="flex justify-between items-center mt-2 text-xs">
-                            <span className={comp.growth > 0 ? 'text-emerald-400' : 'text-rose-400'}>
-                              {comp.growth > 0 ? '+' : ''}{comp.growth}% Growth
-                            </span>
-                            <span className="text-slate-500">Win Rate: {comp.winRate}%</span>
+                          <div className="p-6 pt-0 mt-auto relative z-10">
+                            <div className="py-3 px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl mb-4 flex items-center space-x-3">
+                              <TrendingUp className="w-5 h-5 text-emerald-400 shrink-0" />
+                              <span className="text-sm font-bold text-emerald-400 leading-tight">{directive.impact}</span>
+                            </div>
+                            <button className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 hover:from-blue-500 to-indigo-600 hover:to-indigo-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.2)] hover:shadow-[0_0_30px_rgba(79,70,229,0.4)] flex items-center justify-center uppercase tracking-wider text-xs">
+                              <span className="mr-2">{directive.action}</span>
+                              <ChevronRight className="w-4 h-4 opacity-50" />
+                            </button>
                           </div>
                         </div>
                       ))}
                     </div>
                   </motion.div>
                 </div>
-
               </motion.div>
             )}
 
