@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, Leaf, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function FloatingAIEsgWidget() {
+    const { t } = useLanguage();
     const [isOpen, setIsOpen] = useState(true);
     const [data, setData] = useState({
         profit: 18.5,
@@ -23,7 +25,7 @@ export default function FloatingAIEsgWidget() {
                         className="mb-3 md:mb-4 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden w-64 md:w-72"
                     >
                         <div className="bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border-b border-white/5 p-2.5 md:p-3 flex justify-between items-center">
-                            <span className="text-[10px] md:text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 tracking-wider">LIVE AI INSIGHTS</span>
+                            <span className="text-[10px] md:text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 tracking-wider">{t('ai.liveInsights')}</span>
                             <div className="flex space-x-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                             </div>
@@ -36,8 +38,8 @@ export default function FloatingAIEsgWidget() {
                                     <TrendingUp className="w-4 h-4" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-400 font-medium font-sans">AI Forecast</p>
-                                    <p className="text-sm font-bold text-white tracking-tight">{data.profit}% Margin</p>
+                                    <p className="text-xs text-slate-400 font-medium font-sans">{t('project.aiForecast')}</p>
+                                    <p className="text-sm font-bold text-white tracking-tight">{data.profit}% {t('project.margin')}</p>
                                 </div>
                             </div>
 
@@ -47,8 +49,8 @@ export default function FloatingAIEsgWidget() {
                                     <Leaf className="w-4 h-4" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-400 font-medium font-sans">Carbon Credit</p>
-                                    <p className="text-sm font-bold text-white tracking-tight">-{data.carbon} Tons CO2</p>
+                                    <p className="text-xs text-slate-400 font-medium font-sans">{t('esg.carbonCredit')}</p>
+                                    <p className="text-sm font-bold text-white tracking-tight">-{data.carbon} {t('esg.tonsCO2')}</p>
                                 </div>
                             </div>
 
@@ -58,8 +60,8 @@ export default function FloatingAIEsgWidget() {
                                     <Users className="w-4 h-4" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-400 font-medium font-sans">Happiness Index</p>
-                                    <p className="text-sm font-bold text-white tracking-tight">{data.happiness}/5.0 Score</p>
+                                    <p className="text-xs text-slate-400 font-medium font-sans">{t('esg.happinessIndex')}</p>
+                                    <p className="text-sm font-bold text-white tracking-tight">{data.happiness}/5.0 {t('esg.score')}</p>
                                 </div>
                             </div>
                         </div>

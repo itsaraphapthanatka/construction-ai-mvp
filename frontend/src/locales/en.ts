@@ -5,14 +5,14 @@ export const en = {
         overview: 'Executive Overview',
         projects: 'Project Portfolio',
         bidding: 'Opportunity Scanner',
-        cSuiteBoardroom: 'C-Suite Boardroom',
+        cSuiteBoardroom: 'C-Level Boardroom',
         aiAnalytics: 'AI Analytics',
         esg: 'ESG Impact',
         alerts: 'Command Center',
     },
     // Header
     header: {
-        boardroomTitle: ['C-Suite ', 'Boardroom'],
+        boardroomTitle: ['C-Level ', 'Boardroom'],
         overviewTitle: ['Executive ', 'Overview'],
         projectsTitle: ['Project ', 'Portfolio'],
         biddingTitle: ['Opportunity ', 'Scanner'],
@@ -53,9 +53,28 @@ export const en = {
     // Projects Tab
     project: {
         aiForecast: 'AI Forecast',
+        alert: 'ALERT:',
         margin: 'Margin',
         carbon: 'Carbon',
-        alert: 'Alert:',
+        // Project Drilldown
+        drilldownTitle: 'Project Deep-Dive',
+        budgetBreakdown: 'Budget Allocation',
+        laborCost: 'Labor',
+        materialCost: 'Materials',
+        equipmentCost: 'Equipment',
+        overheadCost: 'Overhead',
+        timelineProgress: 'Timeline Progress',
+        planned: 'Planned',
+        actual: 'Actual',
+        milestone: 'Milestone',
+        targetDate: 'Target Date',
+        statusLabel: 'Status',
+        esgPerformance: 'ESG Performance',
+        safetyScore: 'Safety Score',
+        satisfaction: 'Employee Satisfaction',
+        riskAnalysis: 'AI Risk Analysis',
+        profitForecast: 'Profit Forecast',
+        activeAlerts: 'Active Alerts',
     },
     // ESG Tab
     esg: {
@@ -69,6 +88,63 @@ export const en = {
         days: 'Days',
         happinessIndex: 'Happiness Index',
         score: 'Score',
+
+        // Context & Goals
+        projectFilter: 'Project Filter',
+        allProjects: 'All Projects',
+        sukhumvitSite: 'Sukhumvit Site',
+        bangnaSite: 'Bangna Site',
+        aiExecutiveSummary: 'AI Executive Summary',
+        summaryOnTrack: 'On track for Q3 carbon targets, but safety risks at Bangna site require immediate attention.',
+
+        // Environment (Carbon)
+        annualTarget: 'Annual Target',
+        vsLastMonth: 'vs last month',
+        carbonForecast: 'Carbon Target Forecast',
+        setComplianceThreshold: 'SET Compliance Threshold',
+        currentTrajectory: 'Current Trajectory',
+
+        // Social (Safety)
+        predictiveRiskScore: 'Predictive Risk Score',
+        riskLevel: 'Risk Level',
+        moderateRisk: 'Moderate risk next week due to heavy rain',
+        nearMisses: 'Near Misses Recorded',
+        anomalyDetection: 'Anomaly Detection System',
+        anomalyFuel: 'Unusual fuel consumption detected at Site B, likely due to idle machinery.',
+
+        // People (Sentiment)
+        sentimentAnalysis: 'Workforce Sentiment Analysis',
+        keywordOverworked: 'Overworked',
+        keywordGoodConditions: 'Good Conditions',
+        keywordSafetyFirst: 'Safety First',
+
+        // Governance & Actionable Insights
+        aiRecommendations: 'Actionable Executive Insights',
+        recConcrete: 'Switching to Low-Carbon Concrete in the next project will accelerate reaching Q3 carbon targets by 2 weeks.',
+        recMachinery: 'Schedule preventive maintenance for heavy machinery at Bangna Site to mitigate upcoming predictive risks.',
+        regulatoryCompliance: 'SET 56-1 One Report Readiness',
+        ready: 'Ready',
+        notReady: 'Not Ready',
+        wasteManagement: 'Construction Waste Management',
+        recycleCircular: 'Recycle / Circular Economy',
+
+        // Drilldown Modals
+        closeDetail: 'Close Details',
+        viewDetails: 'View Details',
+        drilldownEnvTitle: 'Environment Target Details',
+        drilldownSocTitle: 'Social & Safety Deep-Dive',
+        drilldownGovTitle: 'Governance & Compliance Dashboard',
+        dailyTrajectory: 'Daily Carbon Mitigation Trajectory (Tons)',
+        emissionSources: 'Emission Sources Breakdown',
+        machinery: 'Heavy Machinery',
+        materials: 'Construction Materials',
+        transport: 'Transport & Logistics',
+        riskTrend: 'Risk Score Trend (30 Days)',
+        anomalyLog: 'Anomaly & Near Miss Log',
+        sentimentChart: 'Workforce Sentiment Composition',
+        setChecklist: 'SET 56-1 One Report Checklist',
+        requirement: 'Requirement',
+        status: 'Status',
     },
     // Bidding Tab
     bidding: {
@@ -122,5 +198,25 @@ export const en = {
         analyzing: 'Analyzing data...',
         inputPlaceholder: 'Ask a question to analyze a project or risk...',
         liveInsights: 'LIVE AI INSIGHTS',
+    },
+    // Directives
+    directives: {
+        d1Category: 'M&A / Market Share',
+        d1Directive: 'Aggressively bid Eastern region contracts at 5% discount.',
+        d1Rationale: 'Competitor SCC Construction margin compression detected due to supply chain overexposure. Capturing this market share now yields long-term pricing power.',
+        d1Impact: 'Est. +2.1B THB Revenue YoY',
+        d1Action: 'Authorize Aggressive Bidding',
+
+        d2Category: 'Capital Allocation',
+        d2Directive: 'Lock in fixed-rate financing for "The Riverfront Condo" immediately.',
+        d2Rationale: 'Macro models predict a 50 bps interest rate hike within 45 days. Delaying financing will erode project margins by 1.2%.',
+        d2Impact: 'Est. 12M THB Cost Savings',
+        d2Action: 'Execute Financing Swap',
+
+        d3Category: 'Resource Optimization',
+        d3Directive: 'Invest 150M THB in robotic bricklaying & automated tying machines.',
+        d3Rationale: 'Subcontractor labor costs are projected to rise 12% YoY. Capital investment payback period is only 14 months at current burn rates.',
+        d3Impact: '-18% Reliance on Manual Labor',
+        d3Action: 'Approve CapEx'
     }
 };

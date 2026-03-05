@@ -5,14 +5,14 @@ export const th = {
         overview: 'ภาพรวมผู้บริหาร',
         projects: 'พอร์ตโฟลิโอโครงการ',
         bidding: 'เครื่องมือสแกนโอกาส',
-        cSuiteBoardroom: 'C-Suite Boardroom',
+        cSuiteBoardroom: 'บอร์ดบริหาร (C-Level)',
         aiAnalytics: 'การวิเคราะห์ AI',
         esg: 'ผลกระทบ ESG',
         alerts: 'ศูนย์บัญชาการ',
     },
     // Header
     header: {
-        boardroomTitle: ['พื้นที่', 'ผู้บริหารระดับสูง'],
+        boardroomTitle: ['บอร์ด', 'บริหาร'],
         overviewTitle: ['ภาพรวม', 'ผู้บริหาร'],
         projectsTitle: ['พอร์ตโฟลิโอ', 'โครงการ'],
         biddingTitle: ['เครื่องมือ', 'สแกนโอกาส'],
@@ -56,6 +56,25 @@ export const th = {
         margin: 'อัตรากำไร',
         carbon: 'คาร์บอน',
         alert: 'แจ้งเตือน:',
+        // Project Drilldown
+        drilldownTitle: 'เจาะลึกโครงการ',
+        budgetBreakdown: 'สัดส่วนงบประมาณ',
+        laborCost: 'ค่าแรงงาน',
+        materialCost: 'วัสดุ',
+        equipmentCost: 'เครื่องจักร',
+        overheadCost: 'ค่าใช้จ่ายอื่นๆ',
+        timelineProgress: 'ความคืบหน้าตามไทม์ไลน์',
+        planned: 'แผน',
+        actual: 'จริง',
+        milestone: 'เป้าหมาย',
+        targetDate: 'วันที่เป้าหมาย',
+        statusLabel: 'สถานะ',
+        esgPerformance: 'ผลการดำเนินงาน ESG',
+        safetyScore: 'คะแนนความปลอดภัย',
+        satisfaction: 'ความพึงพอใจพนักงาน',
+        riskAnalysis: 'วิเคราะห์ความเสี่ยงโดย AI',
+        profitForecast: 'พยากรณ์กำไร',
+        activeAlerts: 'แจ้งเตือนที่ใช้งานอยู่',
     },
     // ESG Tab
     esg: {
@@ -69,6 +88,63 @@ export const th = {
         days: 'วัน',
         happinessIndex: 'ดัชนีความสุข',
         score: 'คะแนน',
+
+        // Context & Goals
+        projectFilter: 'ตัวเลือกโครงการ',
+        allProjects: 'ทุกโครงการ',
+        sukhumvitSite: 'ไซต์งาน สุขุมวิท',
+        bangnaSite: 'ไซต์งาน บางนา',
+        aiExecutiveSummary: 'สรุปสำหรับผู้บริหารโดย AI',
+        summaryOnTrack: 'อยู่บนเส้นทางที่สอดคล้องกับเป้าหมายคาร์บอน Q3 แต่ความเสี่ยงด้านความปลอดภัยที่ไซต์งานบางนาต้องได้รับการจัดการทันที',
+
+        // Environment (Carbon)
+        annualTarget: 'เป้าหมายรายปี',
+        vsLastMonth: 'เทียบกับเดือนที่แล้ว',
+        carbonForecast: 'พยากรณ์การบรรลุเป้าหมายคาร์บอน',
+        setComplianceThreshold: 'เกณฑ์ที่ตั้งไว้โดย SET',
+        currentTrajectory: 'แนวโน้มปัจจุบัน',
+
+        // Social (Safety)
+        predictiveRiskScore: 'คะแนนความเสี่ยงล่วงหน้า',
+        riskLevel: 'ระดับความเสี่ยง',
+        moderateRisk: 'เสี่ยงปานกลางสัปดาห์หน้าจากฝนตกหนัก',
+        nearMisses: 'เหตุการณ์เกือบเกิดอุบัติเหตุ',
+        anomalyDetection: 'การตรวจจับความผิดปกติ',
+        anomalyFuel: 'พบการใช้เชื้อเพลิงสูงผิดปกติที่ไซต์ B คาดว่าเกิดจากการติดเครื่องจักรทิ้งไว้',
+
+        // People (Sentiment)
+        sentimentAnalysis: 'วิเคราะห์ความรู้สึกของแรงงานพนักงาน',
+        keywordOverworked: 'ทำงานหนักเกินไป',
+        keywordGoodConditions: 'สภาพหน้างานดี',
+        keywordSafetyFirst: 'ปลอดภัย',
+
+        // Governance & Actionable Insights
+        aiRecommendations: 'คำแนะนำสู่การลงมือทำโดย AI',
+        recConcrete: 'หากเปลี่ยนมาใช้ Low-carbon Concrete ในโครงการหน้า จะช่วยดันปริมาณคาร์บอนชดเชยให้ถึงเป้าหมาย Q3 ได้เร็วขึ้น 2 สัปดาห์',
+        recMachinery: 'จัดตารางซ่อมบำรุงเชิงป้องกันสำหรับเครื่องจักรกลหนักที่ไซต์งานบางนา เพื่อลดความเสี่ยงที่ระบบคาดการณ์ไว้',
+        regulatoryCompliance: 'สถานะความพร้อมรายงาน SET 56-1 One Report',
+        ready: 'พร้อม',
+        notReady: 'ไม่พร้อม',
+        wasteManagement: 'การบริหารจัดการขยะทิ้งจากก่อสร้าง',
+        recycleCircular: 'รีไซเคิล / เข้าสู่ระบบเศรษฐกิจหมุนเวียน',
+
+        // Drilldown Modals
+        closeDetail: 'ปิดรายละเอียด',
+        viewDetails: 'ดูรายละเอียด',
+        drilldownEnvTitle: 'รายละเอียดเป้าหมายสิ่งแวดล้อม',
+        drilldownSocTitle: 'เจาะลึกความปลอดภัยและสังคม',
+        drilldownGovTitle: 'แดชบอร์ดธรรมาภิบาลและการกำกับดูแล',
+        dailyTrajectory: 'แนวโน้มการลดคาร์บอนรายวัน (ตัน)',
+        emissionSources: 'แหล่งกำเนิดคาร์บอน',
+        machinery: 'เครื่องจักรกลหนัก',
+        materials: 'วัสดุก่อสร้าง',
+        transport: 'การขนส่ง',
+        riskTrend: 'แนวโน้มคะแนนความเสี่ยง (30 วัน)',
+        anomalyLog: 'บันทึกเหตุการณ์ผิดปกติและความเสี่ยง',
+        sentimentChart: 'สัดส่วนความรู้สึกพนักงาน',
+        setChecklist: 'รายการตรวจสอบ SET 56-1 One Report',
+        requirement: 'ข้อกำหนด',
+        status: 'สถานะ',
     },
     // Bidding Tab
     bidding: {
@@ -122,5 +198,25 @@ export const th = {
         analyzing: 'กำลังวิเคราะห์ข้อมูล...',
         inputPlaceholder: 'ตั้งคำถามเพื่อวิเคราะห์โครงการ หรือความเสี่ยง...',
         liveInsights: 'ข้อมูลเจาะลึกจาก AI เชิงรุก',
+    },
+    // Directives
+    directives: {
+        d1Category: 'การควบรวมกิจการ / ส่วนแบ่งตลาด',
+        d1Directive: 'เสนอราคาเชิงรุกในโครงการภาคตะวันออกด้วยส่วนลด 5%',
+        d1Rationale: 'ตรวจพบการหดตัวของอัตรากำไรของคู่แข่ง SCC Construction เนื่องจากปัญหาระบบจัดซื้อ การแย่งชิงส่วนแบ่งตลาดตอนนี้จะทำให้เรามีอำนาจกำหนดราคาในระยะยาว',
+        d1Impact: 'รายได้คาดการณ์ +2.1 พันล้านบาท YoY',
+        d1Action: 'อนุมัติการประมูลเชิงรุก',
+
+        d2Category: 'การจัดสรรเงินทุน',
+        d2Directive: 'ล็อกอัตราดอกเบี้ยคงที่สำหรับโครงการ "The Riverfront Condo" ทันที',
+        d2Rationale: 'โมเดลเศรษฐกิจมหภาคคาดการณ์ว่าอัตราดอกเบี้ยจะปรับขึ้น 0.50% ภายใน 45 วัน การชะลอการจัดหาเงินทุนจะลดอัตรากำไรโครงการลง 1.2%',
+        d2Impact: 'ประหยัดต้นทุนคาดการณ์ 12 ล้านบาท',
+        d2Action: 'ดำเนินการสับเปลี่ยนแผนการเงิน',
+
+        d3Category: 'การเพิ่มประสิทธิภาพทรัพยากร',
+        d3Directive: 'ลงทุน 150 ล้านบาทในหุ่นยนต์ก่ออิฐและเครื่องผูกเหล็กอัตโนมัติ',
+        d3Rationale: 'ต้นทุนแรงงานผู้รับเหมาช่วงคาดว่าจะเพิ่มขึ้น 12% YoY ระยะเวลาคืนทุนของการลงทุนนี้อยู่ที่เพียง 14 เดือนในอัตราการใช้จ่ายปัจจุบัน',
+        d3Impact: 'ลดการพึ่งพาแรงงานคน -18%',
+        d3Action: 'อนุมัติงบรายจ่ายฝ่ายทุน (CapEx)'
     }
 };

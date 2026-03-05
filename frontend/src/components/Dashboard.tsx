@@ -22,7 +22,8 @@ import {
   CheckCircle2,
   XCircle,
   HelpCircle,
-  Briefcase
+  Briefcase,
+  Zap
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
@@ -124,11 +125,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function Dashboard() {
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [biddingOps, setBiddingOps] = useState<BiddingOpportunity[]>([]);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('c-suite');
+  const [activeDrilldown, setActiveDrilldown] = useState<string | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedBidding, setSelectedBidding] = useState<BiddingOpportunity | null>(null);
   // Default sidebar open on desktop, closed on mobile
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -173,7 +177,7 @@ export default function Dashboard() {
 
   const mockCSuiteIntel = {
     macroFinancials: {
-      totalRevenue: '฿42.5B',
+      totalRevenue: language === 'th' ? '42.5 พันล้านบาท' : '42.5B THB',
       revenueGrowth: '+14.2%',
       ebitdaMargin: '18.5%',
       ebitdaGrowth: '+2.1%',
@@ -183,27 +187,27 @@ export default function Dashboard() {
     aiStrategicDirectives: [
       {
         id: 1,
-        category: 'M&A / Market Share',
-        directive: 'Aggressively bid Eastern region contracts at 5% discount.',
-        rationale: 'Competitor SCC Construction margin compression detected due to supply chain overexposure. Capturing this market share now yields long-term pricing power.',
-        impact: 'Est. +฿2.1B Revenue YoY',
-        action: 'Authorize Aggressive Bidding'
+        category: t('directives.d1Category'),
+        directive: t('directives.d1Directive'),
+        rationale: t('directives.d1Rationale'),
+        impact: t('directives.d1Impact'),
+        action: t('directives.d1Action')
       },
       {
         id: 2,
-        category: 'Capital Allocation',
-        directive: 'Lock in fixed-rate financing for "The Riverfront Condo" immediately.',
-        rationale: 'Macro models predict a 50 bps interest rate hike within 45 days. Delaying financing will erode project margins by 1.2%.',
-        impact: 'Est. ฿12M Cost Savings',
-        action: 'Execute Financing Swap'
+        category: t('directives.d2Category'),
+        directive: t('directives.d2Directive'),
+        rationale: t('directives.d2Rationale'),
+        impact: t('directives.d2Impact'),
+        action: t('directives.d2Action')
       },
       {
         id: 3,
-        category: 'Resource Optimization',
-        directive: 'Invest ฿150M in robotic bricklaying & automated tying machines.',
-        rationale: 'Subcontractor labor costs are projected to rise 12% YoY. Capital investment payback period is only 14 months at current burn rates.',
-        impact: '-18% Reliance on Manual Labor',
-        action: 'Approve CapEx'
+        category: t('directives.d3Category'),
+        directive: t('directives.d3Directive'),
+        rationale: t('directives.d3Rationale'),
+        impact: t('directives.d3Impact'),
+        action: t('directives.d3Action')
       }
     ],
     marketDominance: [
@@ -233,13 +237,17 @@ export default function Dashboard() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('th-TH', {
-      style: 'currency',
-      currency: 'THB',
-      maximumFractionDigits: 0,
+    let formatted = new Intl.NumberFormat(language === 'th' ? 'th-TH' : 'en-US', {
+      maximumFractionDigits: 1,
       notation: 'compact',
       compactDisplay: 'short'
     }).format(amount);
+
+    if (language === 'th') {
+      formatted = formatted.replace(/B/g, 'พันล้าน').replace(/M/g, 'ล้าน').replace(/K/g, 'พัน');
+    }
+
+    return `${formatted} ${language === 'th' ? 'บาท' : 'THB'}`;
   };
 
   if (loading) {
@@ -255,10 +263,10 @@ export default function Dashboard() {
   }
 
   const navItems = [
+    { id: 'c-suite', label: t('nav.cSuiteBoardroom'), icon: Briefcase },
     { id: 'overview', label: t('nav.overview'), icon: Activity },
     { id: 'projects', label: t('nav.projects'), icon: Building2 },
     { id: 'bidding', label: t('nav.bidding'), icon: Target },
-    { id: 'c-suite', label: t('nav.cSuiteBoardroom'), icon: Briefcase },
     { id: 'ai-predict', label: t('nav.aiAnalytics'), icon: TrendingUp },
     { id: 'esg', label: t('nav.esg'), icon: Leaf },
     { id: 'alerts', label: t('nav.alerts'), icon: AlertTriangle },
@@ -371,7 +379,6 @@ export default function Dashboard() {
             {(sidebarOpen || isMobile) && (
               <div className="ml-3 overflow-hidden">
                 <p className="text-sm font-medium text-white truncate">{t('user.view')}</p>
-                <p className="text-xs text-slate-500 truncate">{t('user.access')}</p>
               </div>
             )}
           </div>
@@ -411,11 +418,13 @@ export default function Dashboard() {
           >
             <div>
               <h1 className="text-3xl md:text-4xl font-light text-white tracking-tight">
-                {activeTab === 'overview' && <>Executive <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Overview</span></>}
-                {activeTab === 'projects' && <>Project <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Portfolio</span></>}
-                {activeTab === 'ai-predict' && <>AI <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Analytics</span></>}
-                {activeTab === 'esg' && <>ESG <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Impact</span></>}
-                {activeTab === 'alerts' && <>Command <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Center</span></>}
+                {activeTab === 'c-suite' && <>{t('header.boardroomTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.boardroomTitle')[1]}</span></>}
+                {activeTab === 'overview' && <>{t('header.overviewTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.overviewTitle')[1]}</span></>}
+                {activeTab === 'projects' && <>{t('header.projectsTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.projectsTitle')[1]}</span></>}
+                {activeTab === 'bidding' && <>{t('header.biddingTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{t('header.biddingTitle')[1]}</span></>}
+                {activeTab === 'ai-predict' && <>{t('header.aiAnalyticsTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.aiAnalyticsTitle')[1]}</span></>}
+                {activeTab === 'esg' && <>{t('header.esgTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.esgTitle')[1]}</span></>}
+                {activeTab === 'alerts' && <>{t('header.alertsTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.alertsTitle')[1]}</span></>}
               </h1>
               <p className="text-slate-400 mt-2 font-medium">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
@@ -423,12 +432,22 @@ export default function Dashboard() {
             </div>
 
             <div className="flex items-center space-x-4">
+              {/* Language Switcher */}
+              <button
+                onClick={() => setLanguage(language === 'en' ? 'th' : 'en')}
+                className="glass px-3 py-2 rounded-lg flex items-center space-x-2 text-sm hover:bg-white/10 transition-colors border border-white/5"
+              >
+                <span className={`font-medium ${language === 'en' ? 'text-white' : 'text-slate-400'}`}>EN</span>
+                <span className="text-slate-600">|</span>
+                <span className={`font-medium ${language === 'th' ? 'text-white' : 'text-slate-400'}`}>TH</span>
+              </button>
+
               <div className="glass px-4 py-2 rounded-full flex items-center space-x-2 text-sm">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
-                <span className="text-slate-300 font-medium">System Online</span>
+                <span className="text-slate-300 font-medium">{t('header.systemOnline')}</span>
               </div>
             </div>
           </motion.header>
@@ -456,15 +475,15 @@ export default function Dashboard() {
                         <div className="p-2.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                           <ShieldCheck className="h-5 w-5" />
                         </div>
-                        <h3 className="text-slate-300 font-medium">Optimal Status</h3>
+                        <h3 className="text-slate-300 font-medium">{t('overview.optimalStatus')}</h3>
                       </div>
                       <div>
                         <div className="flex items-baseline space-x-2">
                           <span className="text-5xl font-bold text-white tracking-tight">{summary.trafficLight.green}</span>
-                          <span className="text-slate-400 font-medium">Projects</span>
+                          <span className="text-slate-400 font-medium">{t('overview.projects')}</span>
                         </div>
                         <p className="text-emerald-400 text-sm mt-2 font-medium flex items-center">
-                          <TrendingUp className="w-4 h-4 mr-1" /> Trending positively
+                          <TrendingUp className="w-4 h-4 mr-1" /> {t('overview.trendingPositive')}
                         </p>
                       </div>
                     </div>
@@ -480,15 +499,15 @@ export default function Dashboard() {
                         <div className="p-2.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30">
                           <AlertTriangle className="h-5 w-5" />
                         </div>
-                        <h3 className="text-slate-300 font-medium">Requires Attention</h3>
+                        <h3 className="text-slate-300 font-medium">{t('overview.requiresAttention')}</h3>
                       </div>
                       <div>
                         <div className="flex items-baseline space-x-2">
                           <span className="text-5xl font-bold text-white tracking-tight">{summary.trafficLight.yellow}</span>
-                          <span className="text-slate-400 font-medium">Projects</span>
+                          <span className="text-slate-400 font-medium">{t('overview.projects')}</span>
                         </div>
                         <p className="text-amber-400 text-sm mt-2 font-medium flex items-center">
-                          <Activity className="w-4 h-4 mr-1" /> Minor deviations detected
+                          <Activity className="w-4 h-4 mr-1" /> {t('overview.minorDeviations')}
                         </p>
                       </div>
                     </div>
@@ -504,15 +523,15 @@ export default function Dashboard() {
                         <div className="p-2.5 rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30">
                           <Activity className="h-5 w-5" />
                         </div>
-                        <h3 className="text-slate-300 font-medium">Critical Risk</h3>
+                        <h3 className="text-slate-300 font-medium">{t('overview.criticalRisk')}</h3>
                       </div>
                       <div>
                         <div className="flex items-baseline space-x-2">
                           <span className="text-5xl font-bold text-white tracking-tight">{summary.trafficLight.red}</span>
-                          <span className="text-slate-400 font-medium">Projects</span>
+                          <span className="text-slate-400 font-medium">{t('overview.projects')}</span>
                         </div>
                         <p className="text-rose-400 text-sm mt-2 font-medium flex items-center">
-                          <TrendingDown className="w-4 h-4 mr-1" /> Immediate action needed
+                          <TrendingDown className="w-4 h-4 mr-1" /> {t('overview.immediateAction')}
                         </p>
                       </div>
                     </div>
@@ -527,16 +546,16 @@ export default function Dashboard() {
                     <motion.div variants={fadeUp} className="glass-card flex-1 flex flex-col justify-center">
                       <div className="flex items-center justify-between mb-2">
                         <div className="p-2 bg-blue-500/10 text-blue-400 rounded border border-blue-500/20"><DollarSign className="w-5 h-5" /></div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Capital</span>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{t('overview.totalCapital')}</span>
                       </div>
                       <h4 className="text-4xl font-bold text-white tracking-tight">{formatCurrency(summary.totalBudget)}</h4>
-                      <p className="text-sm text-slate-400 mt-2">Across {summary.totalProjects} active developments</p>
+                      <p className="text-sm text-slate-400 mt-2">{t('overview.activeDevelopments').replace('{count}', summary.totalProjects.toString())}</p>
                     </motion.div>
 
                     <motion.div variants={fadeUp} className="glass-card flex-1 flex flex-col justify-center">
                       <div className="flex items-center justify-between mb-2">
                         <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded border border-emerald-500/20"><TrendingUp className="w-5 h-5" /></div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Margin Forecast</span>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{t('overview.marginForecast')}</span>
                       </div>
                       <h4 className="text-4xl font-bold text-white tracking-tight">{summary.avgProfit}%</h4>
                       <div className="w-full bg-slate-800 rounded-full h-1.5 mt-4 overflow-hidden">
@@ -549,13 +568,13 @@ export default function Dashboard() {
                   <motion.div variants={fadeUp} className="glass-card lg:col-span-2 relative overflow-hidden">
                     <div className="flex justify-between items-center mb-6">
                       <div>
-                        <h3 className="text-lg font-semibold text-white">AI Margin Trajectory</h3>
-                        <p className="text-sm text-slate-400">6-month forward-looking predictability model</p>
+                        <h3 className="text-lg font-semibold text-white">{t('overview.aiMarginTrajectory')}</h3>
+                        <p className="text-sm text-slate-400">{t('overview.trajectorySubtext')}</p>
                       </div>
                       <div className="flex items-center space-x-4 text-xs font-medium">
-                        <div className="flex items-center"><div className="w-2 h-2 rounded-full bg-emerald-400 mr-2"></div>Optimistic</div>
-                        <div className="flex items-center"><div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>Predicted</div>
-                        <div className="flex items-center"><div className="w-2 h-2 rounded-full bg-rose-400 mr-2"></div>Conservative</div>
+                        <div className="flex items-center"><div className="w-2 h-2 rounded-full bg-emerald-400 mr-2"></div>{t('overview.chart.optimistic')}</div>
+                        <div className="flex items-center"><div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>{t('overview.chart.predicted')}</div>
+                        <div className="flex items-center"><div className="w-2 h-2 rounded-full bg-rose-400 mr-2"></div>{t('overview.chart.conservative')}</div>
                       </div>
                     </div>
 
@@ -573,9 +592,9 @@ export default function Dashboard() {
                           <YAxis stroke="#94a3b8" tick={{ fill: '#64748b' }} axisLine={false} tickLine={false} tickFormatter={(val) => `${val}%`} />
                           <RechartsTooltip content={<CustomTooltip />} />
 
-                          <Area type="monotone" dataKey="pessimistic" stroke="#f43f5e" strokeWidth={2} strokeDasharray="5 5" fill="none" name="Low-end" />
-                          <Area type="monotone" dataKey="optimistic" stroke="#10b981" strokeWidth={2} strokeDasharray="5 5" fill="none" name="High-end" />
-                          <Area type="monotone" dataKey="predicted" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorPredicted)" name="Consensus" />
+                          <Area type="monotone" dataKey="pessimistic" stroke="#f43f5e" strokeWidth={2} strokeDasharray="5 5" fill="none" name={t('overview.chart.lowEnd')} />
+                          <Area type="monotone" dataKey="optimistic" stroke="#10b981" strokeWidth={2} strokeDasharray="5 5" fill="none" name={t('overview.chart.highEnd')} />
+                          <Area type="monotone" dataKey="predicted" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorPredicted)" name={t('overview.chart.consensus')} />
                         </AreaChart>
                       </ResponsiveContainer>
                     </div>
@@ -588,7 +607,8 @@ export default function Dashboard() {
             {activeTab === 'projects' && (
               <motion.div key="projects" initial="hidden" animate="visible" exit={{ opacity: 0, scale: 0.95 }} variants={{ visible: { transition: { staggerChildren: 0.05 } } }} className="space-y-4">
                 {projects.map((project) => (
-                  <motion.div key={project.id} variants={fadeUp} className="glass-card hover:bg-white/10 transition-colors group cursor-pointer border border-white/5 hover:border-white/10">
+                  <motion.div key={project.id} variants={fadeUp} onClick={() => setSelectedProject(project)} className="glass-card hover:bg-white/10 transition-all group cursor-pointer border border-white/5 hover:border-blue-500/30 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-blue-500/15 transition-colors pointer-events-none"></div>
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                       <div className="flex items-center space-x-4">
                         <div className={`p-3 rounded-xl border ${getRiskColor(project.riskLevel)}`}>
@@ -604,13 +624,13 @@ export default function Dashboard() {
                       </div>
                       <div className="flex flex-wrap items-center gap-4 lg:gap-8 border-t border-slate-800 lg:border-t-0 pt-4 lg:pt-0">
                         <div className="text-left lg:text-right flex-1 sm:flex-none">
-                          <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">AI Forecast</p>
-                          <p className="text-lg md:text-xl font-bold text-emerald-400">{project.predictedProfit}% Margin</p>
+                          <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">{t('project.aiForecast')}</p>
+                          <p className="text-lg md:text-xl font-bold text-emerald-400">{project.predictedProfit}% {t('project.margin')}</p>
                         </div>
                         <div className="h-10 w-px bg-slate-700 hidden lg:block"></div>
                         <div className="flex flex-col space-y-1 w-full sm:w-32 flex-1 sm:flex-none">
                           <div className="flex justify-between text-xs font-medium">
-                            <span className="text-slate-400">Carbon</span>
+                            <span className="text-slate-400">{t('project.carbon')}</span>
                             <span className="text-emerald-400">-{project.esg?.carbonReduction || 0}%</span>
                           </div>
                           <div className="w-full bg-slate-800 rounded-full h-1">
@@ -627,55 +647,575 @@ export default function Dashboard() {
                           <div key={idx} className={`p-3 rounded-lg flex items-center space-x-3 text-sm border ${alert.type === 'danger' ? 'bg-rose-500/10 text-rose-300 border-rose-500/20' : 'bg-amber-500/10 text-amber-300 border-amber-500/20'
                             }`}>
                             <AlertTriangle className="h-4 w-4 flex-shrink-0" />
-                            <span><strong className="text-white mr-2">Alert:</strong>{alert.message}</span>
+                            <span><strong className="text-white mr-2">{t('project.alert')}</strong>{alert.message}</span>
                           </div>
                         ))}
                       </div>
                     )}
                   </motion.div>
                 ))}
+
+                {/* Project Drilldown Modal */}
+                <AnimatePresence>
+                  {selectedProject && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
+                      onClick={() => setSelectedProject(null)}
+                    >
+                      <motion.div
+                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 md:p-8 custom-scrollbar"
+                      >
+                        <button
+                          onClick={() => setSelectedProject(null)}
+                          className="absolute top-4 right-4 p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-rose-500/20 transition-colors z-10"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+
+                        <div className="space-y-6">
+                          {/* Header */}
+                          <div className="flex items-center space-x-4 border-b border-slate-800 pb-4">
+                            <div className={`p-3 rounded-xl border ${getRiskColor(selectedProject.riskLevel)}`}>
+                              <Building2 className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <h2 className="text-2xl font-bold text-white">{selectedProject.name}</h2>
+                              <div className="flex items-center space-x-3 mt-1">
+                                <span className="font-mono text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-300">{selectedProject.id}</span>
+                                <span className="text-slate-400 text-sm">{formatCurrency(selectedProject.budget)}</span>
+                                <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${selectedProject.riskLevel === 'green' ? 'bg-emerald-500/20 text-emerald-400' :
+                                  selectedProject.riskLevel === 'yellow' ? 'bg-amber-500/20 text-amber-400' :
+                                    'bg-rose-500/20 text-rose-400'
+                                  }`}>{selectedProject.status}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Top Stats Row */}
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="glass-card p-4 text-center border-emerald-500/20">
+                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.profitForecast')}</p>
+                              <p className="text-2xl font-bold text-emerald-400">{selectedProject.predictedProfit}%</p>
+                            </div>
+                            <div className="glass-card p-4 text-center border-blue-500/20">
+                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.safetyScore')}</p>
+                              <p className="text-2xl font-bold text-blue-400">{selectedProject.esg?.safetyScore || 92}/100</p>
+                            </div>
+                            <div className="glass-card p-4 text-center border-violet-500/20">
+                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.satisfaction')}</p>
+                              <p className="text-2xl font-bold text-violet-400">{selectedProject.esg?.employeeSatisfaction || 4.2}/5</p>
+                            </div>
+                            <div className="glass-card p-4 text-center border-emerald-500/20">
+                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.carbon')}</p>
+                              <p className="text-2xl font-bold text-emerald-400">-{selectedProject.esg?.carbonReduction || 0}%</p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Budget Breakdown */}
+                            <div className="glass-card p-6 border-slate-700">
+                              <h3 className="text-white font-medium mb-4 flex items-center"><DollarSign className="w-4 h-4 mr-2 text-emerald-400" /> {t('project.budgetBreakdown')}</h3>
+                              <div className="space-y-4">
+                                {[
+                                  { name: t('project.laborCost'), pct: 40, color: 'bg-blue-500' },
+                                  { name: t('project.materialCost'), pct: 35, color: 'bg-emerald-500' },
+                                  { name: t('project.equipmentCost'), pct: 15, color: 'bg-amber-500' },
+                                  { name: t('project.overheadCost'), pct: 10, color: 'bg-violet-500' }
+                                ].map((item, i) => (
+                                  <div key={i}>
+                                    <div className="flex justify-between text-sm mb-1">
+                                      <span className="text-slate-300">{item.name}</span>
+                                      <span className="text-white font-medium">{item.pct}% ({formatCurrency(selectedProject.budget * item.pct / 100)})</span>
+                                    </div>
+                                    <div className="w-full bg-slate-800 rounded-full h-2">
+                                      <div className={`${item.color} h-2 rounded-full`} style={{ width: `${item.pct}%` }}></div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Timeline Milestones */}
+                            <div className="glass-card p-6 border-slate-700">
+                              <h3 className="text-white font-medium mb-4 flex items-center"><Activity className="w-4 h-4 mr-2 text-blue-400" /> {t('project.timelineProgress')}</h3>
+                              <div className="space-y-3">
+                                {[
+                                  { name: 'Foundation & Piling', date: 'Jan 2026', done: true },
+                                  { name: 'Structural Framework', date: 'Apr 2026', done: true },
+                                  { name: 'MEP Installation', date: 'Jul 2026', done: false },
+                                  { name: 'Interior & Finishing', date: 'Oct 2026', done: false },
+                                  { name: 'Final Handover', date: 'Dec 2026', done: false }
+                                ].map((ms, i) => (
+                                  <div key={i} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/50 transition-colors">
+                                    <div className="flex items-center space-x-3">
+                                      <div className={`w-3 h-3 rounded-full ${ms.done ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-700 border border-slate-600'}`}></div>
+                                      <span className={`text-sm ${ms.done ? 'text-white' : 'text-slate-400'}`}>{ms.name}</span>
+                                    </div>
+                                    <div className="flex items-center space-x-3">
+                                      <span className="text-xs text-slate-500">{ms.date}</span>
+                                      {ms.done ? (
+                                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                      ) : (
+                                        <div className="w-4 h-4 rounded-full border border-slate-600"></div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* AI Risk & Profit Chart */}
+                          <div className="glass-card p-6 border-blue-500/20">
+                            <h3 className="text-white font-medium mb-4 flex items-center"><TrendingUp className="w-4 h-4 mr-2 text-blue-400" /> {t('project.riskAnalysis')} — {t('project.profitForecast')}</h3>
+                            <div className="h-56">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={[
+                                  { m: 'M1', profit: selectedProject.predictedProfit * 0.3, risk: 35 },
+                                  { m: 'M2', profit: selectedProject.predictedProfit * 0.5, risk: 30 },
+                                  { m: 'M3', profit: selectedProject.predictedProfit * 0.65, risk: 28 },
+                                  { m: 'M4', profit: selectedProject.predictedProfit * 0.8, risk: 22 },
+                                  { m: 'M5', profit: selectedProject.predictedProfit * 0.9, risk: 18 },
+                                  { m: 'M6', profit: selectedProject.predictedProfit, risk: 15 }
+                                ]}>
+                                  <defs>
+                                    <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                    </linearGradient>
+                                    <linearGradient id="colorRiskP" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2} />
+                                      <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
+                                    </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
+                                  <XAxis dataKey="m" stroke="#94a3b8" fontSize={12} tickLine={false} />
+                                  <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                  <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} />
+                                  <Area type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorProfit)" name={t('project.profitForecast')} />
+                                  <Area type="monotone" dataKey="risk" stroke="#f43f5e" strokeWidth={2} strokeDasharray="5 5" fillOpacity={1} fill="url(#colorRiskP)" name={t('project.riskAnalysis')} />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            </div>
+                          </div>
+
+                          {/* Active Alerts */}
+                          {selectedProject.alerts.length > 0 && (
+                            <div className="glass-card p-6 border-rose-500/20">
+                              <h3 className="text-white font-medium mb-4 flex items-center"><AlertTriangle className="w-4 h-4 mr-2 text-rose-400" /> {t('project.activeAlerts')} ({selectedProject.alerts.length})</h3>
+                              <div className="space-y-3">
+                                {selectedProject.alerts.map((alert, idx) => (
+                                  <div key={idx} className={`p-3 rounded-lg flex items-center space-x-3 text-sm border ${alert.type === 'danger' ? 'bg-rose-500/10 text-rose-300 border-rose-500/20' : 'bg-amber-500/10 text-amber-300 border-amber-500/20'}`}>
+                                    <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                                    <span>{alert.message}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
               </motion.div>
             )}
 
             {/* ----------------- ESG TAB ----------------- */}
             {activeTab === 'esg' && (
               <motion.div key="esg" initial="hidden" animate="visible" exit="hidden" variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="space-y-6">
-                <motion.div variants={fadeUp} className="relative overflow-hidden rounded-2xl glass p-8 border-emerald-500/20">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-[80px] -mr-20 -mt-20"></div>
-                  <div className="relative z-10">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-400"><Leaf className="w-6 h-6" /></div>
-                      <h2 className="text-2xl font-bold text-white tracking-tight">ESG Legacy & Impact</h2>
+
+                {/* ESG Header & Context */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 bg-slate-800/50 p-4 rounded-xl border border-white/5">
+                  <div className="flex items-center space-x-3">
+                    <Leaf className="w-5 h-5 text-emerald-400" />
+                    <div>
+                      <h2 className="text-xl font-bold text-white tracking-tight">{t('esg.title')}</h2>
+                      <p className="text-xs text-slate-400">{t('esg.subtitle')}</p>
                     </div>
-                    <p className="text-emerald-100/70 max-w-xl">Corporate sustainability metrics tracked in real-time for SET compliance and executive reporting.</p>
+                  </div>
+                  <div className="flex items-center space-x-4 w-full md:w-auto">
+                    <span className="text-sm font-medium text-slate-400 whitespace-nowrap">{t('esg.projectFilter')}:</span>
+                    <select className="bg-slate-900 border border-slate-700 text-white text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full md:w-48 p-2">
+                      <option>{t('esg.allProjects')}</option>
+                      <option>{t('esg.sukhumvitSite')}</option>
+                      <option>{t('esg.bangnaSite')}</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* AI Executive Summary Alert */}
+                <motion.div variants={fadeUp} className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-start space-x-4">
+                  <Activity className="w-6 h-6 text-blue-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-1">{t('esg.aiExecutiveSummary')}</h4>
+                    <p className="text-slate-300 leading-relaxed text-sm">{t('esg.summaryOnTrack')}</p>
                   </div>
                 </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <motion.div variants={fadeUp} className="glass-card flex flex-col items-center justify-center text-center p-6 md:p-8 border-t-2 border-t-emerald-500">
-                    <div className="p-4 rounded-full bg-emerald-500/10 mb-4 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-                      <Leaf className="h-8 w-8 text-emerald-400" />
+                {/* Grid for E, S, G */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                  {/* CARBON (Environment) */}
+                  <motion.div variants={fadeUp} onClick={() => setActiveDrilldown('environment')} className="glass-card flex flex-col p-6 border-t-2 border-t-emerald-500 space-y-6 flex-1 cursor-pointer hover:border-emerald-500/50 hover:bg-slate-800/80 transition-all group relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-emerald-500/20 transition-colors pointer-events-none"></div>
+                    <div className="relative z-10 flex items-center space-x-3 mb-2">
+                      <div className="p-2 rounded-lg bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors"><Leaf className="h-5 w-5 text-emerald-400" /></div>
+                      <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">Environment</h3>
+                      <ChevronRight className="w-4 h-4 text-emerald-500/0 group-hover:text-emerald-500/100 ml-auto transition-all transform group-hover:translate-x-1" />
                     </div>
-                    <h3 className="text-3xl md:text-4xl font-bold text-white mb-1">23<span className="text-lg md:text-xl text-emerald-400 ml-1">Tons</span></h3>
-                    <p className="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-wider">Carbon Mitigated</p>
+
+                    <div className="flex-1">
+                      <div className="flex justify-between items-end mb-1">
+                        <h4 className="text-3xl font-bold text-white">23<span className="text-lg text-emerald-400 ml-1">{t('esg.tons')}</span></h4>
+                        <span className="text-xs font-bold text-emerald-400 flex items-center bg-emerald-500/10 px-2 py-1 rounded-full">
+                          <TrendingUp className="w-3 h-3 mr-1" /> 12% {t('esg.vsLastMonth')}
+                        </span>
+                      </div>
+                      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-4">{t('esg.carbonMitigated')}</p>
+
+                      {/* Target Progress Bar */}
+                      <div className="space-y-1 mt-6">
+                        <div className="flex justify-between text-xs text-slate-400 mb-1">
+                          <span>Progress</span>
+                          <span>23 / 100 {t('esg.annualTarget')}</span>
+                        </div>
+                        <div className="w-full bg-slate-800 rounded-full h-2">
+                          <div className="bg-emerald-500 h-2 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]" style={{ width: '23%' }}></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-800 mt-auto">
+                      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">{t('esg.carbonForecast')}</p>
+                      <div className="h-24 w-full bg-slate-800/50 rounded-lg flex items-center justify-center border border-white/5 overflow-hidden relative">
+                        <svg className="absolute w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 40">
+                          <polyline points="0,35 20,30 40,25 60,15 80,10 100,5" fill="none" stroke="#10b981" strokeWidth="2" strokeDasharray="4 2" />
+                          <line x1="0" y1="20" x2="100" y2="20" stroke="#ef4444" strokeWidth="1" strokeDasharray="2 2" />
+                        </svg>
+                        <div className="absolute right-2 top-1 text-[10px] text-rose-400/80 font-medium bg-slate-900/50 px-1 rounded">{t('esg.setComplianceThreshold')}</div>
+                      </div>
+                    </div>
                   </motion.div>
 
-                  <motion.div variants={fadeUp} className="glass-card flex flex-col items-center justify-center text-center p-6 md:p-8 border-t-2 border-t-blue-500">
-                    <div className="p-4 rounded-full bg-blue-500/10 mb-4 shadow-[0_0_30px_rgba(59,130,246,0.2)]">
-                      <ShieldCheck className="h-8 w-8 text-blue-400" />
+                  {/* SAFETY (Social) */}
+                  <motion.div variants={fadeUp} onClick={() => setActiveDrilldown('social')} className="glass-card flex flex-col p-6 border-t-2 border-t-amber-500 space-y-6 flex-1 cursor-pointer hover:border-amber-500/50 hover:bg-slate-800/80 transition-all group relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-amber-500/20 transition-colors pointer-events-none"></div>
+                    <div className="relative z-10 flex items-center space-x-3 mb-2">
+                      <div className="p-2 rounded-lg bg-amber-500/10 group-hover:bg-amber-500/20 transition-colors"><ShieldCheck className="h-5 w-5 text-amber-400" /></div>
+                      <h3 className="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">Social (Safety)</h3>
+                      <ChevronRight className="w-4 h-4 text-amber-500/0 group-hover:text-amber-500/100 ml-auto transition-all transform group-hover:translate-x-1" />
                     </div>
-                    <h3 className="text-3xl md:text-4xl font-bold text-white mb-1">365<span className="text-lg md:text-xl text-blue-400 ml-1">Days</span></h3>
-                    <p className="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-wider">Zero Incidents</p>
+
+                    <div className="flex-1">
+                      <div className="flex justify-between items-end mb-1">
+                        <h4 className="text-3xl font-bold text-amber-400">78<span className="text-lg text-slate-500 ml-1">/100</span></h4>
+                        <span className="text-xs font-bold text-rose-400 flex items-center bg-rose-500/10 px-2 py-1 rounded-full">
+                          <TrendingDown className="w-3 h-3 mr-1" /> +15% Risk
+                        </span>
+                      </div>
+                      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">{t('esg.predictiveRiskScore')}</p>
+                      <p className="text-sm text-slate-300 bg-slate-800/50 p-2 rounded-lg border border-white/5 mt-3">{t('esg.moderateRisk')}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mt-auto">
+                      <div className="pt-4 border-t border-slate-800">
+                        <p className="text-xs text-slate-500 uppercase">{t('esg.nearMisses')}</p>
+                        <p className="text-xl font-bold text-white mt-1">3 <span className="text-[10px] text-slate-500 font-normal ml-1">This Mo.</span></p>
+                      </div>
+                      <div className="pt-4 border-t border-slate-800">
+                        <p className="text-xs text-slate-500 uppercase">{t('esg.anomalyDetection')}</p>
+                        <p className="text-xl font-bold text-rose-400 mt-1">1 <span className="text-[10px] text-slate-500 font-normal ml-1">Active</span></p>
+                      </div>
+                    </div>
+
+                    <div className="bg-rose-500/10 border border-rose-500/20 p-3 rounded-lg text-xs text-rose-300 flex items-start space-x-2 mt-2">
+                      <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{t('esg.anomalyFuel')}</span>
+                    </div>
                   </motion.div>
 
-                  <motion.div variants={fadeUp} className="glass-card flex flex-col items-center justify-center text-center p-6 md:p-8 border-t-2 border-t-violet-500">
-                    <div className="p-4 rounded-full bg-violet-500/10 mb-4 shadow-[0_0_30px_rgba(139,92,246,0.2)]">
-                      <Users className="h-8 w-8 text-violet-400" />
+                  {/* PEOPLE & GOVERNANCE */}
+                  <motion.div variants={fadeUp} onClick={() => setActiveDrilldown('governance')} className="glass-card flex flex-col p-6 border-t-2 border-t-violet-500 space-y-6 flex-1 cursor-pointer hover:border-violet-500/50 hover:bg-slate-800/80 transition-all group relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-violet-500/20 transition-colors pointer-events-none"></div>
+                    <div className="relative z-10 flex items-center space-x-3 mb-2">
+                      <div className="p-2 rounded-lg bg-violet-500/10 group-hover:bg-violet-500/20 transition-colors"><Users className="h-5 w-5 text-violet-400" /></div>
+                      <h3 className="text-lg font-bold text-white group-hover:text-violet-400 transition-colors">People & Gov</h3>
+                      <ChevronRight className="w-4 h-4 text-violet-500/0 group-hover:text-violet-500/100 ml-auto transition-all transform group-hover:translate-x-1" />
                     </div>
-                    <h3 className="text-3xl md:text-4xl font-bold text-white mb-1">4.5<span className="text-lg md:text-xl text-violet-400 text-slate-500 ml-1">/ 5.0</span></h3>
-                    <p className="text-xs md:text-sm font-medium text-slate-400 uppercase tracking-wider">Happiness Index</p>
+
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h4 className="text-3xl font-bold text-white mb-1">4.5<span className="text-lg text-slate-500 ml-1">/ 5.0</span></h4>
+                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t('esg.happinessIndex')}</p>
+                      </div>
+                      <div className="text-right">
+                        <h4 className="text-2xl font-bold text-emerald-400 mb-1">82%</h4>
+                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap">{t('esg.wasteManagement')}</p>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-800 flex-1">
+                      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-3">{t('esg.sentimentAnalysis')}</p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-2 py-1 text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">{t('esg.keywordGoodConditions')} (42%)</span>
+                        <span className="px-2 py-1 text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full">{t('esg.keywordSafetyFirst')} (38%)</span>
+                        <span className="px-2 py-1 text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-full">{t('esg.keywordOverworked')} (12%)</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-800 mt-auto">
+                      <div className="flex justify-between items-center mb-2">
+                        <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t('esg.regulatoryCompliance')}</p>
+                        <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded uppercase">{t('esg.ready')}</span>
+                      </div>
+                      <div className="w-full bg-slate-800 rounded-full h-1.5 shadow-inner">
+                        <div className="bg-emerald-500 h-1.5 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]" style={{ width: '100%' }}></div>
+                      </div>
+                    </div>
                   </motion.div>
                 </div>
+
+                {/* AI Recommendations Panel */}
+                <motion.div variants={fadeUp} className="glass-card p-6 border border-indigo-500/30 bg-gradient-to-r from-slate-900 to-indigo-900/20 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none"></div>
+                  <div className="relative z-10">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                      <Zap className="w-5 h-5 text-indigo-400 mr-2" />
+                      {t('esg.aiRecommendations')}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-indigo-500/50 transition-colors flex items-start space-x-4 group cursor-pointer">
+                        <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-400 shrink-0 group-hover:bg-emerald-500/30 transition-colors"><Leaf className="w-5 h-5" /></div>
+                        <div>
+                          <h4 className="text-white text-sm font-semibold mb-1">Carbon Mitigation</h4>
+                          <p className="text-sm text-slate-300 leading-relaxed">{t('esg.recConcrete')}</p>
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-indigo-500/50 transition-colors flex items-start space-x-4 group cursor-pointer">
+                        <div className="p-2 bg-amber-500/20 rounded-lg text-amber-400 shrink-0 group-hover:bg-amber-500/30 transition-colors"><AlertTriangle className="w-5 h-5" /></div>
+                        <div>
+                          <h4 className="text-white text-sm font-semibold mb-1">Risk Prevention</h4>
+                          <p className="text-sm text-slate-300 leading-relaxed">{t('esg.recMachinery')}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* --- ESG Drilldown Modals --- */}
+                <AnimatePresence>
+                  {activeDrilldown && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
+                      onClick={() => setActiveDrilldown(null)}
+                    >
+                      <motion.div
+                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 md:p-8 custom-scrollbar"
+                      >
+                        <button
+                          onClick={() => setActiveDrilldown(null)}
+                          className="absolute top-4 right-4 p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-rose-500/20 transition-colors"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+
+                        {/* ENVIRONMENT DRILLDOWN */}
+                        {activeDrilldown === 'environment' && (
+                          <div className="space-y-6">
+                            <div className="flex items-center space-x-3 border-b border-slate-800 pb-4">
+                              <div className="p-3 bg-emerald-500/20 rounded-xl text-emerald-400"><Leaf className="w-6 h-6" /></div>
+                              <div>
+                                <h2 className="text-2xl font-bold text-white">{t('esg.drilldownEnvTitle')}</h2>
+                                <p className="text-slate-400 text-sm mt-1">Detailed analysis of cross-site carbon mitigation and emission sources.</p>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="glass-card p-6 border-emerald-500/20">
+                                <h3 className="text-white font-medium mb-4 flex items-center"><Activity className="w-4 h-4 mr-2 text-emerald-400" /> {t('esg.dailyTrajectory')}</h3>
+                                <div className="h-64">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={[
+                                      { day: '01', mt: 1 }, { day: '05', mt: 3 }, { day: '10', mt: 8 }, { day: '15', mt: 12 }, { day: '20', mt: 18 }, { day: '25', mt: 23 }
+                                    ]}>
+                                      <defs>
+                                        <linearGradient id="colorMt" x1="0" y1="0" x2="0" y2="1">
+                                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                          <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                        </linearGradient>
+                                      </defs>
+                                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
+                                      <XAxis dataKey="day" stroke="#94a3b8" fontSize={12} tickLine={false} />
+                                      <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                      <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} itemStyle={{ color: '#10b981' }} />
+                                      <Area type="monotone" dataKey="mt" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorMt)" />
+                                    </AreaChart>
+                                  </ResponsiveContainer>
+                                </div>
+                              </div>
+                              <div className="glass-card p-6 border-slate-700">
+                                <h3 className="text-white font-medium mb-4 flex items-center"><Target className="w-4 h-4 mr-2 text-slate-400" /> {t('esg.emissionSources')}</h3>
+                                <div className="space-y-4">
+                                  {[
+                                    { name: t('esg.materials'), val: 65, color: 'bg-emerald-500' },
+                                    { name: t('esg.machinery'), val: 25, color: 'bg-amber-500' },
+                                    { name: t('esg.transport'), val: 10, color: 'bg-blue-500' }
+                                  ].map((src, i) => (
+                                    <div key={i}>
+                                      <div className="flex justify-between text-sm mb-1">
+                                        <span className="text-slate-300">{src.name}</span>
+                                        <span className="text-white font-medium">{src.val}%</span>
+                                      </div>
+                                      <div className="w-full bg-slate-800 rounded-full h-2">
+                                        <div className={`${src.color} h-2 rounded-full`} style={{ width: `${src.val}%` }}></div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* SOCIAL DRILLDOWN */}
+                        {activeDrilldown === 'social' && (
+                          <div className="space-y-6">
+                            <div className="flex items-center space-x-3 border-b border-slate-800 pb-4">
+                              <div className="p-3 bg-amber-500/20 rounded-xl text-amber-400"><ShieldCheck className="w-6 h-6" /></div>
+                              <div>
+                                <h2 className="text-2xl font-bold text-white">{t('esg.drilldownSocTitle')}</h2>
+                                <p className="text-slate-400 text-sm mt-1">Cross-site safety analysis, predictive risk mapping, and active anomalies.</p>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="glass-card p-6 border-amber-500/20">
+                                <h3 className="text-white font-medium mb-4 flex items-center"><TrendingDown className="w-4 h-4 mr-2 text-amber-400" /> {t('esg.riskTrend')}</h3>
+                                <div className="h-64">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={[
+                                      { day: 'W1', risk: 85 }, { day: 'W2', risk: 86 }, { day: 'W3', risk: 82 }, { day: 'W4', risk: 78 }
+                                    ]}>
+                                      <defs>
+                                        <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
+                                          <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
+                                          <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                                        </linearGradient>
+                                      </defs>
+                                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
+                                      <XAxis dataKey="day" stroke="#94a3b8" fontSize={12} tickLine={false} />
+                                      <YAxis domain={[60, 100]} stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                      <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} itemStyle={{ color: '#f59e0b' }} />
+                                      <Area type="monotone" dataKey="risk" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorRisk)" />
+                                    </AreaChart>
+                                  </ResponsiveContainer>
+                                </div>
+                              </div>
+                              <div className="glass-card p-6 border-rose-500/20">
+                                <h3 className="text-white font-medium mb-4 flex items-center"><AlertTriangle className="w-4 h-4 mr-2 text-rose-400" /> {t('esg.anomalyLog')}</h3>
+                                <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar pr-2">
+                                  <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                                    <div className="flex justify-between items-start mb-1">
+                                      <span className="text-xs font-bold text-rose-400 uppercase">High Priority</span>
+                                      <span className="text-xs text-slate-500">2h ago</span>
+                                    </div>
+                                    <p className="text-sm text-slate-300">{t('esg.anomalyFuel')}</p>
+                                  </div>
+                                  <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                                    <div className="flex justify-between items-start mb-1">
+                                      <span className="text-xs font-bold text-amber-400 uppercase">Near Miss</span>
+                                      <span className="text-xs text-slate-500">1d ago</span>
+                                    </div>
+                                    <p className="text-sm text-slate-300">Scaffold stabilization warning triggered at Sukhumvit Site by IoT sensors.</p>
+                                  </div>
+                                  <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                                    <div className="flex justify-between items-start mb-1">
+                                      <span className="text-xs font-bold text-amber-400 uppercase">Near Miss</span>
+                                      <span className="text-xs text-slate-500">3d ago</span>
+                                    </div>
+                                    <p className="text-sm text-slate-300">Unauthorized personnel entry detected in Zone C outside operating hours.</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* GOVERNANCE DRILLDOWN */}
+                        {activeDrilldown === 'governance' && (
+                          <div className="space-y-6">
+                            <div className="flex items-center space-x-3 border-b border-slate-800 pb-4">
+                              <div className="p-3 bg-violet-500/20 rounded-xl text-violet-400"><Users className="w-6 h-6" /></div>
+                              <div>
+                                <h2 className="text-2xl font-bold text-white">{t('esg.drilldownGovTitle')}</h2>
+                                <p className="text-slate-400 text-sm mt-1">Labor sentiment breakdown and regulatory compliance readiness checklist.</p>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="glass-card p-6 border-slate-700">
+                                <h3 className="text-white font-medium mb-4 flex items-center"><CheckCircle2 className="w-4 h-4 mr-2 text-emerald-400" /> {t('esg.setChecklist')}</h3>
+                                <div className="space-y-3">
+                                  {[
+                                    { req: 'Corporate Governance Policy', status: true },
+                                    { req: 'Business Value Chain & Suppliers', status: true },
+                                    { req: 'Environmental Performance Data', status: true },
+                                    { req: 'Social Performance & Safety', status: true },
+                                    { req: 'Audited Financial Statements', status: false }
+                                  ].map((item, i) => (
+                                    <div key={i} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/50 transition-colors">
+                                      <span className="text-sm text-slate-300">{item.req}</span>
+                                      {item.status ? (
+                                        <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/20">{t('esg.ready')}</span>
+                                      ) : (
+                                        <span className="px-2 py-1 bg-rose-500/10 text-rose-400 text-xs font-bold rounded-full border border-rose-500/20">Pending</span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="glass-card p-6 border-violet-500/20 flex flex-col items-center justify-center">
+                                <h3 className="text-white font-medium mb-4 flex items-center self-start"><Activity className="w-4 h-4 mr-2 text-violet-400" /> {t('esg.sentimentChart')}</h3>
+                                <div className="w-48 h-48 rounded-full border-8 border-slate-800 flex items-center justify-center relative shadow-[0_0_30px_rgba(139,92,246,0.15)]">
+                                  <div className="absolute inset-0 rounded-full border-8 border-transparent border-t-emerald-500 border-r-emerald-500 transform rotate-45"></div>
+                                  <div className="absolute inset-0 rounded-full border-8 border-transparent border-b-blue-500 transform -rotate-12"></div>
+                                  <div className="absolute inset-0 rounded-full border-8 border-transparent border-l-rose-500 transform -rotate-[60deg] clip-quarter"></div>
+                                  <div className="text-center">
+                                    <span className="block text-3xl font-bold text-white">4.5</span>
+                                    <span className="block text-xs text-slate-500">/ 5.0</span>
+                                  </div>
+                                </div>
+                                <div className="flex gap-4 mt-6 text-sm">
+                                  <div className="flex items-center"><div className="w-3 h-3 bg-emerald-500 rounded-full mr-2"></div><span className="text-slate-300">42%</span></div>
+                                  <div className="flex items-center"><div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div><span className="text-slate-300">38%</span></div>
+                                  <div className="flex items-center"><div className="w-3 h-3 bg-rose-500 rounded-full mr-2"></div><span className="text-slate-300">12%</span></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
               </motion.div>
             )}
 
@@ -699,7 +1239,7 @@ export default function Dashboard() {
 
                 <div className="space-y-6">
                   {biddingOps.map((op) => (
-                    <motion.div key={op.id} variants={fadeUp} className="glass-card relative overflow-hidden group border border-white/5 hover:border-indigo-500/30 transition-all p-6">
+                    <motion.div key={op.id} variants={fadeUp} onClick={() => setSelectedBidding(op)} className="glass-card relative overflow-hidden group border border-white/5 hover:border-indigo-500/30 transition-all p-6 cursor-pointer">
                       <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[80px] -mr-20 -mt-20 group-hover:bg-indigo-500/10 transition-colors"></div>
                       <div className="relative z-10">
                         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
@@ -767,8 +1307,8 @@ export default function Dashboard() {
                             </div>
 
                             <div className={`w-full py-3 rounded-xl font-bold text-center uppercase tracking-widest text-sm shadow-xl ${op.recommendation === 'GO' ? 'bg-emerald-500 text-slate-900 shadow-emerald-500/20' :
-                                op.recommendation === 'NO-GO' ? 'bg-rose-500 text-white shadow-rose-500/20' :
-                                  'bg-amber-500 text-slate-900 shadow-amber-500/20'
+                              op.recommendation === 'NO-GO' ? 'bg-rose-500 text-white shadow-rose-500/20' :
+                                'bg-amber-500 text-slate-900 shadow-amber-500/20'
                               }`}>
                               {op.recommendation}
                             </div>
@@ -778,6 +1318,145 @@ export default function Dashboard() {
                     </motion.div>
                   ))}
                 </div>
+
+                {/* Bidding Drilldown Modal */}
+                <AnimatePresence>
+                  {selectedBidding && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
+                      onClick={() => setSelectedBidding(null)}
+                    >
+                      <motion.div
+                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 md:p-8 custom-scrollbar"
+                      >
+                        <button
+                          onClick={() => setSelectedBidding(null)}
+                          className="absolute top-4 right-4 p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-rose-500/20 transition-colors z-10"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+
+                        <div className="space-y-6">
+                          {/* Header */}
+                          <div className="flex items-center space-x-4 border-b border-slate-800 pb-4">
+                            <div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-400"><Target className="w-6 h-6" /></div>
+                            <div className="flex-1">
+                              <h2 className="text-2xl font-bold text-white">{selectedBidding.name}</h2>
+                              <div className="flex items-center space-x-3 mt-1 flex-wrap gap-y-1">
+                                <span className="font-mono text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-300">{selectedBidding.id}</span>
+                                <span className="text-slate-400 text-sm">{selectedBidding.client}</span>
+                                <span className="text-slate-400 text-sm">{formatCurrency(selectedBidding.estimatedBudget)}</span>
+                              </div>
+                            </div>
+                            <div className={`px-4 py-2 rounded-xl font-bold text-sm uppercase tracking-widest ${selectedBidding.recommendation === 'GO' ? 'bg-emerald-500 text-slate-900' :
+                                selectedBidding.recommendation === 'NO-GO' ? 'bg-rose-500 text-white' :
+                                  'bg-amber-500 text-slate-900'
+                              }`}>{selectedBidding.recommendation}</div>
+                          </div>
+
+                          {/* KPI Row */}
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="glass-card p-4 text-center border-indigo-500/20">
+                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">AI Risk Score</p>
+                              <p className={`text-2xl font-bold ${selectedBidding.aiRiskScore > 50 ? 'text-rose-400' : 'text-emerald-400'}`}>{selectedBidding.aiRiskScore}/100</p>
+                            </div>
+                            <div className="glass-card p-4 text-center border-emerald-500/20">
+                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Expected Margin</p>
+                              <p className="text-2xl font-bold text-emerald-400">{selectedBidding.aiExpectedMargin}%</p>
+                            </div>
+                            <div className="glass-card p-4 text-center border-blue-500/20">
+                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Win Probability</p>
+                              <p className="text-2xl font-bold text-blue-400">{selectedBidding.historicalConfidence}%</p>
+                            </div>
+                            <div className="glass-card p-4 text-center border-violet-500/20">
+                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Duration</p>
+                              <p className="text-2xl font-bold text-violet-400">{selectedBidding.estimatedDuration} Mo.</p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Margin Simulation Chart */}
+                            <div className="glass-card p-6 border-emerald-500/20">
+                              <h3 className="text-white font-medium mb-4 flex items-center"><TrendingUp className="w-4 h-4 mr-2 text-emerald-400" /> Margin Simulation (6-Month Projection)</h3>
+                              <div className="h-56">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart data={[
+                                    { m: 'M1', best: selectedBidding.aiExpectedMargin * 1.2, base: selectedBidding.aiExpectedMargin * 0.6, worst: selectedBidding.aiExpectedMargin * 0.3 },
+                                    { m: 'M2', best: selectedBidding.aiExpectedMargin * 1.15, base: selectedBidding.aiExpectedMargin * 0.7, worst: selectedBidding.aiExpectedMargin * 0.35 },
+                                    { m: 'M3', best: selectedBidding.aiExpectedMargin * 1.1, base: selectedBidding.aiExpectedMargin * 0.8, worst: selectedBidding.aiExpectedMargin * 0.4 },
+                                    { m: 'M4', best: selectedBidding.aiExpectedMargin * 1.08, base: selectedBidding.aiExpectedMargin * 0.88, worst: selectedBidding.aiExpectedMargin * 0.5 },
+                                    { m: 'M5', best: selectedBidding.aiExpectedMargin * 1.05, base: selectedBidding.aiExpectedMargin * 0.95, worst: selectedBidding.aiExpectedMargin * 0.6 },
+                                    { m: 'M6', best: selectedBidding.aiExpectedMargin * 1.0, base: selectedBidding.aiExpectedMargin, worst: selectedBidding.aiExpectedMargin * 0.7 }
+                                  ]}>
+                                    <defs>
+                                      <linearGradient id="colorBase" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                      </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
+                                    <XAxis dataKey="m" stroke="#94a3b8" fontSize={12} tickLine={false} />
+                                    <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v.toFixed(0)}%`} />
+                                    <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} />
+                                    <Area type="monotone" dataKey="best" stroke="#10b981" strokeWidth={2} strokeDasharray="5 5" fill="none" name="Best Case" />
+                                    <Area type="monotone" dataKey="base" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorBase)" name="Base Case" />
+                                    <Area type="monotone" dataKey="worst" stroke="#f43f5e" strokeWidth={2} strokeDasharray="5 5" fill="none" name="Worst Case" />
+                                  </AreaChart>
+                                </ResponsiveContainer>
+                              </div>
+                            </div>
+
+                            {/* Competitor Landscape */}
+                            <div className="glass-card p-6 border-slate-700">
+                              <h3 className="text-white font-medium mb-4 flex items-center"><Users className="w-4 h-4 mr-2 text-indigo-400" /> Competitive Landscape</h3>
+                              <div className="space-y-4">
+                                {[
+                                  { name: 'Your Company', share: selectedBidding.historicalConfidence, color: 'bg-blue-500' },
+                                  { name: 'SCC Construction', share: Math.max(15, 85 - selectedBidding.historicalConfidence), color: 'bg-amber-500' },
+                                  { name: 'THAIBUILD Public', share: Math.max(10, 70 - selectedBidding.historicalConfidence), color: 'bg-rose-500' }
+                                ].map((c, i) => (
+                                  <div key={i}>
+                                    <div className="flex justify-between text-sm mb-1">
+                                      <span className={`${i === 0 ? 'text-white font-semibold' : 'text-slate-400'}`}>{c.name}</span>
+                                      <span className="text-white font-medium">{c.share}%</span>
+                                    </div>
+                                    <div className="w-full bg-slate-800 rounded-full h-2">
+                                      <div className={`${c.color} h-2 rounded-full ${i === 0 ? 'shadow-[0_0_8px_rgba(59,130,246,0.5)]' : ''}`} style={{ width: `${c.share}%` }}></div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Expanded Evaluation Factors */}
+                          <div className="glass-card p-6 border-indigo-500/20">
+                            <h3 className="text-white font-medium mb-4 flex items-center"><Activity className="w-4 h-4 mr-2 text-indigo-400" /> Full Evaluation Factor Breakdown</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {selectedBidding.factors.map((factor, idx) => (
+                                <div key={idx} className={`p-4 rounded-xl border flex items-start space-x-3 ${factor.impact === 'positive' ? 'bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10' : 'bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10'} transition-colors`}>
+                                  {factor.impact === 'positive' ? <CheckCircle2 className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" /> : <XCircle className="w-5 h-5 text-rose-400 mt-0.5 shrink-0" />}
+                                  <div>
+                                    <p className={`text-sm font-bold mb-1 ${factor.impact === 'positive' ? 'text-emerald-400' : 'text-rose-400'}`}>{factor.name}</p>
+                                    <p className="text-sm text-slate-400 leading-relaxed">{factor.description}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
               </motion.div>
             )}
 
@@ -795,25 +1474,25 @@ export default function Dashboard() {
                   <div className="lg:col-span-2 grid grid-cols-2 gap-4">
                     <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-purple-500 relative overflow-hidden">
                       <div className="absolute top-0 right-0 p-4 opacity-5"><DollarSign className="w-20 h-20" /></div>
-                      <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Total Revenue (FY)</p>
+                      <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">{t('boardroom.totalRevenue')}</p>
                       <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.totalRevenue}</h3>
-                      <p className="text-sm text-emerald-400 font-medium flex items-center"><TrendingUp className="w-4 h-4 mr-1" /> {mockCSuiteIntel.macroFinancials.revenueGrowth} YoY</p>
+                      <p className="text-sm text-emerald-400 font-medium flex items-center"><TrendingUp className="w-4 h-4 mr-1" /> {mockCSuiteIntel.macroFinancials.revenueGrowth} {t('boardroom.yoy')}</p>
                     </motion.div>
                     <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-blue-500 relative overflow-hidden">
                       <div className="absolute top-0 right-0 p-4 opacity-5"><TrendingUp className="w-20 h-20" /></div>
-                      <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">EBITDA Margin</p>
+                      <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">{t('boardroom.ebitdaMargin')}</p>
                       <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.ebitdaMargin}</h3>
-                      <p className="text-sm text-emerald-400 font-medium flex items-center"><TrendingUp className="w-4 h-4 mr-1" /> {mockCSuiteIntel.macroFinancials.ebitdaGrowth} Expansion</p>
+                      <p className="text-sm text-emerald-400 font-medium flex items-center"><TrendingUp className="w-4 h-4 mr-1" /> {mockCSuiteIntel.macroFinancials.ebitdaGrowth} {t('boardroom.expanding')}</p>
                     </motion.div>
                     <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-emerald-500 relative overflow-hidden">
                       <div className="absolute top-0 right-0 p-4 opacity-5"><Activity className="w-20 h-20" /></div>
-                      <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Cash Runway</p>
+                      <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">{t('boardroom.cashRunway')}</p>
                       <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.cashRunway}</h3>
                       <p className="text-sm text-slate-400 font-medium flex items-center"><CheckCircle2 className="w-4 h-4 mr-1" /> Optimal Liquidity</p>
                     </motion.div>
                     <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-rose-500 relative overflow-hidden">
                       <div className="absolute top-0 right-0 p-4 opacity-5"><AlertTriangle className="w-20 h-20" /></div>
-                      <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Debt-to-Equity</p>
+                      <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">{t('boardroom.debtToEquity')}</p>
                       <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.debtToEquity}</h3>
                       <p className="text-sm text-emerald-400 font-medium flex items-center"><ShieldCheck className="w-4 h-4 mr-1" /> Healthy Leverage</p>
                     </motion.div>
@@ -822,7 +1501,7 @@ export default function Dashboard() {
                   {/* Market Dominance Radar (Neon Donut Graph) */}
                   <motion.div variants={fadeUp} className="glass-card p-6 flex flex-col relative overflow-hidden items-center justify-center">
                     <h3 className="text-lg font-bold text-white mb-2 w-full text-left flex items-center">
-                      <Target className="w-5 h-5 mr-2 text-blue-400" /> Market Dominance
+                      <Target className="w-5 h-5 mr-2 text-blue-400" /> {t('boardroom.marketCapture')}
                     </h3>
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-blue-500/20 blur-[60px] rounded-full pointer-events-none"></div>
                     <div className="h-48 w-full relative z-10 my-4 text-xs font-medium">
@@ -861,7 +1540,7 @@ export default function Dashboard() {
                   {/* Strategic Directives */}
                   <motion.div variants={fadeUp} className="space-y-4">
                     <h3 className="text-2xl font-bold text-white mb-6 flex items-center bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">
-                      <Bot className="w-6 h-6 mr-3 text-indigo-400" /> The Genius Insights: Strategic Directives
+                      <Bot className="w-6 h-6 mr-3 text-indigo-400" /> {t('boardroom.geniusInsights')}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {mockCSuiteIntel.aiStrategicDirectives.map((directive) => (
