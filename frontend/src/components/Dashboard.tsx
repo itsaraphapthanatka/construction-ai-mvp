@@ -655,176 +655,6 @@ export default function Dashboard() {
                   </motion.div>
                 ))}
 
-                {/* Project Drilldown Modal */}
-                <AnimatePresence>
-                  {selectedProject && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
-                      onClick={() => setSelectedProject(null)}
-                    >
-                      <motion.div
-                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 md:p-8 custom-scrollbar"
-                      >
-                        <button
-                          onClick={() => setSelectedProject(null)}
-                          className="absolute top-4 right-4 p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-rose-500/20 transition-colors z-10"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-
-                        <div className="space-y-6">
-                          {/* Header */}
-                          <div className="flex items-center space-x-4 border-b border-slate-800 pb-4">
-                            <div className={`p-3 rounded-xl border ${getRiskColor(selectedProject.riskLevel)}`}>
-                              <Building2 className="w-6 h-6" />
-                            </div>
-                            <div>
-                              <h2 className="text-2xl font-bold text-white">{selectedProject.name}</h2>
-                              <div className="flex items-center space-x-3 mt-1">
-                                <span className="font-mono text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-300">{selectedProject.id}</span>
-                                <span className="text-slate-400 text-sm">{formatCurrency(selectedProject.budget)}</span>
-                                <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${selectedProject.riskLevel === 'green' ? 'bg-emerald-500/20 text-emerald-400' :
-                                  selectedProject.riskLevel === 'yellow' ? 'bg-amber-500/20 text-amber-400' :
-                                    'bg-rose-500/20 text-rose-400'
-                                  }`}>{selectedProject.status}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Top Stats Row */}
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="glass-card p-4 text-center border-emerald-500/20">
-                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.profitForecast')}</p>
-                              <p className="text-2xl font-bold text-emerald-400">{selectedProject.predictedProfit}%</p>
-                            </div>
-                            <div className="glass-card p-4 text-center border-blue-500/20">
-                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.safetyScore')}</p>
-                              <p className="text-2xl font-bold text-blue-400">{selectedProject.esg?.safetyScore || 92}/100</p>
-                            </div>
-                            <div className="glass-card p-4 text-center border-violet-500/20">
-                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.satisfaction')}</p>
-                              <p className="text-2xl font-bold text-violet-400">{selectedProject.esg?.employeeSatisfaction || 4.2}/5</p>
-                            </div>
-                            <div className="glass-card p-4 text-center border-emerald-500/20">
-                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.carbon')}</p>
-                              <p className="text-2xl font-bold text-emerald-400">-{selectedProject.esg?.carbonReduction || 0}%</p>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Budget Breakdown */}
-                            <div className="glass-card p-6 border-slate-700">
-                              <h3 className="text-white font-medium mb-4 flex items-center"><DollarSign className="w-4 h-4 mr-2 text-emerald-400" /> {t('project.budgetBreakdown')}</h3>
-                              <div className="space-y-4">
-                                {[
-                                  { name: t('project.laborCost'), pct: 40, color: 'bg-blue-500' },
-                                  { name: t('project.materialCost'), pct: 35, color: 'bg-emerald-500' },
-                                  { name: t('project.equipmentCost'), pct: 15, color: 'bg-amber-500' },
-                                  { name: t('project.overheadCost'), pct: 10, color: 'bg-violet-500' }
-                                ].map((item, i) => (
-                                  <div key={i}>
-                                    <div className="flex justify-between text-sm mb-1">
-                                      <span className="text-slate-300">{item.name}</span>
-                                      <span className="text-white font-medium">{item.pct}% ({formatCurrency(selectedProject.budget * item.pct / 100)})</span>
-                                    </div>
-                                    <div className="w-full bg-slate-800 rounded-full h-2">
-                                      <div className={`${item.color} h-2 rounded-full`} style={{ width: `${item.pct}%` }}></div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Timeline Milestones */}
-                            <div className="glass-card p-6 border-slate-700">
-                              <h3 className="text-white font-medium mb-4 flex items-center"><Activity className="w-4 h-4 mr-2 text-blue-400" /> {t('project.timelineProgress')}</h3>
-                              <div className="space-y-3">
-                                {[
-                                  { name: 'Foundation & Piling', date: 'Jan 2026', done: true },
-                                  { name: 'Structural Framework', date: 'Apr 2026', done: true },
-                                  { name: 'MEP Installation', date: 'Jul 2026', done: false },
-                                  { name: 'Interior & Finishing', date: 'Oct 2026', done: false },
-                                  { name: 'Final Handover', date: 'Dec 2026', done: false }
-                                ].map((ms, i) => (
-                                  <div key={i} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/50 transition-colors">
-                                    <div className="flex items-center space-x-3">
-                                      <div className={`w-3 h-3 rounded-full ${ms.done ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-700 border border-slate-600'}`}></div>
-                                      <span className={`text-sm ${ms.done ? 'text-white' : 'text-slate-400'}`}>{ms.name}</span>
-                                    </div>
-                                    <div className="flex items-center space-x-3">
-                                      <span className="text-xs text-slate-500">{ms.date}</span>
-                                      {ms.done ? (
-                                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                                      ) : (
-                                        <div className="w-4 h-4 rounded-full border border-slate-600"></div>
-                                      )}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* AI Risk & Profit Chart */}
-                          <div className="glass-card p-6 border-blue-500/20">
-                            <h3 className="text-white font-medium mb-4 flex items-center"><TrendingUp className="w-4 h-4 mr-2 text-blue-400" /> {t('project.riskAnalysis')} — {t('project.profitForecast')}</h3>
-                            <div className="h-56">
-                              <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={[
-                                  { m: 'M1', profit: selectedProject.predictedProfit * 0.3, risk: 35 },
-                                  { m: 'M2', profit: selectedProject.predictedProfit * 0.5, risk: 30 },
-                                  { m: 'M3', profit: selectedProject.predictedProfit * 0.65, risk: 28 },
-                                  { m: 'M4', profit: selectedProject.predictedProfit * 0.8, risk: 22 },
-                                  { m: 'M5', profit: selectedProject.predictedProfit * 0.9, risk: 18 },
-                                  { m: 'M6', profit: selectedProject.predictedProfit, risk: 15 }
-                                ]}>
-                                  <defs>
-                                    <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                                    </linearGradient>
-                                    <linearGradient id="colorRiskP" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2} />
-                                      <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
-                                    </linearGradient>
-                                  </defs>
-                                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
-                                  <XAxis dataKey="m" stroke="#94a3b8" fontSize={12} tickLine={false} />
-                                  <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                  <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} />
-                                  <Area type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorProfit)" name={t('project.profitForecast')} />
-                                  <Area type="monotone" dataKey="risk" stroke="#f43f5e" strokeWidth={2} strokeDasharray="5 5" fillOpacity={1} fill="url(#colorRiskP)" name={t('project.riskAnalysis')} />
-                                </AreaChart>
-                              </ResponsiveContainer>
-                            </div>
-                          </div>
-
-                          {/* Active Alerts */}
-                          {selectedProject.alerts.length > 0 && (
-                            <div className="glass-card p-6 border-rose-500/20">
-                              <h3 className="text-white font-medium mb-4 flex items-center"><AlertTriangle className="w-4 h-4 mr-2 text-rose-400" /> {t('project.activeAlerts')} ({selectedProject.alerts.length})</h3>
-                              <div className="space-y-3">
-                                {selectedProject.alerts.map((alert, idx) => (
-                                  <div key={idx} className={`p-3 rounded-lg flex items-center space-x-3 text-sm border ${alert.type === 'danger' ? 'bg-rose-500/10 text-rose-300 border-rose-500/20' : 'bg-amber-500/10 text-amber-300 border-amber-500/20'}`}>
-                                    <AlertTriangle className="h-4 w-4 flex-shrink-0" />
-                                    <span>{alert.message}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
 
               </motion.div>
             )}
@@ -1011,210 +841,6 @@ export default function Dashboard() {
                   </div>
                 </motion.div>
 
-                {/* --- ESG Drilldown Modals --- */}
-                <AnimatePresence>
-                  {activeDrilldown && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
-                      onClick={() => setActiveDrilldown(null)}
-                    >
-                      <motion.div
-                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 md:p-8 custom-scrollbar"
-                      >
-                        <button
-                          onClick={() => setActiveDrilldown(null)}
-                          className="absolute top-4 right-4 p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-rose-500/20 transition-colors"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-
-                        {/* ENVIRONMENT DRILLDOWN */}
-                        {activeDrilldown === 'environment' && (
-                          <div className="space-y-6">
-                            <div className="flex items-center space-x-3 border-b border-slate-800 pb-4">
-                              <div className="p-3 bg-emerald-500/20 rounded-xl text-emerald-400"><Leaf className="w-6 h-6" /></div>
-                              <div>
-                                <h2 className="text-2xl font-bold text-white">{t('esg.drilldownEnvTitle')}</h2>
-                                <p className="text-slate-400 text-sm mt-1">Detailed analysis of cross-site carbon mitigation and emission sources.</p>
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              <div className="glass-card p-6 border-emerald-500/20">
-                                <h3 className="text-white font-medium mb-4 flex items-center"><Activity className="w-4 h-4 mr-2 text-emerald-400" /> {t('esg.dailyTrajectory')}</h3>
-                                <div className="h-64">
-                                  <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={[
-                                      { day: '01', mt: 1 }, { day: '05', mt: 3 }, { day: '10', mt: 8 }, { day: '15', mt: 12 }, { day: '20', mt: 18 }, { day: '25', mt: 23 }
-                                    ]}>
-                                      <defs>
-                                        <linearGradient id="colorMt" x1="0" y1="0" x2="0" y2="1">
-                                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                                          <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                                        </linearGradient>
-                                      </defs>
-                                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
-                                      <XAxis dataKey="day" stroke="#94a3b8" fontSize={12} tickLine={false} />
-                                      <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                      <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} itemStyle={{ color: '#10b981' }} />
-                                      <Area type="monotone" dataKey="mt" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorMt)" />
-                                    </AreaChart>
-                                  </ResponsiveContainer>
-                                </div>
-                              </div>
-                              <div className="glass-card p-6 border-slate-700">
-                                <h3 className="text-white font-medium mb-4 flex items-center"><Target className="w-4 h-4 mr-2 text-slate-400" /> {t('esg.emissionSources')}</h3>
-                                <div className="space-y-4">
-                                  {[
-                                    { name: t('esg.materials'), val: 65, color: 'bg-emerald-500' },
-                                    { name: t('esg.machinery'), val: 25, color: 'bg-amber-500' },
-                                    { name: t('esg.transport'), val: 10, color: 'bg-blue-500' }
-                                  ].map((src, i) => (
-                                    <div key={i}>
-                                      <div className="flex justify-between text-sm mb-1">
-                                        <span className="text-slate-300">{src.name}</span>
-                                        <span className="text-white font-medium">{src.val}%</span>
-                                      </div>
-                                      <div className="w-full bg-slate-800 rounded-full h-2">
-                                        <div className={`${src.color} h-2 rounded-full`} style={{ width: `${src.val}%` }}></div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* SOCIAL DRILLDOWN */}
-                        {activeDrilldown === 'social' && (
-                          <div className="space-y-6">
-                            <div className="flex items-center space-x-3 border-b border-slate-800 pb-4">
-                              <div className="p-3 bg-amber-500/20 rounded-xl text-amber-400"><ShieldCheck className="w-6 h-6" /></div>
-                              <div>
-                                <h2 className="text-2xl font-bold text-white">{t('esg.drilldownSocTitle')}</h2>
-                                <p className="text-slate-400 text-sm mt-1">Cross-site safety analysis, predictive risk mapping, and active anomalies.</p>
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              <div className="glass-card p-6 border-amber-500/20">
-                                <h3 className="text-white font-medium mb-4 flex items-center"><TrendingDown className="w-4 h-4 mr-2 text-amber-400" /> {t('esg.riskTrend')}</h3>
-                                <div className="h-64">
-                                  <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={[
-                                      { day: 'W1', risk: 85 }, { day: 'W2', risk: 86 }, { day: 'W3', risk: 82 }, { day: 'W4', risk: 78 }
-                                    ]}>
-                                      <defs>
-                                        <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
-                                          <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                                          <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-                                        </linearGradient>
-                                      </defs>
-                                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
-                                      <XAxis dataKey="day" stroke="#94a3b8" fontSize={12} tickLine={false} />
-                                      <YAxis domain={[60, 100]} stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                      <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} itemStyle={{ color: '#f59e0b' }} />
-                                      <Area type="monotone" dataKey="risk" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorRisk)" />
-                                    </AreaChart>
-                                  </ResponsiveContainer>
-                                </div>
-                              </div>
-                              <div className="glass-card p-6 border-rose-500/20">
-                                <h3 className="text-white font-medium mb-4 flex items-center"><AlertTriangle className="w-4 h-4 mr-2 text-rose-400" /> {t('esg.anomalyLog')}</h3>
-                                <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar pr-2">
-                                  <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
-                                    <div className="flex justify-between items-start mb-1">
-                                      <span className="text-xs font-bold text-rose-400 uppercase">High Priority</span>
-                                      <span className="text-xs text-slate-500">2h ago</span>
-                                    </div>
-                                    <p className="text-sm text-slate-300">{t('esg.anomalyFuel')}</p>
-                                  </div>
-                                  <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
-                                    <div className="flex justify-between items-start mb-1">
-                                      <span className="text-xs font-bold text-amber-400 uppercase">Near Miss</span>
-                                      <span className="text-xs text-slate-500">1d ago</span>
-                                    </div>
-                                    <p className="text-sm text-slate-300">Scaffold stabilization warning triggered at Sukhumvit Site by IoT sensors.</p>
-                                  </div>
-                                  <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
-                                    <div className="flex justify-between items-start mb-1">
-                                      <span className="text-xs font-bold text-amber-400 uppercase">Near Miss</span>
-                                      <span className="text-xs text-slate-500">3d ago</span>
-                                    </div>
-                                    <p className="text-sm text-slate-300">Unauthorized personnel entry detected in Zone C outside operating hours.</p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* GOVERNANCE DRILLDOWN */}
-                        {activeDrilldown === 'governance' && (
-                          <div className="space-y-6">
-                            <div className="flex items-center space-x-3 border-b border-slate-800 pb-4">
-                              <div className="p-3 bg-violet-500/20 rounded-xl text-violet-400"><Users className="w-6 h-6" /></div>
-                              <div>
-                                <h2 className="text-2xl font-bold text-white">{t('esg.drilldownGovTitle')}</h2>
-                                <p className="text-slate-400 text-sm mt-1">Labor sentiment breakdown and regulatory compliance readiness checklist.</p>
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              <div className="glass-card p-6 border-slate-700">
-                                <h3 className="text-white font-medium mb-4 flex items-center"><CheckCircle2 className="w-4 h-4 mr-2 text-emerald-400" /> {t('esg.setChecklist')}</h3>
-                                <div className="space-y-3">
-                                  {[
-                                    { req: 'Corporate Governance Policy', status: true },
-                                    { req: 'Business Value Chain & Suppliers', status: true },
-                                    { req: 'Environmental Performance Data', status: true },
-                                    { req: 'Social Performance & Safety', status: true },
-                                    { req: 'Audited Financial Statements', status: false }
-                                  ].map((item, i) => (
-                                    <div key={i} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/50 transition-colors">
-                                      <span className="text-sm text-slate-300">{item.req}</span>
-                                      {item.status ? (
-                                        <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/20">{t('esg.ready')}</span>
-                                      ) : (
-                                        <span className="px-2 py-1 bg-rose-500/10 text-rose-400 text-xs font-bold rounded-full border border-rose-500/20">Pending</span>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                              <div className="glass-card p-6 border-violet-500/20 flex flex-col items-center justify-center">
-                                <h3 className="text-white font-medium mb-4 flex items-center self-start"><Activity className="w-4 h-4 mr-2 text-violet-400" /> {t('esg.sentimentChart')}</h3>
-                                <div className="w-48 h-48 rounded-full border-8 border-slate-800 flex items-center justify-center relative shadow-[0_0_30px_rgba(139,92,246,0.15)]">
-                                  <div className="absolute inset-0 rounded-full border-8 border-transparent border-t-emerald-500 border-r-emerald-500 transform rotate-45"></div>
-                                  <div className="absolute inset-0 rounded-full border-8 border-transparent border-b-blue-500 transform -rotate-12"></div>
-                                  <div className="absolute inset-0 rounded-full border-8 border-transparent border-l-rose-500 transform -rotate-[60deg] clip-quarter"></div>
-                                  <div className="text-center">
-                                    <span className="block text-3xl font-bold text-white">4.5</span>
-                                    <span className="block text-xs text-slate-500">/ 5.0</span>
-                                  </div>
-                                </div>
-                                <div className="flex gap-4 mt-6 text-sm">
-                                  <div className="flex items-center"><div className="w-3 h-3 bg-emerald-500 rounded-full mr-2"></div><span className="text-slate-300">42%</span></div>
-                                  <div className="flex items-center"><div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div><span className="text-slate-300">38%</span></div>
-                                  <div className="flex items-center"><div className="w-3 h-3 bg-rose-500 rounded-full mr-2"></div><span className="text-slate-300">12%</span></div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
 
               </motion.div>
             )}
@@ -1326,7 +952,7 @@ export default function Dashboard() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
+                      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
                       onClick={() => setSelectedBidding(null)}
                     >
                       <motion.div
@@ -1356,8 +982,8 @@ export default function Dashboard() {
                               </div>
                             </div>
                             <div className={`px-4 py-2 rounded-xl font-bold text-sm uppercase tracking-widest ${selectedBidding.recommendation === 'GO' ? 'bg-emerald-500 text-slate-900' :
-                                selectedBidding.recommendation === 'NO-GO' ? 'bg-rose-500 text-white' :
-                                  'bg-amber-500 text-slate-900'
+                              selectedBidding.recommendation === 'NO-GO' ? 'bg-rose-500 text-white' :
+                                'bg-amber-500 text-slate-900'
                               }`}>{selectedBidding.recommendation}</div>
                           </div>
 
@@ -1619,6 +1245,543 @@ export default function Dashboard() {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* Drilldown Modals (Rendered outside main to cover sidebar) */}
+      {/* Project Drilldown Modal */}
+      <AnimatePresence>
+        {selectedProject && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
+            onClick={() => setSelectedProject(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 md:p-8 custom-scrollbar"
+            >
+              <button
+                onClick={() => setSelectedProject(null)}
+                className="absolute top-4 right-4 p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-rose-500/20 transition-colors z-10"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="space-y-6">
+                {/* Header */}
+                <div className="flex items-center space-x-4 border-b border-slate-800 pb-4">
+                  <div className={`p-3 rounded-xl border ${getRiskColor(selectedProject.riskLevel)}`}>
+                    <Building2 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">{selectedProject.name}</h2>
+                    <div className="flex items-center space-x-3 mt-1">
+                      <span className="font-mono text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-300">{selectedProject.id}</span>
+                      <span className="text-slate-400 text-sm">{formatCurrency(selectedProject.budget)}</span>
+                      <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${selectedProject.riskLevel === 'green' ? 'bg-emerald-500/20 text-emerald-400' :
+                        selectedProject.riskLevel === 'yellow' ? 'bg-amber-500/20 text-amber-400' :
+                          'bg-rose-500/20 text-rose-400'
+                        }`}>{selectedProject.status}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Top Stats Row */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="glass-card p-4 text-center border-emerald-500/20">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.profitForecast')}</p>
+                    <p className="text-2xl font-bold text-emerald-400">{selectedProject.predictedProfit}%</p>
+                  </div>
+                  <div className="glass-card p-4 text-center border-blue-500/20">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.safetyScore')}</p>
+                    <p className="text-2xl font-bold text-blue-400">{selectedProject.esg?.safetyScore || 92}/100</p>
+                  </div>
+                  <div className="glass-card p-4 text-center border-violet-500/20">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.satisfaction')}</p>
+                    <p className="text-2xl font-bold text-violet-400">{selectedProject.esg?.employeeSatisfaction || 4.2}/5</p>
+                  </div>
+                  <div className="glass-card p-4 text-center border-emerald-500/20">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.carbon')}</p>
+                    <p className="text-2xl font-bold text-emerald-400">-{selectedProject.esg?.carbonReduction || 0}%</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Budget Breakdown */}
+                  <div className="glass-card p-6 border-slate-700">
+                    <h3 className="text-white font-medium mb-4 flex items-center"><DollarSign className="w-4 h-4 mr-2 text-emerald-400" /> {t('project.budgetBreakdown')}</h3>
+                    <div className="space-y-4">
+                      {[
+                        { name: t('project.laborCost'), pct: 40, color: 'bg-blue-500' },
+                        { name: t('project.materialCost'), pct: 35, color: 'bg-emerald-500' },
+                        { name: t('project.equipmentCost'), pct: 15, color: 'bg-amber-500' },
+                        { name: t('project.overheadCost'), pct: 10, color: 'bg-violet-500' }
+                      ].map((item, i) => (
+                        <div key={i}>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-slate-300">{item.name}</span>
+                            <span className="text-white font-medium">{item.pct}% ({formatCurrency(selectedProject.budget * item.pct / 100)})</span>
+                          </div>
+                          <div className="w-full bg-slate-800 rounded-full h-2">
+                            <div className={`${item.color} h-2 rounded-full`} style={{ width: `${item.pct}%` }}></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Timeline Milestones */}
+                  <div className="glass-card p-6 border-slate-700">
+                    <h3 className="text-white font-medium mb-4 flex items-center"><Activity className="w-4 h-4 mr-2 text-blue-400" /> {t('project.timelineProgress')}</h3>
+                    <div className="space-y-3">
+                      {[
+                        { name: 'Foundation & Piling', date: 'Jan 2026', done: true },
+                        { name: 'Structural Framework', date: 'Apr 2026', done: true },
+                        { name: 'MEP Installation', date: 'Jul 2026', done: false },
+                        { name: 'Interior & Finishing', date: 'Oct 2026', done: false },
+                        { name: 'Final Handover', date: 'Dec 2026', done: false }
+                      ].map((ms, i) => (
+                        <div key={i} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/50 transition-colors">
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-3 h-3 rounded-full ${ms.done ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-700 border border-slate-600'}`}></div>
+                            <span className={`text-sm ${ms.done ? 'text-white' : 'text-slate-400'}`}>{ms.name}</span>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <span className="text-xs text-slate-500">{ms.date}</span>
+                            {ms.done ? (
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                            ) : (
+                              <div className="w-4 h-4 rounded-full border border-slate-600"></div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* AI Risk & Profit Chart */}
+                <div className="glass-card p-6 border-blue-500/20">
+                  <h3 className="text-white font-medium mb-4 flex items-center"><TrendingUp className="w-4 h-4 mr-2 text-blue-400" /> {t('project.riskAnalysis')} — {t('project.profitForecast')}</h3>
+                  <div className="h-56">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={[
+                        { m: 'M1', profit: selectedProject.predictedProfit * 0.3, risk: 35 },
+                        { m: 'M2', profit: selectedProject.predictedProfit * 0.5, risk: 30 },
+                        { m: 'M3', profit: selectedProject.predictedProfit * 0.65, risk: 28 },
+                        { m: 'M4', profit: selectedProject.predictedProfit * 0.8, risk: 22 },
+                        { m: 'M5', profit: selectedProject.predictedProfit * 0.9, risk: 18 },
+                        { m: 'M6', profit: selectedProject.predictedProfit, risk: 15 }
+                      ]}>
+                        <defs>
+                          <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                          </linearGradient>
+                          <linearGradient id="colorRiskP" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2} />
+                            <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
+                        <XAxis dataKey="m" stroke="#94a3b8" fontSize={12} tickLine={false} />
+                        <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                        <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} />
+                        <Area type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorProfit)" name={t('project.profitForecast')} />
+                        <Area type="monotone" dataKey="risk" stroke="#f43f5e" strokeWidth={2} strokeDasharray="5 5" fillOpacity={1} fill="url(#colorRiskP)" name={t('project.riskAnalysis')} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Active Alerts */}
+                {selectedProject.alerts.length > 0 && (
+                  <div className="glass-card p-6 border-rose-500/20">
+                    <h3 className="text-white font-medium mb-4 flex items-center"><AlertTriangle className="w-4 h-4 mr-2 text-rose-400" /> {t('project.activeAlerts')} ({selectedProject.alerts.length})</h3>
+                    <div className="space-y-3">
+                      {selectedProject.alerts.map((alert, idx) => (
+                        <div key={idx} className={`p-3 rounded-lg flex items-center space-x-3 text-sm border ${alert.type === 'danger' ? 'bg-rose-500/10 text-rose-300 border-rose-500/20' : 'bg-amber-500/10 text-amber-300 border-amber-500/20'}`}>
+                          <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                          <span>{alert.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ESG Drilldown Modals */}
+      <AnimatePresence>
+        {activeDrilldown && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
+            onClick={() => setActiveDrilldown(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 md:p-8 custom-scrollbar"
+            >
+              <button
+                onClick={() => setActiveDrilldown(null)}
+                className="absolute top-4 right-4 p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-rose-500/20 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* ENVIRONMENT DRILLDOWN */}
+              {activeDrilldown === 'environment' && (
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-3 border-b border-slate-800 pb-4">
+                    <div className="p-3 bg-emerald-500/20 rounded-xl text-emerald-400"><Leaf className="w-6 h-6" /></div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">{t('esg.drilldownEnvTitle')}</h2>
+                      <p className="text-slate-400 text-sm mt-1">Detailed analysis of cross-site carbon mitigation and emission sources.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="glass-card p-6 border-emerald-500/20">
+                      <h3 className="text-white font-medium mb-4 flex items-center"><Activity className="w-4 h-4 mr-2 text-emerald-400" /> {t('esg.dailyTrajectory')}</h3>
+                      <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={[
+                            { day: '01', mt: 1 }, { day: '05', mt: 3 }, { day: '10', mt: 8 }, { day: '15', mt: 12 }, { day: '20', mt: 18 }, { day: '25', mt: 23 }
+                          ]}>
+                            <defs>
+                              <linearGradient id="colorMt" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
+                            <XAxis dataKey="day" stroke="#94a3b8" fontSize={12} tickLine={false} />
+                            <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                            <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} itemStyle={{ color: '#10b981' }} />
+                            <Area type="monotone" dataKey="mt" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorMt)" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                    <div className="glass-card p-6 border-slate-700">
+                      <h3 className="text-white font-medium mb-4 flex items-center"><Target className="w-4 h-4 mr-2 text-slate-400" /> {t('esg.emissionSources')}</h3>
+                      <div className="space-y-4">
+                        {[
+                          { name: t('esg.materials'), val: 65, color: 'bg-emerald-500' },
+                          { name: t('esg.machinery'), val: 25, color: 'bg-amber-500' },
+                          { name: t('esg.transport'), val: 10, color: 'bg-blue-500' }
+                        ].map((src, i) => (
+                          <div key={i}>
+                            <div className="flex justify-between text-sm mb-1">
+                              <span className="text-slate-300">{src.name}</span>
+                              <span className="text-white font-medium">{src.val}%</span>
+                            </div>
+                            <div className="w-full bg-slate-800 rounded-full h-2">
+                              <div className={`${src.color} h-2 rounded-full`} style={{ width: `${src.val}%` }}></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SOCIAL DRILLDOWN */}
+              {activeDrilldown === 'social' && (
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-3 border-b border-slate-800 pb-4">
+                    <div className="p-3 bg-amber-500/20 rounded-xl text-amber-400"><ShieldCheck className="w-6 h-6" /></div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">{t('esg.drilldownSocTitle')}</h2>
+                      <p className="text-slate-400 text-sm mt-1">Cross-site safety analysis, predictive risk mapping, and active anomalies.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="glass-card p-6 border-amber-500/20">
+                      <h3 className="text-white font-medium mb-4 flex items-center"><TrendingDown className="w-4 h-4 mr-2 text-amber-400" /> {t('esg.riskTrend')}</h3>
+                      <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={[
+                            { day: 'W1', risk: 85 }, { day: 'W2', risk: 86 }, { day: 'W3', risk: 82 }, { day: 'W4', risk: 78 }
+                          ]}>
+                            <defs>
+                              <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
+                            <XAxis dataKey="day" stroke="#94a3b8" fontSize={12} tickLine={false} />
+                            <YAxis domain={[60, 100]} stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                            <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} itemStyle={{ color: '#f59e0b' }} />
+                            <Area type="monotone" dataKey="risk" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorRisk)" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                    <div className="glass-card p-6 border-rose-500/20">
+                      <h3 className="text-white font-medium mb-4 flex items-center"><AlertTriangle className="w-4 h-4 mr-2 text-rose-400" /> {t('esg.anomalyLog')}</h3>
+                      <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar pr-2">
+                        <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="text-xs font-bold text-rose-400 uppercase">High Priority</span>
+                            <span className="text-xs text-slate-500">2h ago</span>
+                          </div>
+                          <p className="text-sm text-slate-300">{t('esg.anomalyFuel')}</p>
+                        </div>
+                        <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="text-xs font-bold text-amber-400 uppercase">Near Miss</span>
+                            <span className="text-xs text-slate-500">1d ago</span>
+                          </div>
+                          <p className="text-sm text-slate-300">Scaffold stabilization warning triggered at Sukhumvit Site by IoT sensors.</p>
+                        </div>
+                        <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="text-xs font-bold text-amber-400 uppercase">Near Miss</span>
+                            <span className="text-xs text-slate-500">3d ago</span>
+                          </div>
+                          <p className="text-sm text-slate-300">Unauthorized personnel entry detected in Zone C outside operating hours.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* GOVERNANCE DRILLDOWN */}
+              {activeDrilldown === 'governance' && (
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-3 border-b border-slate-800 pb-4">
+                    <div className="p-3 bg-violet-500/20 rounded-xl text-violet-400"><Users className="w-6 h-6" /></div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">{t('esg.drilldownGovTitle')}</h2>
+                      <p className="text-slate-400 text-sm mt-1">Labor sentiment breakdown and regulatory compliance readiness checklist.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="glass-card p-6 border-slate-700">
+                      <h3 className="text-white font-medium mb-4 flex items-center"><CheckCircle2 className="w-4 h-4 mr-2 text-emerald-400" /> {t('esg.setChecklist')}</h3>
+                      <div className="space-y-3">
+                        {[
+                          { req: 'Corporate Governance Policy', status: true },
+                          { req: 'Business Value Chain & Suppliers', status: true },
+                          { req: 'Environmental Performance Data', status: true },
+                          { req: 'Social Performance & Safety', status: true },
+                          { req: 'Audited Financial Statements', status: false }
+                        ].map((item, i) => (
+                          <div key={i} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/50 transition-colors">
+                            <span className="text-sm text-slate-300">{item.req}</span>
+                            {item.status ? (
+                              <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/20">{t('esg.ready')}</span>
+                            ) : (
+                              <span className="px-2 py-1 bg-rose-500/10 text-rose-400 text-xs font-bold rounded-full border border-rose-500/20">Pending</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="glass-card p-6 border-violet-500/20 flex flex-col items-center justify-center">
+                      <h3 className="text-white font-medium mb-4 flex items-center self-start"><Activity className="w-4 h-4 mr-2 text-violet-400" /> {t('esg.sentimentChart')}</h3>
+                      <div className="w-48 h-48 rounded-full border-8 border-slate-800 flex items-center justify-center relative shadow-[0_0_30px_rgba(139,92,246,0.15)]">
+                        <div className="absolute inset-0 rounded-full border-8 border-transparent border-t-emerald-500 border-r-emerald-500 transform rotate-45"></div>
+                        <div className="absolute inset-0 rounded-full border-8 border-transparent border-b-blue-500 transform -rotate-12"></div>
+                        <div className="absolute inset-0 rounded-full border-8 border-transparent border-l-rose-500 transform -rotate-[60deg] clip-quarter"></div>
+                        <div className="text-center">
+                          <span className="block text-3xl font-bold text-white">4.5</span>
+                          <span className="block text-xs text-slate-500">/ 5.0</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-4 mt-6 text-sm">
+                        <div className="flex items-center"><div className="w-3 h-3 bg-emerald-500 rounded-full mr-2"></div><span className="text-slate-300">42%</span></div>
+                        <div className="flex items-center"><div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div><span className="text-slate-300">38%</span></div>
+                        <div className="flex items-center"><div className="w-3 h-3 bg-rose-500 rounded-full mr-2"></div><span className="text-slate-300">12%</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Bidding Opportunity Drilldown Modal */}
+      <AnimatePresence>
+        {selectedBidding && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
+            onClick={() => setSelectedBidding(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 md:p-8 custom-scrollbar"
+            >
+              <button
+                onClick={() => setSelectedBidding(null)}
+                className="absolute top-4 right-4 p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-rose-500/20 transition-colors z-10"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="space-y-6">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-400">
+                      <Building2 className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">{selectedBidding.name}</h2>
+                      <p className="text-slate-400 text-sm mt-1">{selectedBidding.client} • {formatCurrency(selectedBidding.estimatedBudget)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <span className="text-xs text-slate-400 uppercase tracking-widest font-bold">AI Recommendation:</span>
+                    <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border ${selectedBidding.riskScore < 40 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30'}`}>
+                      {selectedBidding.riskScore < 40 ? 'Go / High Priority' : 'Caution / Review'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Quick Stats Row */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="glass-card p-4 border-slate-700">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">AI Risk Score</p>
+                    <p className={`text-2xl font-bold ${selectedBidding.riskScore < 40 ? 'text-emerald-400' : 'text-rose-400'}`}>{selectedBidding.riskScore}/100</p>
+                  </div>
+                  <div className="glass-card p-4 border-slate-700">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Expected Margin</p>
+                    <p className="text-2xl font-bold text-indigo-400">{selectedBidding.predictedMargin}%</p>
+                  </div>
+                  <div className="glass-card p-4 border-slate-700">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Win Probability</p>
+                    <p className="text-2xl font-bold text-blue-400">{selectedBidding.historicalConfidence}%</p>
+                  </div>
+                  <div className="glass-card p-4 border-slate-700">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Project Duration</p>
+                    <p className="text-2xl font-bold text-white">{selectedBidding.estimatedDuration} Mo</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Margin Simulation */}
+                  <div className="glass-card p-6 border-slate-700">
+                    <h3 className="text-white font-medium mb-4 flex items-center"><TrendingUp className="w-4 h-4 mr-2 text-indigo-400" /> Margin Simulation (6-Month Projection)</h3>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={[
+                          { month: 'M1', best: 18, base: 17, worst: 15 },
+                          { month: 'M2', best: 19, base: 17.5, worst: 14 },
+                          { month: 'M3', best: 20, base: 18, worst: 13 },
+                          { month: 'M4', best: 21, base: 18.2, worst: 12 },
+                          { month: 'M5', best: 22, base: 18.2, worst: 11 },
+                          { month: 'M6', best: 22.5, base: 18.5, worst: 10.5 },
+                        ]}>
+                          <defs>
+                            <linearGradient id="colorBase" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                          <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                          <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} unit="%" />
+                          <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} />
+                          <Area type="monotone" dataKey="best" stroke="#10b981" fill="none" strokeDasharray="5 5" />
+                          <Area type="monotone" dataKey="base" stroke="#6366f1" fillOpacity={1} fill="url(#colorBase)" strokeWidth={3} />
+                          <Area type="monotone" dataKey="worst" stroke="#f43f5e" fill="none" strokeDasharray="5 5" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Competitive Landscape */}
+                  <div className="glass-card p-6 border-slate-700">
+                    <h3 className="text-white font-medium mb-4 flex items-center"><Users className="w-4 h-4 mr-2 text-blue-400" /> Competitive Landscape (Market Share)</h3>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={[
+                              { name: 'Our Firm', value: 35 },
+                              { name: 'Competitor A', value: 25 },
+                              { name: 'Competitor B', value: 20 },
+                              { name: 'Others', value: 20 },
+                            ]}
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            <Cell fill="#6366f1" />
+                            <Cell fill="#3b82f6" />
+                            <Cell fill="#1e293b" />
+                            <Cell fill="#334155" />
+                          </Pie>
+                          <RechartsTooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="grid grid-cols-2 gap-2 mt-4">
+                        {[
+                          { name: 'Our Firm', color: 'bg-indigo-500' },
+                          { name: 'Competitor A', color: 'bg-blue-500' },
+                          { name: 'Competitor B', color: 'bg-slate-800' },
+                          { name: 'Others', color: 'bg-slate-700' }
+                        ].map((c, i) => (
+                          <div key={i} className="flex items-center space-x-2">
+                            <div className={`w-3 h-3 rounded-full ${c.color}`}></div>
+                            <span className="text-xs text-slate-400">{c.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded Evaluation Factors */}
+                <div className="glass-card p-6 border-indigo-500/20">
+                  <h3 className="text-white font-medium mb-4 flex items-center"><Activity className="w-4 h-4 mr-2 text-indigo-400" /> Full Evaluation Factor Breakdown</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {selectedBidding.factors.map((factor, idx) => (
+                      <div key={idx} className={`p-4 rounded-xl border flex items-start space-x-3 ${factor.impact === 'positive' ? 'bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10' : 'bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10'} transition-colors`}>
+                        {factor.impact === 'positive' ? <CheckCircle2 className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" /> : <XCircle className="w-5 h-5 text-rose-400 mt-0.5 shrink-0" />}
+                        <div>
+                          <p className={`text-sm font-bold mb-1 ${factor.impact === 'positive' ? 'text-emerald-400' : 'text-rose-400'}`}>{factor.name}</p>
+                          <p className="text-sm text-slate-400 leading-relaxed">{factor.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
