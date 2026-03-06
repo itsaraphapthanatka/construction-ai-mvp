@@ -1,0 +1,5 @@
+
+> construction-ai-backend@1.0.0 dev
+> tsx src/server.ts
+
+🚀 Backend running on http://localhost:3001

@@ -1,0 +1,13 @@
+
+> construction-ai-frontend@1.0.0 dev
+> next dev
+
+   ▲ Next.js 14.1.0
+   - Local:        http://localhost:3000
+
+ ✓ Ready in 2.2s
+ ○ Compiling / ...
+ ✓ Compiled / in 3.4s (2544 modules)
+ ✓ Compiled in 321ms (1238 modules)
+(node:38804) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
