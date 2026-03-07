@@ -1745,19 +1745,19 @@ export default function Dashboard() {
                           <RechartsTooltip />
                         </PieChart>
                       </ResponsiveContainer>
-                      <div className="grid grid-cols-2 gap-2 mt-4">
-                        {[
-                          { name: 'Our Firm', color: 'bg-indigo-500' },
-                          { name: 'Competitor A', color: 'bg-blue-500' },
-                          { name: 'Competitor B', color: 'bg-slate-800' },
-                          { name: 'Others', color: 'bg-slate-700' }
-                        ].map((c, i) => (
-                          <div key={i} className="flex items-center space-x-2">
-                            <div className={`w-3 h-3 rounded-full ${c.color}`}></div>
-                            <span className="text-xs text-slate-400">{c.name}</span>
-                          </div>
-                        ))}
-                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mt-4">
+                      {[
+                        { name: 'Our Firm', color: 'bg-indigo-500' },
+                        { name: 'Competitor A', color: 'bg-blue-500' },
+                        { name: 'Competitor B', color: 'bg-slate-800' },
+                        { name: 'Others', color: 'bg-slate-700' }
+                      ].map((c, i) => (
+                        <div key={i} className="flex items-center space-x-2">
+                          <div className={`w-3 h-3 rounded-full ${c.color}`}></div>
+                          <span className="text-xs text-slate-400">{c.name}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
