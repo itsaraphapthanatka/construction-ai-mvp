@@ -6,8 +6,8 @@ import axios from 'axios';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8001';
+const PORT = process.env.PORT || 4001;
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8100';
 
 app.use(cors());
 app.use(express.json());

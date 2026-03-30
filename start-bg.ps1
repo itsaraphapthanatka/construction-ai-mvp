@@ -10,5 +10,5 @@ Start-Process -FilePath "npm.cmd" -ArgumentList "run dev" -WorkingDirectory ".\f
 
 Write-Host ""
 Write-Host "✅ Services are running in the background (Hidden windows)."
-Write-Host "You can view the app at: http://localhost:3000"
+Write-Host "You can view the app at: http://localhost:4000"
 Write-Host "To stop them, please run: .\stop-bg.ps1"
