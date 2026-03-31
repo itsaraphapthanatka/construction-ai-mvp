@@ -118,6 +118,19 @@ export default function AIConsultant() {
 
             {/* Input Area */}
             <div className="p-4 border-t border-white/5 bg-slate-900/50">
+                {/* Suggestions */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                    {['Analyze Q4 Margin Risk', 'View ESG Financial ROI', 'Competitor Market Shift'].map((suggestion) => (
+                        <button
+                            key={suggestion}
+                            onClick={() => { setInput(suggestion); }}
+                            className="px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest hover:bg-blue-500/20 transition-all"
+                        >
+                            {suggestion}
+                        </button>
+                    ))}
+                </div>
+
                 <form onSubmit={sendMessage} className="relative flex items-center">
                     <input
                         type="text"

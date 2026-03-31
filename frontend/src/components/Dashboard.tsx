@@ -23,7 +23,11 @@ import {
   XCircle,
   HelpCircle,
   Briefcase,
-  Zap
+  Globe,
+  Search,
+  Radar,
+  Zap,
+  Camera
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
@@ -36,7 +40,11 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell
+  Cell,
+  BarChart,
+  Bar,
+  ScatterChart,
+  Scatter
 } from 'recharts';
 
 // Types
@@ -71,6 +79,7 @@ interface BiddingOpportunity {
     impact: 'positive' | 'negative';
     description: string;
   }>;
+  executeAction?: string;
 }
 
 interface DashboardSummary {
@@ -83,6 +92,20 @@ interface DashboardSummary {
     yellow: number;
     red: number;
   };
+  portfolioNarrative?: string;
+  riskMatrix?: Array<{
+    id: number;
+    label: string;
+    probability: number;
+    impact: number;
+    project: string;
+    mitigation?: string;
+  }>;
+  healthPillers?: Array<{
+    name: string;
+    score: number;
+    status: string;
+  }>;
 }
 
 // Mock data
@@ -130,13 +153,17 @@ export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [biddingOps, setBiddingOps] = useState<BiddingOpportunity[]>([]);
   const [activeTab, setActiveTab] = useState('c-suite');
+  const [esgSummary, setEsgSummary] = useState<any>(null);
   const [activeDrilldown, setActiveDrilldown] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedBidding, setSelectedBidding] = useState<BiddingOpportunity | null>(null);
+  const [strategicDrilldown, setStrategicDrilldown] = useState<{ type: string; data: any } | null>(null);
+  const [cSuiteIntel, setCSuiteIntel] = useState<any>(null);
   // Default sidebar open on desktop, closed on mobile
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [executing, setExecuting] = useState<string | null>(null);
 
   // Handle responsive sidebar behavior on mount and resize
   useEffect(() => {
@@ -160,14 +187,19 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     try {
-      const [summaryRes, projectsRes, biddingRes] = await Promise.all([
-        axios.get('/api/dashboard/summary'),
-        axios.get('/api/projects'),
-        axios.get('/api/bidding-opportunities')
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const [summaryRes, projectsRes, biddingRes, esgRes, intelRes] = await Promise.all([
+        axios.get(`${API_BASE}/api/dashboard/summary`),
+        axios.get(`${API_BASE}/api/projects`),
+        axios.get(`${API_BASE}/api/bidding-opportunities`),
+        axios.get(`${API_BASE}/api/esg/summary`),
+        axios.get(`${API_BASE}/api/c-suite-intel`)
       ]);
       setSummary(summaryRes.data);
       setProjects(projectsRes.data);
       setBiddingOps(biddingRes.data);
+      setEsgSummary(esgRes.data);
+      setCSuiteIntel(intelRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -215,7 +247,29 @@ export default function Dashboard() {
       { competitor: 'Legacy Corp', marketShare: 28, growth: -2, winRate: 42 },
       { competitor: 'FastConstruct', marketShare: 15, growth: 8, winRate: 55 },
       { competitor: 'EcoBuilders', marketShare: 12, growth: 22, winRate: 60 },
-    ]
+    ],
+    macroHeadwinds: {
+      interestRateTrend: '+50 bps forecast',
+      materialInflation: '8.2% YoY',
+      laborCostIndex: '112.5 (Rising)',
+      consumerSentiment: 'Stable',
+      historicalTrends: [
+        { month: 'Jan', steel: 24000, cement: 175, inflation: 2.1 },
+        { month: 'Feb', steel: 24500, cement: 178, inflation: 2.4 },
+        { month: 'Mar', steel: 25000, cement: 180, inflation: 2.8 },
+        { month: 'Apr', steel: 25800, cement: 182, inflation: 3.2 },
+        { month: 'May', steel: 26500, cement: 185, inflation: 3.5 },
+        { month: 'Jun', steel: 27200, cement: 188, inflation: 4.1 },
+      ]
+    },
+    competitiveInsight: {
+      marketShift: 'Competitors shifting focus to "Green Mini-Condos" in EEC zone.',
+      vulnerability: 'Small contractors experiencing 20% default increase due to credit tightening.',
+      competitorTactics: [
+        { name: 'Legacy Corp', tactic: 'Aggressive pricing in public infra', risk: 'High' },
+        { name: 'EcoBuilders', tactic: 'Niche focus on zero-waste sites', risk: 'Medium' },
+      ]
+    }
   };
 
   const getRiskColor = (level: string) => {
@@ -275,32 +329,18 @@ export default function Dashboard() {
   return (
     <div className="flex h-screen bg-[#0B1120] text-slate-200 overflow-hidden font-sans selection:bg-blue-500/30">
 
-      {/* Mobile Sidebar Overlay Background */}
-      <AnimatePresence>
-        {isMobile && sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSidebarOpen(false)}
-            className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-40 md:hidden"
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Premium Sidebar */}
+      {/* Premium Sidebar (Hidden on Mobile) */}
       <motion.aside
         initial={false}
         animate={{
-          width: sidebarOpen ? 280 : (isMobile ? 0 : 80),
-          x: isMobile && !sidebarOpen ? -280 : 0
+          width: sidebarOpen ? 280 : 80,
+          x: 0
         }}
-        className={`relative z-50 flex-shrink-0 border-r border-white/5 bg-slate-900/95 backdrop-blur-xl flex flex-col h-full ${isMobile ? 'fixed inset-y-0 left-0 shadow-2xl overflow-hidden' : ''
-          }`}
+        className="hidden md:flex relative z-40 flex-shrink-0 border-r border-white/5 bg-slate-900/95 backdrop-blur-xl flex-col h-full"
       >
         <div className="p-6 flex items-center justify-between min-w-[280px]">
           <AnimatePresence mode="wait">
-            {(sidebarOpen || isMobile) && (
+            {sidebarOpen && (
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -317,22 +357,12 @@ export default function Dashboard() {
               </motion.div>
             )}
           </AnimatePresence>
-          {!isMobile && (
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 absolute right-4 rounded-lg hover:bg-white/5 transition-colors text-slate-400 hover:text-white"
-            >
-              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-          )}
-          {isMobile && (
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="p-2 rounded-lg hover:bg-white/5 transition-colors text-slate-400 hover:text-white ml-auto"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          )}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 absolute right-4 rounded-lg hover:bg-white/5 transition-colors text-slate-400 hover:text-white"
+          >
+            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
 
         <nav className="flex-1 mt-6 px-4 space-y-2 overflow-y-auto min-w-[280px]">
@@ -350,7 +380,7 @@ export default function Dashboard() {
             >
               <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
               <AnimatePresence>
-                {(sidebarOpen || isMobile) && (
+                {sidebarOpen && (
                   <motion.span
                     initial={{ opacity: 0, width: 0 }}
                     animate={{ opacity: 1, width: 'auto' }}
@@ -361,7 +391,7 @@ export default function Dashboard() {
                   </motion.span>
                 )}
               </AnimatePresence>
-              {(sidebarOpen || isMobile) && activeTab === item.id && (
+              {sidebarOpen && activeTab === item.id && (
                 <motion.div layoutId="activeNav" className="ml-auto">
                   <ChevronRight className="h-4 w-4" />
                 </motion.div>
@@ -376,7 +406,7 @@ export default function Dashboard() {
             <div className="h-10 w-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center flex-shrink-0">
               <span className="text-sm font-bold text-slate-300">{t('user.role')}</span>
             </div>
-            {(sidebarOpen || isMobile) && (
+            {sidebarOpen && (
               <div className="ml-3 overflow-hidden">
                 <p className="text-sm font-medium text-white truncate">{t('user.view')}</p>
               </div>
@@ -402,12 +432,9 @@ export default function Dashboard() {
                 </div>
                 <span className="font-bold text-lg text-white">Construction AI</span>
               </div>
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="p-2 rounded-lg hover:bg-white/5 transition-colors text-slate-300"
-              >
-                <Menu className="h-6 w-6" />
-              </button>
+              <div className="flex items-center space-x-2">
+                 <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-[10px] font-bold uppercase rounded-full border border-blue-500/30">Field Mode</span>
+              </div>
             </div>
           )}
 
@@ -462,6 +489,168 @@ export default function Dashboard() {
                 variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
                 className="space-y-8"
               >
+                {/* Narrative AI Layer */}
+                <motion.div variants={fadeUp} className="p-5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 backdrop-blur-sm relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Bot className="w-16 h-16" />
+                  </div>
+                  <div className="flex items-start space-x-4">
+                    <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                      <Bot className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest mb-1">{t('ai.liveInsights')}</h3>
+                      <p className="text-white text-lg md:text-xl font-medium leading-relaxed">
+                        {summary.portfolioNarrative || t('overview.portfolioNarrative')}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Risk & Impact Matrix (Executive Decision Matrix) */}
+                <motion.div 
+                  variants={fadeUp} 
+                  className="glass-card p-6 border-indigo-500/20 relative overflow-hidden cursor-pointer"
+                  onClick={() => setStrategicDrilldown({ type: 'risk_matrix', data: summary?.riskMatrix })}
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
+                        <Radar className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-xl font-bold text-white uppercase tracking-tight">{t('esg.riskMatrix')}</h3>
+                    </div>
+                    <div className="flex items-center space-x-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                      <div className="flex items-center space-x-1">
+                        <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                        <span>{t('esg.highImpact')}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span>{t('esg.medium')}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="relative h-64 md:h-80 border-l border-b border-slate-700/50 mb-4 bg-slate-900/30 rounded-bl-xl overflow-hidden mt-6">
+                    {/* Grid Labels */}
+                    <div className="absolute left-3 top-3 text-[10px] font-black uppercase text-rose-500/80 tracking-tighter z-0">{t('esg.criticalThreat')}</div>
+                    <div className="absolute right-3 bottom-3 text-[10px] font-black uppercase text-emerald-500/80 tracking-tighter z-0">{t('esg.operationalTarget')}</div>
+                    
+                    {/* Axis Labels */}
+                    <div className="absolute -left-12 top-1/2 -rotate-90 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.impact')} →</div>
+                    <div className="absolute left-1/2 -bottom-8 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.probability')} →</div>
+
+                    {/* Matrix Quadrants (Made them more visible) */}
+                    <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-15 pointer-events-none">
+                      <div className="border-r border-b border-slate-700 bg-rose-500"></div>
+                      <div className="border-b border-slate-700 bg-amber-500"></div>
+                      <div className="border-r border-slate-700 bg-amber-500"></div>
+                      <div className="bg-emerald-500"></div>
+                    </div>
+
+                    {/* Matrix Axis Lines */}
+                    <div className="absolute inset-0 pointer-events-none border border-slate-700/30">
+                       <div className="absolute left-1/2 top-0 bottom-0 border-l border-dashed border-slate-600/50" />
+                       <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-slate-600/50" />
+                    </div>
+
+                    {/* Data Points */}
+                    {summary?.riskMatrix && summary.riskMatrix.length > 0 ? (
+                      summary.riskMatrix.map((point: any) => (
+                        <div
+                          key={point.id}
+                          className="absolute group z-20 animate-pulse-glow"
+                          style={{ left: `${point.probability}%`, bottom: `${point.impact}%` }}
+                        >
+                          <div className={`w-4 h-4 rounded-full shadow-lg cursor-pointer transform -translate-x-1/2 translate-y-1/2 transition-all hover:scale-150 border-2 border-slate-900 ${
+                            point.impact > 80 ? 'bg-rose-500 shadow-rose-500/50' : 
+                            point.impact > 60 ? 'bg-amber-500 shadow-amber-500/50' : 'bg-blue-500 shadow-blue-500/50'
+                          }`}
+                          onClick={(e) => { e.stopPropagation(); setStrategicDrilldown({ type: 'risk_matrix', data: point }); }}
+                          >
+                            <div className="absolute inset-0 w-full h-full rounded-full animate-ping opacity-75" style={{ backgroundColor: point.impact > 80 ? '#f43f5e' : point.impact > 60 ? '#f59e0b' : '#3b82f6' }}></div>
+                            
+                            {/* Point Label Text (always visible on desktop) */}
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 whitespace-nowrap text-[9px] font-bold text-slate-300 pointer-events-none hidden md:block mix-blend-screen drop-shadow-md">
+                              {point.label}
+                            </span>
+
+                            {/* Tooltip */}
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-2xl z-30">
+                              <p className="text-[11px] font-black text-white leading-tight mb-2 uppercase tracking-wide">{point.label}</p>
+                              <div className="flex flex-col gap-1 text-[9px]">
+                                <span className="text-slate-400">{t('esg.project')}: <b className="text-slate-200">{point.project}</b></span>
+                                <div className="flex justify-between mt-1 pt-1 border-t border-slate-800">
+                                  <span className="text-rose-400 font-bold">{t('esg.impact')}: {point.impact}%</span>
+                                  <span className="text-blue-400 font-bold">{t('esg.probability')}: {point.probability}%</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                       <div className="absolute inset-0 flex p-4 items-center justify-center text-slate-500 text-xs text-center z-10 animate-pulse">
+                         Analyzing risk dynamics & building operational impact model...<br/>Awaiting AI compilation.
+                       </div>
+                    )}
+                  </div>
+                </motion.div>
+
+                {/* Portfolio Health Summary Card (Premium) */}
+                <motion.div 
+                  variants={fadeUp} 
+                  className="grid grid-cols-1 md:grid-cols-4 gap-6 cursor-pointer"
+                  onClick={() => setStrategicDrilldown({ type: 'health', data: summary?.healthPillers })}
+                >
+                  <div className="md:col-span-1 glass-card bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border-blue-500/30 flex flex-col items-center justify-center py-8">
+                    <div className="relative w-24 h-24 mb-4">
+                      <svg className="w-full h-full transform -rotate-90">
+                        <circle cx="48" cy="48" r="40" className="text-slate-800" strokeWidth="8" stroke="currentColor" fill="transparent" />
+                        <circle cx="48" cy="48" r="40" className="text-blue-500" strokeWidth="8" strokeDasharray="251.2" strokeDashoffset={251.2 - (251.2 * 84) / 100} strokeLinecap="round" stroke="currentColor" fill="transparent" />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-black text-white">84</span>
+                        <span className="text-[8px] text-blue-300 font-bold uppercase tracking-widest leading-none">{t('esg.health')}</span>
+                      </div>
+                    </div>
+                    <p className="text-sm font-bold text-white uppercase tracking-widest">{t('esg.portfolioIndex')}</p>
+                    <p className="text-xs text-blue-400 font-medium">+2.4% {t('esg.vsLastWeek')}</p>
+                  </div>
+
+                  <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="glass-card p-4 border-emerald-500/20 flex flex-col justify-center">
+                      <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">{t('esg.safetyLeader')}</p>
+                      <p className="text-sm font-bold text-white truncate">สุขุมวิท ไซต์งาน A</p>
+                      <div className="mt-2 flex items-center space-x-2">
+                        <div className="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-emerald-500" style={{ width: '98%' }}></div>
+                        </div>
+                        <span className="text-xs font-bold text-emerald-400">98%</span>
+                      </div>
+                    </div>
+                    <div className="glass-card p-4 border-amber-500/20 flex flex-col justify-center">
+                      <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">{t('esg.marginAtRisk')}</p>
+                      <p className="text-sm font-bold text-white">฿1.2M ({t('esg.materials')})</p>
+                      <div className="mt-2 flex items-center space-x-2">
+                        <div className="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-amber-500" style={{ width: '15%' }}></div>
+                        </div>
+                        <span className="text-xs font-bold text-amber-400">{t('esg.low')}</span>
+                      </div>
+                    </div>
+                    <div className="glass-card p-4 border-blue-500/20 flex flex-col justify-center">
+                      <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-1">{t('esg.upcomingMilestones')}</p>
+                      <p className="text-sm font-bold text-white">12 {t('esg.in30Days')}</p>
+                      <div className="mt-2 flex items-center space-x-2 text-xs font-bold text-blue-400">
+                        <Activity className="w-3 h-3" />
+                        <span>74% {t('esg.onSchedule')}</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
                 {/* Traffic Light System (Billionaire Version) */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
@@ -537,6 +726,52 @@ export default function Dashboard() {
                     </div>
                   </motion.div>
 
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <div className="lg:col-span-2 space-y-8">
+                    {/* Macro Economic Intelligence & Headwinds */}
+                    <motion.div 
+                      variants={fadeUp} 
+                      className="glass-card p-6 border-blue-500/20 cursor-pointer"
+                      onClick={() => setStrategicDrilldown({ type: 'macro_intel', data: (cSuiteIntel || mockCSuiteIntel)?.macroHeadwinds })}
+                    >
+                      <div className="flex items-center space-x-3 mb-6">
+                        <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400">
+                          <Globe className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white uppercase tracking-tight">{t('esg.macroHeadwinds')}</h3>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        {[
+                          { label: t('esg.interestRateTrend'), val: '+50 bps forecast', trend: 'down', color: 'text-amber-400' },
+                          { label: t('esg.materialInflation'), val: '8.2% YoY', trend: 'up', color: 'text-rose-400' },
+                          { label: t('esg.laborCostIndex'), val: '112.5 (Rising)', trend: 'up', color: 'text-rose-400' },
+                          { label: t('esg.consumerSentiment'), val: t('esg.stable'), trend: 'side', color: 'text-blue-400' }
+                        ].map((m, i) => (
+                          <div key={i} className="p-3 rounded-xl bg-slate-900/50 border border-white/5">
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">{m.label}</p>
+                            <p className={`text-sm font-black ${m.color}`}>{m.val}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Competitive Insights */}
+                      <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/20 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                          <Search className="w-12 h-12 text-indigo-400" />
+                        </div>
+                        <h4 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-2 flex items-center">
+                          <Activity className="w-3 h-3 mr-1.5" />
+                          {t('esg.marketInsight')}
+                        </h4>
+                        <p className="text-sm text-slate-300 leading-relaxed font-medium">
+                          {t('esg.competitorInsight')}
+                        </p>
+                      </div>
+                    </motion.div>
+                  </div>
                 </div>
 
                 {/* Portfolio Financials & Predictive Graph */}
@@ -682,6 +917,31 @@ export default function Dashboard() {
                   </div>
                 </div>
 
+                {/* ESG Opportunity Insight (The raak.life style) */}
+                {esgSummary?.carbon?.opportunity && (
+                  <motion.div variants={fadeUp} className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 backdrop-blur-md relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                      <Leaf className="w-24 h-24 text-emerald-400" />
+                    </div>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-emerald-400 mb-2 flex items-center">
+                          {esgSummary.carbon.opportunity.title}
+                        </h3>
+                        <p className="text-slate-300 text-lg leading-relaxed mb-1">
+                          {esgSummary.carbon.opportunity.description}
+                        </p>
+                        <p className="text-emerald-400 font-bold text-xl">
+                          {esgSummary.carbon.opportunity.estimatedSavings}
+                        </p>
+                      </div>
+                      <button className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/20 transition-all hover:scale-105 active:scale-95 uppercase tracking-widest text-sm whitespace-nowrap">
+                        {esgSummary.carbon.opportunity.action}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
                 {/* AI Executive Summary Alert */}
                 <motion.div variants={fadeUp} className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-start space-x-4">
                   <Activity className="w-6 h-6 text-blue-400 shrink-0 mt-0.5" />
@@ -699,7 +959,7 @@ export default function Dashboard() {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-emerald-500/20 transition-colors pointer-events-none"></div>
                     <div className="relative z-10 flex items-center space-x-3 mb-2">
                       <div className="p-2 rounded-lg bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors"><Leaf className="h-5 w-5 text-emerald-400" /></div>
-                      <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">Environment</h3>
+                      <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">{t('esg.environment')}</h3>
                       <ChevronRight className="w-4 h-4 text-emerald-500/0 group-hover:text-emerald-500/100 ml-auto transition-all transform group-hover:translate-x-1" />
                     </div>
 
@@ -715,7 +975,7 @@ export default function Dashboard() {
                       {/* Target Progress Bar */}
                       <div className="space-y-1 mt-6">
                         <div className="flex justify-between text-xs text-slate-400 mb-1">
-                          <span>Progress</span>
+                          <span>{t('esg.progress')}</span>
                           <span>23 / 100 {t('esg.annualTarget')}</span>
                         </div>
                         <div className="w-full bg-slate-800 rounded-full h-2">
@@ -741,7 +1001,7 @@ export default function Dashboard() {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-amber-500/20 transition-colors pointer-events-none"></div>
                     <div className="relative z-10 flex items-center space-x-3 mb-2">
                       <div className="p-2 rounded-lg bg-amber-500/10 group-hover:bg-amber-500/20 transition-colors"><ShieldCheck className="h-5 w-5 text-amber-400" /></div>
-                      <h3 className="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">Social (Safety)</h3>
+                      <h3 className="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">{t('esg.socialSafety')}</h3>
                       <ChevronRight className="w-4 h-4 text-amber-500/0 group-hover:text-amber-500/100 ml-auto transition-all transform group-hover:translate-x-1" />
                     </div>
 
@@ -749,7 +1009,7 @@ export default function Dashboard() {
                       <div className="flex justify-between items-end mb-1">
                         <h4 className="text-3xl font-bold text-amber-400">78<span className="text-lg text-slate-500 ml-1">/100</span></h4>
                         <span className="text-xs font-bold text-rose-400 flex items-center bg-rose-500/10 px-2 py-1 rounded-full">
-                          <TrendingDown className="w-3 h-3 mr-1" /> +15% Risk
+                          <TrendingDown className="w-3 h-3 mr-1" /> +15% {t('esg.risk')}
                         </span>
                       </div>
                       <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">{t('esg.predictiveRiskScore')}</p>
@@ -759,11 +1019,11 @@ export default function Dashboard() {
                     <div className="grid grid-cols-2 gap-4 mt-auto">
                       <div className="pt-4 border-t border-slate-800">
                         <p className="text-xs text-slate-500 uppercase">{t('esg.nearMisses')}</p>
-                        <p className="text-xl font-bold text-white mt-1">3 <span className="text-[10px] text-slate-500 font-normal ml-1">This Mo.</span></p>
+                        <p className="text-xl font-bold text-white mt-1">3 <span className="text-[10px] text-slate-500 font-normal ml-1">{t('esg.thisMonth')}</span></p>
                       </div>
                       <div className="pt-4 border-t border-slate-800">
                         <p className="text-xs text-slate-500 uppercase">{t('esg.anomalyDetection')}</p>
-                        <p className="text-xl font-bold text-rose-400 mt-1">1 <span className="text-[10px] text-slate-500 font-normal ml-1">Active</span></p>
+                        <p className="text-xl font-bold text-rose-400 mt-1">1 <span className="text-[10px] text-slate-500 font-normal ml-1">{t('esg.active')}</span></p>
                       </div>
                     </div>
 
@@ -778,7 +1038,7 @@ export default function Dashboard() {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-violet-500/20 transition-colors pointer-events-none"></div>
                     <div className="relative z-10 flex items-center space-x-3 mb-2">
                       <div className="p-2 rounded-lg bg-violet-500/10 group-hover:bg-violet-500/20 transition-colors"><Users className="h-5 w-5 text-violet-400" /></div>
-                      <h3 className="text-lg font-bold text-white group-hover:text-violet-400 transition-colors">People & Gov</h3>
+                      <h3 className="text-lg font-bold text-white group-hover:text-violet-400 transition-colors">{t('esg.peopleGov')}</h3>
                       <ChevronRight className="w-4 h-4 text-violet-500/0 group-hover:text-violet-500/100 ml-auto transition-all transform group-hover:translate-x-1" />
                     </div>
 
@@ -826,18 +1086,109 @@ export default function Dashboard() {
                       <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-indigo-500/50 transition-colors flex items-start space-x-4 group cursor-pointer">
                         <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-400 shrink-0 group-hover:bg-emerald-500/30 transition-colors"><Leaf className="w-5 h-5" /></div>
                         <div>
-                          <h4 className="text-white text-sm font-semibold mb-1">Carbon Mitigation</h4>
+                          <h4 className="text-white text-sm font-semibold mb-1">{t('esg.carbonMitigation')}</h4>
                           <p className="text-sm text-slate-300 leading-relaxed">{t('esg.recConcrete')}</p>
                         </div>
                       </div>
                       <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-indigo-500/50 transition-colors flex items-start space-x-4 group cursor-pointer">
                         <div className="p-2 bg-amber-500/20 rounded-lg text-amber-400 shrink-0 group-hover:bg-amber-500/30 transition-colors"><AlertTriangle className="w-5 h-5" /></div>
                         <div>
-                          <h4 className="text-white text-sm font-semibold mb-1">Risk Prevention</h4>
+                          <h4 className="text-white text-sm font-semibold mb-1">{t('esg.riskPrevention')}</h4>
                           <p className="text-sm text-slate-300 leading-relaxed">{t('esg.recMachinery')}</p>
                         </div>
                       </div>
                     </div>
+                  </div>
+                </motion.div>
+
+                {/* Strategic Risk & Impact Matrix (Executive Decision Matrix) */}
+                <motion.div 
+                  variants={fadeUp} 
+                  className="glass-card p-6 border-indigo-500/20 relative overflow-hidden cursor-pointer mt-6"
+                  onClick={() => setStrategicDrilldown({ type: 'risk_matrix', data: summary?.riskMatrix })}
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
+                        <Radar className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-xl font-bold text-white uppercase tracking-tight">{t('esg.riskMatrix')}</h3>
+                    </div>
+                    <div className="flex items-center space-x-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                      <div className="flex items-center space-x-1">
+                        <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                        <span>{t('esg.highImpact')}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span>{t('esg.medium')}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="relative h-64 md:h-80 border-l border-b border-slate-700/50 mb-4 bg-slate-900/30 rounded-bl-xl overflow-hidden mt-6">
+                    {/* Grid Labels */}
+                    <div className="absolute left-3 top-3 text-[10px] font-black uppercase text-rose-500/80 tracking-tighter z-0">{t('esg.criticalThreat')}</div>
+                    <div className="absolute right-3 bottom-3 text-[10px] font-black uppercase text-emerald-500/80 tracking-tighter z-0">{t('esg.operationalTarget')}</div>
+                    
+                    {/* Axis Labels */}
+                    <div className="absolute -left-12 top-1/2 -rotate-90 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.impact')} →</div>
+                    <div className="absolute left-1/2 -bottom-8 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.probability')} →</div>
+
+                    {/* Matrix Quadrants (Made them more visible) */}
+                    <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-15 pointer-events-none">
+                      <div className="border-r border-b border-slate-700 bg-rose-500"></div>
+                      <div className="border-b border-slate-700 bg-amber-500"></div>
+                      <div className="border-r border-slate-700 bg-amber-500"></div>
+                      <div className="bg-emerald-500"></div>
+                    </div>
+
+                    {/* Matrix Axis Lines */}
+                    <div className="absolute inset-0 pointer-events-none border border-slate-700/30">
+                       <div className="absolute left-1/2 top-0 bottom-0 border-l border-dashed border-slate-600/50" />
+                       <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-slate-600/50" />
+                    </div>
+
+                    {/* Data Points */}
+                    {summary?.riskMatrix && summary.riskMatrix.length > 0 ? (
+                      summary.riskMatrix.map((point: any) => (
+                        <div
+                          key={point.id}
+                          className="absolute group z-20 animate-pulse-glow"
+                          style={{ left: `${point.probability}%`, bottom: `${point.impact}%` }}
+                        >
+                          <div className={`w-4 h-4 rounded-full shadow-lg cursor-pointer transform -translate-x-1/2 translate-y-1/2 transition-all hover:scale-150 border-2 border-slate-900 ${
+                            point.impact > 80 ? 'bg-rose-500 shadow-rose-500/50' : 
+                            point.impact > 60 ? 'bg-amber-500 shadow-amber-500/50' : 'bg-blue-500 shadow-blue-500/50'
+                          }`}
+                          onClick={(e) => { e.stopPropagation(); setStrategicDrilldown({ type: 'risk_matrix', data: point }); }}
+                          >
+                            <div className="absolute inset-0 w-full h-full rounded-full animate-ping opacity-75" style={{ backgroundColor: point.impact > 80 ? '#f43f5e' : point.impact > 60 ? '#f59e0b' : '#3b82f6' }}></div>
+                            
+                            {/* Point Label Text (always visible on desktop) */}
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 whitespace-nowrap text-[9px] font-bold text-slate-300 pointer-events-none hidden md:block mix-blend-screen drop-shadow-md">
+                              {point.label}
+                            </span>
+
+                            {/* Tooltip */}
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-2xl z-30">
+                              <p className="text-[11px] font-black text-white leading-tight mb-2 uppercase tracking-wide">{point.label}</p>
+                              <div className="flex flex-col gap-1 text-[9px]">
+                                <span className="text-slate-400">{t('esg.project')}: <b className="text-slate-200">{point.project}</b></span>
+                                <div className="flex justify-between mt-1 pt-1 border-t border-slate-800">
+                                  <span className="text-rose-400 font-bold">{t('esg.impact')}: {point.impact}%</span>
+                                  <span className="text-blue-400 font-bold">{t('esg.probability')}: {point.probability}%</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                       <div className="absolute inset-0 flex p-4 items-center justify-center text-slate-500 text-xs text-center z-10 animate-pulse">
+                         Analyzing risk dynamics & building operational impact model...<br/>Awaiting AI compilation.
+                       </div>
+                    )}
                   </div>
                 </motion.div>
 
@@ -859,7 +1210,7 @@ export default function Dashboard() {
                   <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400"><Target className="w-6 h-6" /></div>
                   <div>
                     <h2 className="text-2xl font-bold text-white tracking-tight">{t('nav.bidding')}</h2>
-                    <p className="text-sm text-slate-400 mt-1">AI-driven risk assessment and margin prediction for upcoming tenders.</p>
+                    <p className="text-sm text-slate-400 mt-1">{t('bidding.subtitle')}</p>
                   </div>
                 </div>
 
@@ -876,19 +1227,19 @@ export default function Dashboard() {
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                               <div>
-                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Client</p>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('bidding.client')}</p>
                                 <p className="text-sm text-slate-300 font-medium">{op.client}</p>
                               </div>
                               <div>
-                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Est. Value</p>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('bidding.estValue')}</p>
                                 <p className="text-sm text-slate-300 font-medium">{formatCurrency(op.estimatedBudget)}</p>
                               </div>
                               <div>
-                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Duration</p>
-                                <p className="text-sm text-slate-300 font-medium">{op.estimatedDuration} Months</p>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('bidding.duration')}</p>
+                                <p className="text-sm text-slate-300 font-medium">{op.estimatedDuration} {t('bidding.months')}</p>
                               </div>
                               <div>
-                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Historical Win Rate</p>
+                                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('bidding.winRate')}</p>
                                 <div className="flex items-center space-x-2">
                                   <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                     <div className="h-full bg-blue-500 rounded-full" style={{ width: `${op.historicalConfidence}%` }}></div>
@@ -898,7 +1249,7 @@ export default function Dashboard() {
                               </div>
                             </div>
                             <div className="mt-6 pt-6 border-t border-slate-800 focus-within:ring space-y-3">
-                              <p className="text-sm font-semibold text-slate-300 flex items-center"><Activity className="w-4 h-4 mr-2 text-indigo-400" /> Evaluation Factors</p>
+                              <p className="text-sm font-semibold text-slate-300 flex items-center"><Activity className="w-4 h-4 mr-2 text-indigo-400" /> {t('bidding.evalFactors')}</p>
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 {op.factors.map((factor, idx) => (
                                   <div key={idx} className={`p-3 rounded-lg border flex items-start space-x-3 ${factor.impact === 'positive' ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-rose-500/10 border-rose-500/20'}`}>
@@ -914,7 +1265,7 @@ export default function Dashboard() {
                           </div>
 
                           <div className="lg:w-72 bg-slate-900/80 rounded-2xl p-6 border border-slate-700/50 flex flex-col items-center text-center">
-                            <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6">AI Decision Matrix</h4>
+                            <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6">{t('bidding.aiDecisionMatrix')}</h4>
 
                             <div className="relative w-32 h-32 mb-6">
                               <svg className="w-full h-full transform -rotate-90">
@@ -923,12 +1274,12 @@ export default function Dashboard() {
                               </svg>
                               <div className="absolute inset-0 flex flex-col items-center justify-center">
                                 <span className="text-3xl font-black text-white leading-none">{op.aiRiskScore}</span>
-                                <span className="text-[10px] text-slate-500 font-bold uppercase mt-1">Risk Score</span>
+                                <span className="text-[10px] text-slate-500 font-bold uppercase mt-1">{t('bidding.riskScore')}</span>
                               </div>
                             </div>
 
                             <div className="w-full bg-slate-800 rounded-lg p-3 mb-6">
-                              <p className="text-xs text-slate-400 uppercase mb-1">Expected Margin</p>
+                              <p className="text-xs text-slate-400 uppercase mb-1">{t('bidding.expectedMargin')}</p>
                               <p className="text-2xl font-bold text-emerald-400">{op.aiExpectedMargin}%</p>
                             </div>
 
@@ -938,6 +1289,12 @@ export default function Dashboard() {
                               }`}>
                               {op.recommendation}
                             </div>
+
+                            {op.executeAction && (
+                              <button className="w-full mt-4 py-3 border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-xl font-bold text-xs uppercase tracking-widest transition-all">
+                                [ {op.executeAction} ]
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -945,143 +1302,6 @@ export default function Dashboard() {
                   ))}
                 </div>
 
-                {/* Bidding Drilldown Modal */}
-                <AnimatePresence>
-                  {selectedBidding && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
-                      onClick={() => setSelectedBidding(null)}
-                    >
-                      <motion.div
-                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 md:p-8 custom-scrollbar"
-                      >
-                        <button
-                          onClick={() => setSelectedBidding(null)}
-                          className="absolute top-4 right-4 p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-rose-500/20 transition-colors z-10"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-
-                        <div className="space-y-6">
-                          {/* Header */}
-                          <div className="flex items-center space-x-4 border-b border-slate-800 pb-4">
-                            <div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-400"><Target className="w-6 h-6" /></div>
-                            <div className="flex-1">
-                              <h2 className="text-2xl font-bold text-white">{selectedBidding.name}</h2>
-                              <div className="flex items-center space-x-3 mt-1 flex-wrap gap-y-1">
-                                <span className="font-mono text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-300">{selectedBidding.id}</span>
-                                <span className="text-slate-400 text-sm">{selectedBidding.client}</span>
-                                <span className="text-slate-400 text-sm">{formatCurrency(selectedBidding.estimatedBudget)}</span>
-                              </div>
-                            </div>
-                            <div className={`px-4 py-2 rounded-xl font-bold text-sm uppercase tracking-widest ${selectedBidding.recommendation === 'GO' ? 'bg-emerald-500 text-slate-900' :
-                              selectedBidding.recommendation === 'NO-GO' ? 'bg-rose-500 text-white' :
-                                'bg-amber-500 text-slate-900'
-                              }`}>{selectedBidding.recommendation}</div>
-                          </div>
-
-                          {/* KPI Row */}
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="glass-card p-4 text-center border-indigo-500/20">
-                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">AI Risk Score</p>
-                              <p className={`text-2xl font-bold ${selectedBidding.aiRiskScore > 50 ? 'text-rose-400' : 'text-emerald-400'}`}>{selectedBidding.aiRiskScore}/100</p>
-                            </div>
-                            <div className="glass-card p-4 text-center border-emerald-500/20">
-                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Expected Margin</p>
-                              <p className="text-2xl font-bold text-emerald-400">{selectedBidding.aiExpectedMargin}%</p>
-                            </div>
-                            <div className="glass-card p-4 text-center border-blue-500/20">
-                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Win Probability</p>
-                              <p className="text-2xl font-bold text-blue-400">{selectedBidding.historicalConfidence}%</p>
-                            </div>
-                            <div className="glass-card p-4 text-center border-violet-500/20">
-                              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Duration</p>
-                              <p className="text-2xl font-bold text-violet-400">{selectedBidding.estimatedDuration} Mo.</p>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Margin Simulation Chart */}
-                            <div className="glass-card p-6 border-emerald-500/20">
-                              <h3 className="text-white font-medium mb-4 flex items-center"><TrendingUp className="w-4 h-4 mr-2 text-emerald-400" /> Margin Simulation (6-Month Projection)</h3>
-                              <div className="h-56">
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart data={[
-                                    { m: 'M1', best: selectedBidding.aiExpectedMargin * 1.2, base: selectedBidding.aiExpectedMargin * 0.6, worst: selectedBidding.aiExpectedMargin * 0.3 },
-                                    { m: 'M2', best: selectedBidding.aiExpectedMargin * 1.15, base: selectedBidding.aiExpectedMargin * 0.7, worst: selectedBidding.aiExpectedMargin * 0.35 },
-                                    { m: 'M3', best: selectedBidding.aiExpectedMargin * 1.1, base: selectedBidding.aiExpectedMargin * 0.8, worst: selectedBidding.aiExpectedMargin * 0.4 },
-                                    { m: 'M4', best: selectedBidding.aiExpectedMargin * 1.08, base: selectedBidding.aiExpectedMargin * 0.88, worst: selectedBidding.aiExpectedMargin * 0.5 },
-                                    { m: 'M5', best: selectedBidding.aiExpectedMargin * 1.05, base: selectedBidding.aiExpectedMargin * 0.95, worst: selectedBidding.aiExpectedMargin * 0.6 },
-                                    { m: 'M6', best: selectedBidding.aiExpectedMargin * 1.0, base: selectedBidding.aiExpectedMargin, worst: selectedBidding.aiExpectedMargin * 0.7 }
-                                  ]}>
-                                    <defs>
-                                      <linearGradient id="colorBase" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                                      </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
-                                    <XAxis dataKey="m" stroke="#94a3b8" fontSize={12} tickLine={false} />
-                                    <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v.toFixed(0)}%`} />
-                                    <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} />
-                                    <Area type="monotone" dataKey="best" stroke="#10b981" strokeWidth={2} strokeDasharray="5 5" fill="none" name="Best Case" />
-                                    <Area type="monotone" dataKey="base" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorBase)" name="Base Case" />
-                                    <Area type="monotone" dataKey="worst" stroke="#f43f5e" strokeWidth={2} strokeDasharray="5 5" fill="none" name="Worst Case" />
-                                  </AreaChart>
-                                </ResponsiveContainer>
-                              </div>
-                            </div>
-
-                            {/* Competitor Landscape */}
-                            <div className="glass-card p-6 border-slate-700">
-                              <h3 className="text-white font-medium mb-4 flex items-center"><Users className="w-4 h-4 mr-2 text-indigo-400" /> Competitive Landscape</h3>
-                              <div className="space-y-4">
-                                {[
-                                  { name: 'Your Company', share: selectedBidding.historicalConfidence, color: 'bg-blue-500' },
-                                  { name: 'SCC Construction', share: Math.max(15, 85 - selectedBidding.historicalConfidence), color: 'bg-amber-500' },
-                                  { name: 'THAIBUILD Public', share: Math.max(10, 70 - selectedBidding.historicalConfidence), color: 'bg-rose-500' }
-                                ].map((c, i) => (
-                                  <div key={i}>
-                                    <div className="flex justify-between text-sm mb-1">
-                                      <span className={`${i === 0 ? 'text-white font-semibold' : 'text-slate-400'}`}>{c.name}</span>
-                                      <span className="text-white font-medium">{c.share}%</span>
-                                    </div>
-                                    <div className="w-full bg-slate-800 rounded-full h-2">
-                                      <div className={`${c.color} h-2 rounded-full ${i === 0 ? 'shadow-[0_0_8px_rgba(59,130,246,0.5)]' : ''}`} style={{ width: `${c.share}%` }}></div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Expanded Evaluation Factors */}
-                          <div className="glass-card p-6 border-indigo-500/20">
-                            <h3 className="text-white font-medium mb-4 flex items-center"><Activity className="w-4 h-4 mr-2 text-indigo-400" /> Full Evaluation Factor Breakdown</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                              {selectedBidding.factors.map((factor, idx) => (
-                                <div key={idx} className={`p-4 rounded-xl border flex items-start space-x-3 ${factor.impact === 'positive' ? 'bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10' : 'bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10'} transition-colors`}>
-                                  {factor.impact === 'positive' ? <CheckCircle2 className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" /> : <XCircle className="w-5 h-5 text-rose-400 mt-0.5 shrink-0" />}
-                                  <div>
-                                    <p className={`text-sm font-bold mb-1 ${factor.impact === 'positive' ? 'text-emerald-400' : 'text-rose-400'}`}>{factor.name}</p>
-                                    <p className="text-sm text-slate-400 leading-relaxed">{factor.description}</p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
 
               </motion.div>
             )}
@@ -1098,34 +1318,54 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                   {/* Macro Financials Grid (Left 2 columns) */}
                   <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-                    <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-purple-500 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 p-4 opacity-5"><DollarSign className="w-20 h-20" /></div>
+                    <motion.div 
+                      variants={fadeUp} 
+                      className="glass-card p-6 border-t-2 border-t-purple-500 relative overflow-hidden cursor-pointer hover:bg-white/5 transition-colors group"
+                      onClick={() => setStrategicDrilldown({ type: 'macro_intel', data: mockCSuiteIntel.macroHeadwinds })}
+                    >
+                      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity"><DollarSign className="w-20 h-20" /></div>
                       <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">{t('boardroom.totalRevenue')}</p>
                       <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.totalRevenue}</h3>
                       <p className="text-sm text-emerald-400 font-medium flex items-center"><TrendingUp className="w-4 h-4 mr-1" /> {mockCSuiteIntel.macroFinancials.revenueGrowth} {t('boardroom.yoy')}</p>
                     </motion.div>
-                    <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-blue-500 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 p-4 opacity-5"><TrendingUp className="w-20 h-20" /></div>
+                    <motion.div 
+                      variants={fadeUp} 
+                      className="glass-card p-6 border-t-2 border-t-blue-500 relative overflow-hidden cursor-pointer hover:bg-white/5 transition-colors group"
+                      onClick={() => setStrategicDrilldown({ type: 'macro_intel', data: mockCSuiteIntel.macroHeadwinds })}
+                    >
+                      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity"><TrendingUp className="w-20 h-20" /></div>
                       <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">{t('boardroom.ebitdaMargin')}</p>
                       <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.ebitdaMargin}</h3>
                       <p className="text-sm text-emerald-400 font-medium flex items-center"><TrendingUp className="w-4 h-4 mr-1" /> {mockCSuiteIntel.macroFinancials.ebitdaGrowth} {t('boardroom.expanding')}</p>
                     </motion.div>
-                    <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-emerald-500 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 p-4 opacity-5"><Activity className="w-20 h-20" /></div>
+                    <motion.div 
+                      variants={fadeUp} 
+                      className="glass-card p-6 border-t-2 border-t-emerald-500 relative overflow-hidden cursor-pointer hover:bg-white/5 transition-colors group"
+                      onClick={() => setStrategicDrilldown({ type: 'macro_intel', data: mockCSuiteIntel.macroHeadwinds })}
+                    >
+                      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity"><Activity className="w-20 h-20" /></div>
                       <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">{t('boardroom.cashRunway')}</p>
                       <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.cashRunway}</h3>
-                      <p className="text-sm text-slate-400 font-medium flex items-center"><CheckCircle2 className="w-4 h-4 mr-1" /> Optimal Liquidity</p>
+                      <p className="text-sm text-slate-400 font-medium flex items-center"><CheckCircle2 className="w-4 h-4 mr-1" /> {t('boardroom.optimalLiquidity')}</p>
                     </motion.div>
-                    <motion.div variants={fadeUp} className="glass-card p-6 border-t-2 border-t-rose-500 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 p-4 opacity-5"><AlertTriangle className="w-20 h-20" /></div>
+                    <motion.div 
+                      variants={fadeUp} 
+                      className="glass-card p-6 border-t-2 border-t-rose-500 relative overflow-hidden cursor-pointer hover:bg-white/5 transition-colors group"
+                      onClick={() => setStrategicDrilldown({ type: 'macro_intel', data: mockCSuiteIntel.macroHeadwinds })}
+                    >
+                      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity"><AlertTriangle className="w-20 h-20" /></div>
                       <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">{t('boardroom.debtToEquity')}</p>
                       <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.debtToEquity}</h3>
-                      <p className="text-sm text-emerald-400 font-medium flex items-center"><ShieldCheck className="w-4 h-4 mr-1" /> Healthy Leverage</p>
+                      <p className="text-sm text-emerald-400 font-medium flex items-center"><ShieldCheck className="w-4 h-4 mr-1" /> {t('boardroom.healthyLeverage')}</p>
                     </motion.div>
                   </div>
 
                   {/* Market Dominance Radar (Neon Donut Graph) */}
-                  <motion.div variants={fadeUp} className="glass-card p-6 flex flex-col relative overflow-hidden items-center justify-center">
+                  <motion.div 
+                    variants={fadeUp} 
+                    className="glass-card p-6 flex flex-col relative overflow-hidden items-center justify-center cursor-pointer hover:bg-white/5 transition-colors group"
+                    onClick={() => setStrategicDrilldown({ type: 'market_intel', data: mockCSuiteIntel.marketDominance })}
+                  >
                     <h3 className="text-lg font-bold text-white mb-2 w-full text-left flex items-center">
                       <Target className="w-5 h-5 mr-2 text-blue-400" /> {t('boardroom.marketCapture')}
                     </h3>
@@ -1152,17 +1392,108 @@ export default function Dashboard() {
                       </ResponsiveContainer>
                       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                         <span className="text-3xl font-black text-white drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">34%</span>
-                        <span className="text-[10px] text-blue-300 font-bold uppercase tracking-widest mt-1">Us</span>
+                        <span className="text-[10px] text-blue-300 font-bold uppercase tracking-widest mt-1">{t('boardroom.us')}</span>
                       </div>
                     </div>
                     <div className="w-full flex justify-between px-2 text-xs">
                       <div className="flex items-center text-slate-300"><div className="w-3 h-3 bg-blue-500 rounded-sm mr-2 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>TopBuild.AI</div>
-                      <div className="flex items-center text-slate-500"><div className="w-3 h-3 bg-slate-600 rounded-sm mr-2"></div>Legacy Corp</div>
+                      <div className="flex items-center text-slate-500"><div className="w-3 h-3 bg-slate-600 rounded-sm mr-2"></div>{t('boardroom.legacyCorp')}</div>
                     </div>
                   </motion.div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6">
+                  {/* Strategic Risk & Impact Matrix (Executive Decision Matrix) */}
+                  <motion.div 
+                    variants={fadeUp} 
+                    className="glass-card p-6 border-indigo-500/20 relative overflow-hidden cursor-pointer"
+                    onClick={() => setStrategicDrilldown({ type: 'risk_matrix', data: summary?.riskMatrix })}
+                  >
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
+                          <Radar className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white uppercase tracking-tight">{t('esg.riskMatrix')}</h3>
+                      </div>
+                      <div className="flex items-center space-x-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                        <div className="flex items-center space-x-1">
+                          <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                          <span>{t('esg.highImpact')}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                          <span>{t('esg.medium')}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="relative h-64 md:h-80 border-l border-b border-slate-700/50 mb-4 bg-slate-900/30 rounded-bl-xl overflow-hidden mt-6">
+                      {/* Grid Labels */}
+                      <div className="absolute left-3 top-3 text-[10px] font-black uppercase text-rose-500/80 tracking-tighter z-0">{t('esg.criticalThreat')}</div>
+                      <div className="absolute right-3 bottom-3 text-[10px] font-black uppercase text-emerald-500/80 tracking-tighter z-0">{t('esg.operationalTarget')}</div>
+                      
+                      {/* Axis Labels */}
+                      <div className="absolute -left-12 top-1/2 -rotate-90 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.impact')} →</div>
+                      <div className="absolute left-1/2 -bottom-8 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.probability')} →</div>
+
+                      {/* Matrix Quadrants (Made them more visible) */}
+                      <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-15 pointer-events-none">
+                        <div className="border-r border-b border-slate-700 bg-rose-500"></div>
+                        <div className="border-b border-slate-700 bg-amber-500"></div>
+                        <div className="border-r border-slate-700 bg-amber-500"></div>
+                        <div className="bg-emerald-500"></div>
+                      </div>
+
+                      {/* Matrix Axis Lines */}
+                      <div className="absolute inset-0 pointer-events-none border border-slate-700/30">
+                         <div className="absolute left-1/2 top-0 bottom-0 border-l border-dashed border-slate-600/50" />
+                         <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-slate-600/50" />
+                      </div>
+
+                      {/* Data Points */}
+                      {summary?.riskMatrix && summary.riskMatrix.length > 0 ? (
+                        summary.riskMatrix.map((point: any) => (
+                          <div
+                            key={point.id}
+                            className="absolute group z-20 animate-pulse-glow"
+                            style={{ left: `${point.probability}%`, bottom: `${point.impact}%` }}
+                          >
+                            <div className={`w-4 h-4 rounded-full shadow-lg cursor-pointer transform -translate-x-1/2 translate-y-1/2 transition-all hover:scale-150 border-2 border-slate-900 ${
+                              point.impact > 80 ? 'bg-rose-500 shadow-rose-500/50' : 
+                              point.impact > 60 ? 'bg-amber-500 shadow-amber-500/50' : 'bg-blue-500 shadow-blue-500/50'
+                            }`}
+                            onClick={(e) => { e.stopPropagation(); setStrategicDrilldown({ type: 'risk_matrix', data: point }); }}
+                            >
+                              <div className="absolute inset-0 w-full h-full rounded-full animate-ping opacity-75" style={{ backgroundColor: point.impact > 80 ? '#f43f5e' : point.impact > 60 ? '#f59e0b' : '#3b82f6' }}></div>
+                              
+                              {/* Point Label Text (always visible on desktop) */}
+                              <span className="absolute left-4 top-1/2 -translate-y-1/2 whitespace-nowrap text-[9px] font-bold text-slate-300 pointer-events-none hidden md:block mix-blend-screen drop-shadow-md">
+                                {point.label}
+                              </span>
+
+                              {/* Tooltip */}
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-2xl z-30">
+                                <p className="text-[11px] font-black text-white leading-tight mb-2 uppercase tracking-wide">{point.label}</p>
+                                <div className="flex flex-col gap-1 text-[9px]">
+                                  <span className="text-slate-400">{t('esg.project')}: <b className="text-slate-200">{point.project}</b></span>
+                                  <div className="flex justify-between mt-1 pt-1 border-t border-slate-800">
+                                    <span className="text-rose-400 font-bold">{t('esg.impact')}: {point.impact}%</span>
+                                    <span className="text-blue-400 font-bold">{t('esg.probability')}: {point.probability}%</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                         <div className="absolute inset-0 flex p-4 items-center justify-center text-slate-500 text-xs text-center z-10 animate-pulse">
+                           Analyzing risk dynamics & building operational impact model...<br/>Awaiting AI compilation.
+                         </div>
+                      )}
+                    </div>
+                  </motion.div>
+
                   {/* Strategic Directives */}
                   <motion.div variants={fadeUp} className="space-y-4">
                     <h3 className="text-2xl font-bold text-white mb-6 flex items-center bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">
@@ -1170,7 +1501,11 @@ export default function Dashboard() {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {mockCSuiteIntel.aiStrategicDirectives.map((directive) => (
-                        <div key={directive.id} className="glass-card flex flex-col relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
+                        <div 
+                            key={directive.id} 
+                            className="group bg-slate-900/40 border border-white/5 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all flex flex-col relative cursor-pointer"
+                            onClick={() => setStrategicDrilldown({ type: 'directive', data: directive })}
+                          >
                           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-[40px] -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
 
                           <div className="p-6 flex-1 relative z-10">
@@ -1186,9 +1521,16 @@ export default function Dashboard() {
                               <TrendingUp className="w-5 h-5 text-emerald-400 shrink-0" />
                               <span className="text-sm font-bold text-emerald-400 leading-tight">{directive.impact}</span>
                             </div>
-                            <button className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 hover:from-blue-500 to-indigo-600 hover:to-indigo-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.2)] hover:shadow-[0_0_30px_rgba(79,70,229,0.4)] flex items-center justify-center uppercase tracking-wider text-xs">
-                              <span className="mr-2">{directive.action}</span>
-                              <ChevronRight className="w-4 h-4 opacity-50" />
+                            <button 
+                              className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 hover:from-blue-500 to-indigo-600 hover:to-indigo-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.2)] hover:shadow-[0_0_30px_rgba(79,70,229,0.4)] flex items-center justify-center uppercase tracking-wider text-xs group/btn relative overflow-hidden"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setStrategicDrilldown({ type: 'directive', data: directive });
+                              }}
+                            >
+                              <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700"></div>
+                              <span className="mr-2 relative z-10">{directive.action}</span>
+                              <ChevronRight className="w-4 h-4 ml-1 opacity-50 group-hover/btn:opacity-100 transition-opacity relative z-10" />
                             </button>
                           </div>
                         </div>
@@ -1204,17 +1546,23 @@ export default function Dashboard() {
               <motion.div key="alerts" initial="hidden" animate="visible" exit="hidden" variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="space-y-6">
                 <div className="flex items-center space-x-3 mb-6">
                   <div className="p-2 bg-rose-500/20 rounded-lg text-rose-400"><AlertTriangle className="w-6 h-6" /></div>
-                  <h2 className="text-2xl font-bold text-white tracking-tight">Active Mitigation Center</h2>
+                  <h2 className="text-2xl font-bold text-white tracking-tight">{t('alerts.mitigationCenter')}</h2>
                 </div>
 
                 {projects.flatMap(p => p.alerts.map(a => ({ ...a, projectName: p.name }))).map((alert, idx) => (
                   <motion.div variants={fadeUp} key={idx} className="glass-card flex flex-col md:flex-row gap-6 p-6 border-l-4 border-l-rose-500">
                     <div className="flex-1">
-                      <h4 className="text-rose-400 font-bold uppercase tracking-wider text-xs mb-1">Critical Alert - {alert.projectName}</h4>
+                      <div className="flex items-center space-x-3 mb-2">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-tighter border ${alert.priority === 'high' ? 'bg-rose-500/20 text-rose-400 border-rose-500/30 shadow-[0_0_10px_rgba(225,29,72,0.2)]' : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                          }`}>
+                          {alert.priority === 'high' ? t('alerts.highPriority') : t('alerts.mediumPriority')}
+                        </span>
+                        <h4 className="text-slate-500 font-bold uppercase tracking-wider text-[10px]">{alert.projectName}</h4>
+                      </div>
                       <p className="text-white text-lg font-medium mb-3">{alert.message}</p>
                       <div className="flex items-center space-x-2 text-xs text-slate-400">
-                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                        <span>Live AI Monitoring Active</span>
+                        <span className={`w-2 h-2 rounded-full ${alert.priority === 'high' ? 'bg-rose-500 animate-pulse' : 'bg-amber-500'}`}></span>
+                        <span>{alert.priority === 'high' ? t('alerts.liveMonitoring') : t('alerts.activeMonitoring')}</span>
                       </div>
                     </div>
                     <div className="md:w-5/12 bg-slate-900/50 p-4 rounded-xl border border-white/5 relative overflow-hidden group">
@@ -1222,10 +1570,10 @@ export default function Dashboard() {
                       <div className="relative z-10">
                         <div className="flex items-center space-x-2 mb-3 text-blue-400">
                           <Bot className="w-4 h-4" />
-                          <span className="text-xs font-bold uppercase tracking-wider">AI Mitigation Strategy</span>
+                          <span className="text-xs font-bold uppercase tracking-wider">{t('alerts.aiMitigation')}</span>
                         </div>
                         <p className="text-sm text-slate-300 leading-relaxed">
-                          กำลังประเมินสถานการณ์ร่วมกับ OpenClaw Engine... แนะนำให้เพิ่มงบประมาณเผื่อฉุกเฉิน 15% และจัดสรรทีมงานทดแทนจากโครงการใกล้เคียงเพื่อลดผลกระทบต่อแผนงานหลัก
+                          {t('alerts.mitigationStrategy')}
                         </p>
                       </div>
                     </div>
@@ -1235,8 +1583,8 @@ export default function Dashboard() {
                 {projects.flatMap(p => p.alerts).length === 0 && (
                   <motion.div variants={fadeUp} className="glass-card py-20 text-center border-t-2 border-t-emerald-500">
                     <ShieldCheck className="w-16 h-16 text-emerald-500/50 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-white mb-2">Systems Nominal</h3>
-                    <p className="text-slate-400">No critical alerts detected across the portfolio.</p>
+                    <h3 className="text-2xl font-bold text-white mb-2">{t('alerts.systemsNominal')}</h3>
+                    <p className="text-slate-400">{t('alerts.noAlerts')}</p>
                   </motion.div>
                 )}
               </motion.div>
@@ -1297,12 +1645,12 @@ export default function Dashboard() {
                     <p className="text-2xl font-bold text-emerald-400">{selectedProject.predictedProfit}%</p>
                   </div>
                   <div className="glass-card p-4 text-center border-blue-500/20">
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.safetyScore')}</p>
-                    <p className="text-2xl font-bold text-blue-400">{selectedProject.esg?.safetyScore || 92}/100</p>
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.roi')}</p>
+                    <p className="text-2xl font-bold text-blue-400">18.4%</p>
                   </div>
                   <div className="glass-card p-4 text-center border-violet-500/20">
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.satisfaction')}</p>
-                    <p className="text-2xl font-bold text-violet-400">{selectedProject.esg?.employeeSatisfaction || 4.2}/5</p>
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.cashFlow')}</p>
+                    <p className="text-2xl font-bold text-violet-400">{t('project.strong')}</p>
                   </div>
                   <div className="glass-card p-4 text-center border-emerald-500/20">
                     <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('project.carbon')}</p>
@@ -1622,6 +1970,376 @@ export default function Dashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Strategic Intelligence Drilldown Modal (Boardroom / Overview) */}
+      <AnimatePresence>
+        {strategicDrilldown && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0B1120]/90 backdrop-blur-xl"
+            onClick={() => setStrategicDrilldown(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 30 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 30 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-6xl max-h-[92vh] overflow-y-auto bg-slate-900 border border-white/10 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] p-6 md:p-10 custom-scrollbar"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setStrategicDrilldown(null)}
+                className="absolute top-6 right-6 p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-rose-500/20 transition-all z-50"
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              <div className="space-y-8">
+                
+                {/* 1. STRATEGIC DIRECTIVE DRILLDOWN */}
+                {strategicDrilldown.type === 'directive' && (
+                  <div className="space-y-8">
+                    {/* Header: Directive Identity */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-8">
+                      <div className="flex items-center space-x-5">
+                        <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                          <Bot className="w-8 h-8 text-white" />
+                        </div>
+                        <div>
+                          <span className="px-3 py-1 bg-indigo-500/20 text-indigo-300 text-[10px] font-black rounded-full uppercase tracking-[0.2em] mb-2 inline-block">
+                            {strategicDrilldown.data.category}
+                          </span>
+                          <h2 className="text-3xl font-bold text-white tracking-tight leading-tight">{strategicDrilldown.data.directive}</h2>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">{t('boardroom.predictedRoi')}</span>
+                        <div className="px-5 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center space-x-3">
+                          <TrendingUp className="w-5 h-5 text-emerald-400" />
+                          <span className="text-xl font-black text-emerald-400">{strategicDrilldown.data.impact}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                      {/* Left: Logic & Multi-Project Mapping */}
+                      <div className="lg:col-span-2 space-y-6">
+                        <div className="glass-card p-8 border-white/5 bg-white/[0.02]">
+                          <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                            <Radar className="w-5 h-5 mr-3 text-indigo-400" /> {t('directives.directiveRationale')}
+                          </h3>
+                          <p className="text-slate-300 leading-relaxed text-lg font-light italic">
+                            "{strategicDrilldown.data?.rationale}"
+                          </p>
+                          <div className="mt-8 pt-8 border-t border-white/5 grid grid-cols-2 gap-6">
+                            <div>
+                              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3">{t('directives.targetProject')}</p>
+                              <div className="flex items-center space-x-3 text-white font-medium">
+                                <Building2 className="w-4 h-4 text-blue-400" />
+                                <span>{strategicDrilldown.data?.id === 2 ? 'The Riverfront Condo' : 'All Portfolio Assets'}</span>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-3">{t('directives.confidenceLevel')}</p>
+                              <div className="flex items-center space-x-3">
+                                <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                  <div className="h-full bg-blue-500" style={{ width: '92%' }}></div>
+                                </div>
+                                <span className="text-sm font-bold text-blue-400">92%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Financial Benchmarking */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {[
+                            { label: t('directives.npv'), val: '฿124M', icon: DollarSign, color: 'text-indigo-400' },
+                            { label: t('directives.irr'), val: '24.2%', icon: TrendingUp, color: 'text-emerald-400' },
+                            { label: t('directives.payback'), val: '14 Mo', icon: Activity, color: 'text-blue-400' },
+                          ].map((stat, i) => (
+                            <div key={i} className="glass-card p-5 border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-colors">
+                              <stat.icon className={`w-4 h-4 mb-3 ${stat.color}`} />
+                              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">{stat.label}</p>
+                              <p className="text-xl font-bold text-white">{stat.val}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Right: Simulation & Final Action */}
+                      <div className="space-y-6">
+                        <div className="glass-card p-6 border-indigo-500/20 bg-indigo-500/5">
+                          <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-widest flex items-center">
+                            <Zap className="w-4 h-4 mr-2 text-yellow-400" /> {t('directives.directiveModeling')}
+                          </h3>
+                          <div className="h-48">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={[
+                                { x: 'Q1', y: 10 }, { x: 'Q2', y: 35 }, { x: 'Q3', y: 65 }, { x: 'Q4', y: 100 }
+                              ]}>
+                                <Area type="monotone" dataKey="y" stroke="#6366f1" fill="#6366f120" strokeWidth={3} />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-4 leading-relaxed">
+                            {t('directives.impactForecast')}: Implementation triggers an immediate liquidity delta of +฿45M within 30 days.
+                          </p>
+                        </div>
+                        <button 
+                          className={`w-full py-5 px-6 rounded-2xl transition-all uppercase tracking-[0.2em] text-sm flex items-center justify-center group overflow-hidden relative font-black shadow-lg ${
+                            executing === strategicDrilldown.data?.id 
+                              ? 'bg-emerald-500 text-white' 
+                              : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-indigo-500/30 hover:shadow-indigo-500/50'
+                          }`}
+                          onClick={() => {
+                            if (executing) return;
+                            setExecuting(strategicDrilldown.data?.id);
+                            setTimeout(() => {
+                              setExecuting(null);
+                              setStrategicDrilldown(null);
+                            }, 2000);
+                          }}
+                        >
+                          <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                          {executing === strategicDrilldown.data?.id ? (
+                            <span className="flex items-center">
+                              <CheckCircle2 className="w-5 h-5 mr-3 animate-bounce" /> EXECUTING AGENT...
+                            </span>
+                          ) : (
+                            strategicDrilldown.data?.action
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. MACRO INTELLIGENCE DRILLDOWN */}
+                {strategicDrilldown.type === 'macro_intel' && (
+                  <div className="space-y-8">
+                    <div className="flex items-center space-x-5 border-b border-white/5 pb-8">
+                      <div className="h-16 w-16 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400">
+                        <Globe className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-bold text-white tracking-tight">{t('directives.marketDeepDive')}</h2>
+                        <p className="text-slate-400 mt-1 uppercase text-xs font-bold tracking-widest">{t('directives.protocolActive')}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      <div className="glass-card p-8 border-white/5">
+                        <h3 className="text-lg font-bold text-white mb-6 underline decoration-blue-500/30 underline-offset-8 decoration-2">{t('directives.historicalTrends')}</h3>
+                        <div className="h-72">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={[
+                              { m: 'Jan', val: 4.5 }, { m: 'Feb', val: 4.6 }, { m: 'Mar', val: 4.8 }, { m: 'Apr', val: 5.2 }, { m: 'May', val: 5.1 }, { m: 'Jun', val: 5.4 }
+                            ]}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" />
+                              <XAxis dataKey="m" stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
+                              <YAxis stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
+                              <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '12px' }} />
+                              <Area type="monotone" dataKey="val" stroke="#3b82f6" fill="#3b82f620" strokeWidth={4} />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                      <div className="space-y-6">
+                        <div className="glass-card p-6 border-white/5 bg-slate-800/20">
+                          <h3 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4">{t('directives.executiveSummary')}</h3>
+                          <p className="text-slate-300 leading-relaxed italic">
+                            "{mockCSuiteIntel.competitiveInsight.marketShift}"
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="p-6 bg-slate-800/40 rounded-3xl border border-white/5">
+                            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">{t('directives.volatilityScore')}</p>
+                            <p className="text-2xl font-black text-rose-400">High (8.4)</p>
+                          </div>
+                          <div className="p-6 bg-slate-800/40 rounded-3xl border border-white/5">
+                            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">{t('directives.confidenceLevel')}</p>
+                            <p className="text-2xl font-black text-emerald-400">95%</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2.5 MARKET INTELLIGENCE DRILLDOWN */}
+                {strategicDrilldown.type === 'market_intel' && (
+                  <div className="space-y-8">
+                    <div className="flex items-center space-x-5 border-b border-white/5 pb-8">
+                      <div className="h-16 w-16 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                        <Target className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-bold text-white tracking-tight">{t('boardroom.marketCapture')}</h2>
+                        <p className="text-slate-400 mt-1 uppercase text-xs font-bold tracking-widest">{t('directives.competitiveBenchmark')}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                      {/* Market Share Table */}
+                      <div className="lg:col-span-2 glass-card p-8 border-white/5">
+                        <h3 className="text-lg font-bold text-white mb-6 underline decoration-indigo-500/30 underline-offset-8 decoration-2">{t('directives.peerComparison')}</h3>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-4 text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] pb-2 border-b border-white/5">
+                            <div className="col-span-1">{t('directives.competitor')}</div>
+                            <div className="text-right">{t('directives.marketShare')}</div>
+                            <div className="text-right">{t('directives.growth')}</div>
+                            <div className="text-right">{t('directives.winRate')}</div>
+                          </div>
+                          {mockCSuiteIntel.marketDominance.map((peer, idx) => (
+                            <div key={idx} className={`grid grid-cols-4 py-4 items-center ${idx === 0 ? 'bg-indigo-500/5 -mx-4 px-4 rounded-xl border border-indigo-500/20' : 'border-b border-white/5'}`}>
+                              <div className="col-span-1 flex items-center">
+                                <div className={`w-3 h-3 rounded-full mr-3 ${idx === 0 ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'bg-slate-700'}`}></div>
+                                <span className={`font-bold ${idx === 0 ? 'text-white' : 'text-slate-300'}`}>{peer.competitor}</span>
+                              </div>
+                              <div className="text-right font-mono text-white">{peer.marketShare}%</div>
+                              <div className={`text-right font-mono ${peer.growth > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>{peer.growth > 0 ? '+' : ''}{peer.growth}%</div>
+                              <div className="text-right font-mono text-blue-400">{peer.winRate}%</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* AI Tactical Insight */}
+                      <div className="space-y-6">
+                        <div className="glass-card p-6 border-indigo-500/20 bg-indigo-500/5">
+                          <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest mb-4 flex items-center">
+                            <Bot className="w-4 h-4 mr-2" /> {t('directives.vulnerabilityScan')}
+                          </h3>
+                          <p className="text-white text-base font-light italic leading-relaxed">
+                            "{mockCSuiteIntel.competitiveInsight.vulnerability}"
+                          </p>
+                        </div>
+                        <div className="p-6 bg-slate-800/40 rounded-3xl border border-white/5">
+                          <h4 className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-4">{t('directives.growthProjection')}</h4>
+                          <div className="h-40">
+                             <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={mockCSuiteIntel.marketDominance}>
+                                   <Bar dataKey="growth" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                                   <XAxis dataKey="competitor" hide />
+                                </BarChart>
+                             </ResponsiveContainer>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. PORTFOLIO HEALTH DRILLDOWN */}
+                {strategicDrilldown.type === 'health' && (
+                  <div className="space-y-8">
+                    <div className="flex items-center space-x-5 border-b border-white/5 pb-8">
+                      <div className="h-16 w-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <ShieldCheck className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-bold text-white tracking-tight">{t('directives.healthBreakdown')}</h2>
+                        <p className="text-slate-400 mt-1 uppercase text-xs font-bold tracking-widest">{t('directives.integrityProtocol')}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                      <div className="flex justify-center h-[400px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={summary?.healthPillers || []}
+                              dataKey="score"
+                              nameKey="name"
+                              innerRadius={80}
+                              outerRadius={120}
+                              paddingAngle={5}
+                            >
+                              {(summary?.healthPillers || []).map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={index === 0 ? '#3b82f6' : index === 1 ? '#10b981' : index === 2 ? '#f43f5e' : '#8b5cf6'} />
+                              ))}
+                            </Pie>
+                            <RechartsTooltip />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="glass-card p-8 border-emerald-500/20 bg-emerald-500/5">
+                           <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-widest mb-4 flex items-center">
+                             <Bot className="w-4 h-4 mr-2" /> {t('directives.aiAuditor')}
+                           </h3>
+                           <p className="text-white text-lg font-light leading-relaxed">
+                             {summary?.portfolioNarrative}
+                           </p>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2">
+                           {(summary?.healthPillers || []).map((p, i) => (
+                             <div key={i} className="flex items-center justify-between p-4 bg-white/[0.02] rounded-2xl border border-white/5">
+                               <span className="text-slate-200 font-medium">{t(`directives.${p.name.toLowerCase()}`)}</span>
+                               <div className="flex items-center space-x-3">
+                                  <span className={`text-xs font-bold uppercase ${p.score > 80 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                    {p.score > 90 ? t('directives.excellent') : p.score > 80 ? t('directives.stable') : t('directives.atrisk')}
+                                  </span>
+                                  <span className="text-white font-black">{p.score}%</span>
+                               </div>
+                             </div>
+                           ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. RISK MATRIX DRILLDOWN */}
+                {strategicDrilldown.type === 'risk_matrix' && (
+                  <div className="space-y-8">
+                    <div className="flex items-center space-x-5 border-b border-white/5 pb-8">
+                      <div className="h-16 w-16 rounded-2xl bg-rose-500/20 flex items-center justify-center text-rose-400">
+                        <AlertTriangle className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-bold text-white tracking-tight">{t('directives.mitigationDetail')}</h2>
+                        <p className="text-slate-400 mt-1 uppercase text-xs font-bold tracking-widest">{t('alerts.liveMonitor')}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      <div className="glass-card p-6 border-white/10 bg-slate-800/40">
+                         <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-white font-bold">{strategicDrilldown.data?.label}</h3>
+                            <span className="px-3 py-1 bg-rose-500/20 text-rose-400 text-[10px] font-black rounded-full uppercase tracking-widest">{t('directives.atrisk')}</span>
+                         </div>
+                         <div className="space-y-6">
+                            <div>
+                               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">{t('directives.riskSeverity')}</p>
+                               <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden">
+                                  <div className="h-full bg-rose-500" style={{ width: `${strategicDrilldown.data?.impact}%` }}></div>
+                               </div>
+                            </div>
+                            <div>
+                               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">{t('directives.targetProject')}</p>
+                               <p className="text-white font-bold flex items-center"><Building2 className="w-4 h-4 mr-2 text-blue-400" /> {strategicDrilldown.data?.project}</p>
+                            </div>
+                         </div>
+                      </div>
+                      <div className="glass-card p-8 border-blue-500/20 bg-blue-500/5 flex flex-col justify-center">
+                         <h3 className="text-lg font-bold text-blue-400 mb-4 flex items-center"><Zap className="w-5 h-5 mr-3" /> AI Tactical Mitigation</h3>
+                         <p className="text-white text-xl font-light italic leading-relaxed">
+                            "{strategicDrilldown.data?.mitigation}"
+                         </p>
+                         <button className="mt-8 py-4 bg-white text-slate-900 font-black rounded-2xl uppercase tracking-widest text-xs hover:bg-slate-200 transition-all">Close Mitigated Thread</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Bidding Opportunity Drilldown Modal */}
       <AnimatePresence>
@@ -1651,7 +2369,7 @@ export default function Dashboard() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                   <div className="flex items-center space-x-4">
-                    <div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-400">
+                      <div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-400">
                       <Building2 className="w-6 h-6" />
                     </div>
                     <div>
@@ -1694,12 +2412,12 @@ export default function Dashboard() {
                     <div className="h-64">
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={[
-                          { month: 'M1', best: 18, base: 17, worst: 15 },
-                          { month: 'M2', best: 19, base: 17.5, worst: 14 },
-                          { month: 'M3', best: 20, base: 18, worst: 13 },
-                          { month: 'M4', best: 21, base: 18.2, worst: 12 },
-                          { month: 'M5', best: 22, base: 18.2, worst: 11 },
-                          { month: 'M6', best: 22.5, base: 18.5, worst: 10.5 },
+                          { month: 'M1', best: selectedBidding.aiExpectedMargin * 1.2, base: selectedBidding.aiExpectedMargin * 0.6, worst: selectedBidding.aiExpectedMargin * 0.3 },
+                          { month: 'M2', best: selectedBidding.aiExpectedMargin * 1.15, base: selectedBidding.aiExpectedMargin * 0.7, worst: selectedBidding.aiExpectedMargin * 0.35 },
+                          { month: 'M3', best: selectedBidding.aiExpectedMargin * 1.1, base: selectedBidding.aiExpectedMargin * 0.8, worst: selectedBidding.aiExpectedMargin * 0.4 },
+                          { month: 'M4', best: selectedBidding.aiExpectedMargin * 1.08, base: selectedBidding.aiExpectedMargin * 0.88, worst: selectedBidding.aiExpectedMargin * 0.5 },
+                          { month: 'M5', best: selectedBidding.aiExpectedMargin * 1.05, base: selectedBidding.aiExpectedMargin * 0.95, worst: selectedBidding.aiExpectedMargin * 0.6 },
+                          { month: 'M6', best: selectedBidding.aiExpectedMargin * 1.0, base: selectedBidding.aiExpectedMargin, worst: selectedBidding.aiExpectedMargin * 0.7 }
                         ]}>
                           <defs>
                             <linearGradient id="colorBase" x1="0" y1="0" x2="0" y2="1">
@@ -1782,6 +2500,45 @@ export default function Dashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating Action Button (FAB) - Mobile Only */}
+      {isMobile && (
+        <button className="md:hidden fixed z-40 bottom-24 right-4 w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full shadow-[0_0_30px_rgba(59,130,246,0.5)] flex items-center justify-center text-white focus:outline-none focus:ring-4 focus:ring-blue-500/30 overflow-hidden group">
+           <Camera className="w-6 h-6 transition-transform group-hover:scale-110" />
+           <span className="sr-only">{t('field.captureHazard')}</span>
+           <div className="absolute inset-0 bg-white/20 scale-0 group-active:scale-100 transition-transform rounded-full"></div>
+        </button>
+      )}
+
+      {/* Mobile Bottom Navigation - Sticky */}
+      {isMobile && (
+        <div className="md:hidden fixed bottom-0 left-0 w-full z-50 bg-slate-900/90 backdrop-blur-xl border-t border-white/10 pb-env-safe">
+          <div className="flex items-center justify-around h-20 px-2 pb-2">
+            {[
+              { id: 'c-suite', icon: Briefcase, label: 'Board' },
+              { id: 'overview', icon: Activity, label: 'Overview' },
+              { id: 'projects', icon: Building2, label: 'Field' },
+              { id: 'alerts', icon: AlertTriangle, label: 'Alerts' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${activeTab === item.id ? 'text-blue-400' : 'text-slate-500'}`}
+              >
+                <div className={`p-1.5 rounded-xl transition-all ${activeTab === item.id ? 'bg-blue-500/20 shadow-inner overflow-hidden relative' : ''}`}>
+                  <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'relative z-10' : ''}`} />
+                  {activeTab === item.id && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-400 blur-[2px]"></div>}
+                </div>
+                <span className="text-[10px] font-black tracking-widest uppercase">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Padding to allow content scrolling behind the bottom nav on mobile */}
+      {isMobile && <div className="h-24 shrink-0 md:hidden" />}
+
     </div>
   );
 }

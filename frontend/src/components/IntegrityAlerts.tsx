@@ -19,7 +19,8 @@ export default function IntegrityAlerts() {
         // Mock polling for critical integrity alerts
         const fetchAlerts = async () => {
             try {
-                const response = await axios.get('/api/alerts');
+                const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+                const response = await axios.get(`${API_BASE}/api/alerts`);
                 const criticalAlerts = response.data
                     .filter((a: any) => a.type === 'danger')
                     .slice(0, 1) // Only show the most critical one as popup

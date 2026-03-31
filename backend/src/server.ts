@@ -27,7 +27,13 @@ const projects = [
     esg: {
       carbonReduction: 15,
       safetyScore: 98,
-      employeeSatisfaction: 4.5
+      employeeSatisfaction: 4.5,
+      potentialGreenLoan: {
+        unlocked: false,
+        targetTons: 23,
+        rateReduction: 0.3,
+        estimatedSavings: 450000
+      }
     }
   },
   {
@@ -40,12 +46,18 @@ const projects = [
     predictedProfit: 8.2,
     actualProfit: 6.5,
     alerts: [
-      { type: 'warning', message: 'ต้นทุนวัสดุเพิ่มขึ้น 5% จากแผน', timestamp: '2026-02-27' }
+      { type: 'warning', message: 'ต้นทุนเหล็กแนวโน้มสูงขึ้น: Margin at Risk 1.2M THB', timestamp: '2026-02-27', priority: 'medium' }
     ],
     esg: {
       carbonReduction: 8,
       safetyScore: 92,
-      employeeSatisfaction: 4.2
+      employeeSatisfaction: 4.2,
+      potentialGreenLoan: {
+        unlocked: false,
+        targetTons: 15,
+        rateReduction: 0.25,
+        estimatedSavings: 600000
+      }
     }
   },
   {
@@ -58,13 +70,14 @@ const projects = [
     predictedProfit: 3.5,
     actualProfit: null,
     alerts: [
-      { type: 'danger', message: 'กำลังคนไม่เพียงพอสำหรับ Timeline', timestamp: '2026-02-28' },
-      { type: 'warning', message: 'Client มีประวัติจ่ายเงินล่าชา 20%', timestamp: '2026-02-25' }
+      { type: 'danger', message: '🚨 Safety Alert: โครงสร้างชั่วคราวไซต์งาน C ไม่เสถียร (IoT Detection)', timestamp: '2026-02-28', priority: 'high' },
+      { type: 'warning', message: 'Client Liquidity Risk detected: 20% latency in accounts payable', timestamp: '2026-02-25', priority: 'medium' }
     ],
     esg: {
       carbonReduction: 0,
       safetyScore: 0,
-      employeeSatisfaction: 0
+      employeeSatisfaction: 0,
+      potentialGreenLoan: null
     }
   }
 ];
@@ -100,11 +113,25 @@ app.get('/api/dashboard/summary', (req, res) => {
     totalBudget,
     avgProfit: avgProfit.toFixed(2),
     alerts,
+    portfolioNarrative: "Margin at Risk: 3 ปัจจัยที่อาจกระทบ Q4 - ต้นทุนวัสดุผันผวน, ความเสี่ยงด้านการเบิกจ่ายภาครัฐ, และอุบัติเหตุหน้างานที่โครงการเชียงใหม่",
     trafficLight: {
       green: projects.filter(p => p.riskLevel === 'green').length,
       yellow: projects.filter(p => p.riskLevel === 'yellow').length,
       red: projects.filter(p => p.riskLevel === 'red').length,
-    }
+    },
+    riskMatrix: [
+      { id: 1, label: 'Material Price Spike', probability: 85, impact: 90, project: 'EEC Rayong', mitigation: 'Hedge steel prices immediately and authorize alternative sourcing.' },
+      { id: 2, label: 'Safety Anomaly', probability: 20, impact: 95, project: 'Chiang Mai Hospital', mitigation: 'Deploy IoT safety sensors and conduct immediate on-site safety audit.' },
+      { id: 3, label: 'Labor shortage Q4', probability: 65, impact: 70, project: 'Portfolio-wide', mitigation: 'Initiate recruitment drive for MEP specialists and increase sub-con rates by 5%.' },
+      { id: 4, label: 'Payment Delay Risk', probability: 40, impact: 80, project: 'Sukhumvit Condo', mitigation: 'Engage legal Dept. for pre-emptive payment notification and credit review.' },
+    ],
+    healthPillers: [
+      { name: 'Financial', score: 82, status: 'Stable' },
+      { name: 'Safety', score: 98, status: 'Excellent' },
+      { name: 'Timeline', score: 74, status: 'At Risk' },
+      { name: 'Resource', score: 88, status: 'Optimal' },
+      { name: 'Sentiment', score: 80, status: 'Favorable' },
+    ]
   });
 });
 
@@ -206,12 +233,19 @@ app.get('/api/esg/summary', (req, res) => {
     carbon: {
       totalReduction: activeProjects.reduce((s, p) => s + p.esg.carbonReduction, 0),
       target: 50,
-      unit: 'tons'
+      unit: 'tons',
+      opportunity: {
+        title: "🌿 ESG Opportunity: Unlock Green Loan Rate -0.3%",
+        description: "หากลดคาร์บอนเพิ่มอีก 8 ตันที่โครงการสุขุมวิท จะช่วยปลดล็อกอัตราดอกเบี้ย Green Loan เกรด A",
+        estimatedSavings: "฿450,000/ปี",
+        action: "Execute Action Plan"
+      }
     },
     safety: {
       avgScore: (activeProjects.reduce((s, p) => s + p.esg.safetyScore, 0) / activeProjects.length).toFixed(1),
       incidents: 0,
-      daysWithoutAccident: 365
+      daysWithoutAccident: 365,
+      riskMap: "High risk zone detected: Crane operation at site B."
     },
     happiness: {
       avgScore: (employees.reduce((s, e) => s + e.happiness, 0) / employees.length).toFixed(2),
@@ -232,6 +266,9 @@ app.get('/api/alerts', (req, res) => {
     }))
   );
 
+  // Prioritize high-priority alerts
+  allAlerts.sort((a, b) => (a.priority === 'high' ? -1 : 1));
+
   res.json(allAlerts);
 });
 
@@ -251,7 +288,8 @@ const biddingOpportunities = [
       { name: 'ประวัติเจ้าของโครงการ (Client History)', impact: 'positive', description: 'จ่ายเงินตรงเวลาใน 3 โครงการที่ผ่านมา' },
       { name: 'ความเชี่ยวชาญ (Domain Expertise)', impact: 'positive', description: 'บริษัทมีผลงานเทียบเท่า 5 โครงการในพื้นที่' },
       { name: 'สภาพอากาศ (Weather Risk)', impact: 'negative', description: 'เริ่มงานหน้าฝน มีสถิติล่าช้า 15%' }
-    ]
+    ],
+    executeAction: "Qualify Supplier"
   },
   {
     id: 'BID-002',
@@ -267,7 +305,8 @@ const biddingOpportunities = [
       { name: 'การเบิกจ่ายภาครัฐ (Payment Cycle)', impact: 'negative', description: 'ประวัติการเบิกจ่ายล่าช้าเฉลี่ย 45 วัน' },
       { name: 'ต้นทุนวัสดุผันผวน (Material Volatility)', impact: 'negative', description: 'แนวโน้มเหล็กเส้นราคาขึ้น 10% ในปีหน้า' },
       { name: 'ผลงานอ้างอิง (Portfolio Value)', impact: 'positive', description: 'ช่วยเพิ่มมูลค่าแบรนด์พอร์ตโฟลิโอ 40%' }
-    ]
+    ],
+    executeAction: "Review Contingency"
   },
   {
     id: 'BID-003',
@@ -283,7 +322,8 @@ const biddingOpportunities = [
       { name: 'เทคโนโลยีใหม่ (New Tech Risk)', impact: 'negative', description: 'ต้องการผู้รับเหมาช่วง (Sub-contractor) เฉพาะทาง' },
       { name: 'ระยะเวลา (Timeline Pressure)', impact: 'negative', description: 'ค่าปรับ (Penalty) สูงถึง 0.1% ต่อวัน' },
       { name: 'งบประมาณ (Budget)', impact: 'positive', description: 'งบประมาณตั้งไว้สูงกว่าราคากลางตลาด 12%' }
-    ]
+    ],
+    executeAction: "Execute PO for Long-lead items"
   }
 ];
 
@@ -332,11 +372,34 @@ const mockCSuiteIntel = {
     { competitor: 'Legacy Corp', marketShare: 28, growth: -2, winRate: 42 },
     { competitor: 'FastConstruct', marketShare: 15, growth: 8, winRate: 55 },
     { competitor: 'EcoBuilders', marketShare: 12, growth: 22, winRate: 60 },
-  ]
+  ],
+  macroHeadwinds: {
+    interestRateTrend: '+50 bps forecast',
+    materialInflation: '8.2% YoY',
+    laborCostIndex: '112.5 (Rising)',
+    consumerSentiment: 'Stable'
+  },
+  competitiveInsight: {
+    marketShift: 'Competitors shifting focus to "Green Mini-Condos" in EEC zone.',
+    vulnerability: 'Small contractors experiencing 20% default increase due to credit tightening.'
+  },
+  portfolioNarrative: "The portfolio shows strong expansion in Q3, but interest rate sensitivity remains a key risk. Tactical recommendation: Accelerate 'Green' initiatives to hedge financing costs."
 };
 
 app.get('/api/c-suite-intel', (req, res) => {
   res.json(mockCSuiteIntel);
+});
+
+// Dedicated alerts endpoint for IntegrityAlerts component
+app.get('/api/alerts', (req, res) => {
+  // Aggregate alerts from all projects and prioritize them
+  const alerts = projects.flatMap(p => p.alerts.map(a => ({ 
+    ...a, 
+    projectId: p.id, 
+    projectName: p.name,
+    type: a.priority === 'high' ? 'danger' : 'warning' // Map priority to severity color
+  })));
+  res.json(alerts);
 });
 
 app.listen(PORT, () => {
