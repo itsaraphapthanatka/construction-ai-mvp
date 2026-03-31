@@ -149,7 +149,23 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function Dashboard() {
   const { t, language, setLanguage } = useLanguage();
-  const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [summary, setSummary] = useState<DashboardSummary | null>({
+    totalProjects: 12,
+    activeProjects: 8,
+    totalBudget: 42500000000,
+    avgProfit: '18.5',
+    trafficLight: {
+      green: 9,
+      yellow: 2,
+      red: 1
+    },
+    portfolioNarrative: t('overview.portfolioNarrative'),
+    healthPillers: [
+      { name: 'Environment', score: 92, status: 'Excellent' },
+      { name: 'Social', score: 85, status: 'Stable' },
+      { name: 'Governance', score: 95, status: 'Excellent' }
+    ]
+  });
   const [projects, setProjects] = useState<Project[]>([]);
   const [biddingOps, setBiddingOps] = useState<BiddingOpportunity[]>([]);
   const [activeTab, setActiveTab] = useState('c-suite');
@@ -164,6 +180,15 @@ export default function Dashboard() {
   const [isMobile, setIsMobile] = useState(false);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState<string | null>(null);
+  const [liveEventIndex, setLiveEventIndex] = useState(0);
+
+  // Cycle live AI events
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveEventIndex((prev) => (prev + 1) % 5);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Handle responsive sidebar behavior on mount and resize
   useEffect(() => {
@@ -821,7 +846,11 @@ export default function Dashboard() {
                       <p className="text-sm text-slate-400 mt-2">{t('overview.activeDevelopments').replace('{count}', summary.totalProjects.toString())}</p>
                     </motion.div>
 
-                    <motion.div variants={fadeUp} className="glass-card flex-1 flex flex-col justify-center">
+                    <motion.div 
+                      variants={fadeUp} 
+                      className="glass-card flex-1 flex flex-col justify-center cursor-pointer hover:bg-white/5 transition-colors"
+                      onClick={() => setStrategicDrilldown({ type: 'margin_detail', data: {} })}
+                    >
                       <div className="flex items-center justify-between mb-2">
                         <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded border border-emerald-500/20"><TrendingUp className="w-5 h-5" /></div>
                         <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{t('overview.marginForecast')}</span>
@@ -989,7 +1018,11 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                   {/* CARBON (Environment) */}
-                  <motion.div variants={fadeUp} onClick={() => setActiveDrilldown('environment')} className="glass-card flex flex-col p-6 border-t-2 border-t-emerald-500 space-y-6 flex-1 cursor-pointer hover:border-emerald-500/50 hover:bg-slate-800/80 transition-all group relative overflow-hidden">
+                  <motion.div 
+                    variants={fadeUp} 
+                    onClick={() => setStrategicDrilldown({ type: 'carbon_detail', data: {} })} 
+                    className="glass-card flex flex-col p-6 border-t-2 border-t-emerald-500 space-y-6 flex-1 cursor-pointer hover:border-emerald-500/50 hover:bg-slate-800/80 transition-all group relative overflow-hidden"
+                  >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-emerald-500/20 transition-colors pointer-events-none"></div>
                     <div className="relative z-10 flex items-center space-x-3 mb-2">
                       <div className="p-2 rounded-lg bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors"><Leaf className="h-5 w-5 text-emerald-400" /></div>
@@ -999,12 +1032,12 @@ export default function Dashboard() {
 
                     <div className="flex-1">
                       <div className="flex justify-between items-end mb-1">
-                        <h4 className="text-3xl font-bold text-white">23<span className="text-lg text-emerald-400 ml-1">{t('esg.tons')}</span></h4>
+                        <h4 className="text-3xl font-bold text-white">-12<span className="text-lg text-emerald-400 ml-1">{t('esg.tons')}</span></h4>
                         <span className="text-xs font-bold text-emerald-400 flex items-center bg-emerald-500/10 px-2 py-1 rounded-full">
-                          <TrendingUp className="w-3 h-3 mr-1" /> 12% {t('esg.vsLastMonth')}
+                          <TrendingUp className="w-3 h-3 mr-1" /> 18% {t('esg.vsLastMonth')}
                         </span>
                       </div>
-                      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-4">{t('esg.carbonMitigated')}</p>
+                      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-4">{t('esg.carbonCredit')}</p>
 
                       {/* Target Progress Bar */}
                       <div className="space-y-1 mt-6">
@@ -1068,7 +1101,11 @@ export default function Dashboard() {
                   </motion.div>
 
                   {/* PEOPLE & GOVERNANCE */}
-                  <motion.div variants={fadeUp} onClick={() => setActiveDrilldown('governance')} className="glass-card flex flex-col p-6 border-t-2 border-t-violet-500 space-y-6 flex-1 cursor-pointer hover:border-violet-500/50 hover:bg-slate-800/80 transition-all group relative overflow-hidden">
+                  <motion.div 
+                    variants={fadeUp} 
+                    onClick={() => setStrategicDrilldown({ type: 'happiness_detail', data: {} })} 
+                    className="glass-card flex flex-col p-6 border-t-2 border-t-violet-500 space-y-6 flex-1 cursor-pointer hover:border-violet-500/50 hover:bg-slate-800/80 transition-all group relative overflow-hidden"
+                  >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-violet-500/20 transition-colors pointer-events-none"></div>
                     <div className="relative z-10 flex items-center space-x-3 mb-2">
                       <div className="p-2 rounded-lg bg-violet-500/10 group-hover:bg-violet-500/20 transition-colors"><Users className="h-5 w-5 text-violet-400" /></div>
@@ -1078,7 +1115,7 @@ export default function Dashboard() {
 
                     <div className="flex items-center justify-between mb-2">
                       <div>
-                        <h4 className="text-3xl font-bold text-white mb-1">4.5<span className="text-lg text-slate-500 ml-1">/ 5.0</span></h4>
+                        <h4 className="text-3xl font-bold text-white mb-1">4.8<span className="text-lg text-slate-500 ml-1">/ 5.0</span></h4>
                         <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t('esg.happinessIndex')}</p>
                       </div>
                       <div className="text-right">
@@ -1372,7 +1409,7 @@ export default function Dashboard() {
                     <motion.div 
                       variants={fadeUp} 
                       className="glass-card p-6 border-t-2 border-t-blue-500 relative overflow-hidden cursor-pointer hover:bg-white/5 transition-colors group"
-                      onClick={() => setStrategicDrilldown({ type: 'macro_intel', data: mockCSuiteIntel.macroHeadwinds })}
+                      onClick={() => setStrategicDrilldown({ type: 'margin_detail', data: {} })}
                     >
                       <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity"><TrendingUp className="w-20 h-20" /></div>
                       <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">{t('boardroom.ebitdaMargin')}</p>
@@ -1442,6 +1479,52 @@ export default function Dashboard() {
                     </div>
                   </motion.div>
                 </div>
+
+                {/* Live AI Insights Feed (Wide Card) */}
+                <motion.div 
+                  variants={fadeUp} 
+                  className="glass-card p-6 border border-blue-500/30 bg-blue-500/5 relative overflow-hidden cursor-pointer hover:bg-blue-500/10 transition-all group"
+                  onClick={() => setStrategicDrilldown({ type: 'strategic_insights', data: {} })}
+                >
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[80px] rounded-full -mr-20 -mt-20 pointer-events-none"></div>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                    <div className="flex items-center space-x-4">
+                      <div className="relative">
+                        <div className="p-3 bg-blue-500/20 rounded-2xl text-blue-400 border border-blue-500/30">
+                          <Bot className="w-6 h-6 animate-pulse" />
+                        </div>
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-4 w-4 bg-rose-500 border-2 border-slate-900"></span>
+                        </span>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-black text-white tracking-tighter uppercase italic">{t('ai.liveInsights')}</h3>
+                        <p className="text-[10px] text-blue-400 font-bold uppercase tracking-[0.2em]">{t('ai.activeMonitoring')}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex-1 max-w-2xl bg-slate-900/50 border border-white/5 rounded-2xl p-4 flex items-center overflow-hidden">
+                      <div className="w-2 h-2 rounded-full bg-blue-500 mr-4 shadow-[0_0_10px_rgba(59,130,246,0.5)] shrink-0"></div>
+                      <AnimatePresence mode="wait">
+                        <motion.p 
+                          key={liveEventIndex}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          className="text-slate-200 font-mono text-sm tracking-tight"
+                        >
+                          <span className="text-blue-400 mr-2">[{new Date().toLocaleTimeString([], { hour12: false })}]</span>
+                          {t(`ai.event${liveEventIndex + 1}`)}
+                        </motion.p>
+                      </AnimatePresence>
+                    </div>
+
+                    <button className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black rounded-xl uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20">
+                      {t('ai.neuralStrategy')}
+                    </button>
+                  </div>
+                </motion.div>
 
                 <div className="grid grid-cols-1 gap-6">
                   {/* Strategic Risk & Impact Matrix (Executive Decision Matrix) */}
@@ -2378,6 +2461,257 @@ export default function Dashboard() {
                             "{strategicDrilldown.data?.mitigation}"
                          </p>
                          <button className="mt-8 py-4 bg-white text-slate-900 font-black rounded-2xl uppercase tracking-widest text-xs hover:bg-slate-200 transition-all">Close Mitigated Thread</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. MARGIN DETAIL DRILLDOWN */}
+                {strategicDrilldown.type === 'margin_detail' && (
+                  <div className="space-y-8">
+                    <div className="flex items-center space-x-5 border-b border-white/5 pb-8">
+                      <div className="h-16 w-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <TrendingUp className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-bold text-white tracking-tight">{t('overview.marginDetailTitle')}</h2>
+                        <p className="text-slate-400 mt-1 uppercase text-xs font-bold tracking-widest">{t('overview.marginDetailSub')}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      <div className="glass-card p-6 border-white/10 bg-slate-800/40">
+                         <h3 className="text-white font-bold mb-6">EBITDA Trajectory by Project</h3>
+                         <div className="space-y-4">
+                            {[
+                              { name: 'The Riverfront Condo', margin: '21.2%', trend: '+2.4%' },
+                              { name: 'Sukhumvit Luxury Hub', margin: '19.5%', trend: '+1.1%' },
+                              { name: 'Chiang Mai Eco-Resort', margin: '14.8%', trend: '-0.5%' },
+                              { name: 'Bangna Logistics Park', margin: '18.5%', trend: '+0.8%' }
+                            ].map((p, i) => (
+                              <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5">
+                                <span className="text-slate-300 font-medium">{p.name}</span>
+                                <div className="text-right">
+                                  <span className="text-white font-bold block">{p.margin}</span>
+                                  <span className={`text-[10px] ${p.trend.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}`}>{p.trend} vs target</span>
+                                </div>
+                              </div>
+                            ))}
+                         </div>
+                      </div>
+                      <div className="glass-card p-8 border-indigo-500/20 bg-indigo-500/5 flex flex-col justify-center">
+                         <h3 className="text-lg font-bold text-indigo-400 mb-4 flex items-center"><Zap className="w-5 h-5 mr-3" /> AI Margin Optimization</h3>
+                         <p className="text-white text-xl font-light italic leading-relaxed">
+                            "Current predictive model shows a 1.2% uplift opportunity by re-allocating idle equipment from Chiang Mai to the Bangna site, reducing operational overhead by ฿2.4M."
+                         </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 6. CARBON DETAIL DRILLDOWN */}
+                {strategicDrilldown.type === 'carbon_detail' && (
+                  <div className="space-y-8">
+                    <div className="flex items-center space-x-5 border-b border-white/5 pb-8">
+                      <div className="h-16 w-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <Leaf className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-bold text-white tracking-tight">{t('esg.carbonDetailTitle')}</h2>
+                        <p className="text-slate-400 mt-1 uppercase text-xs font-bold tracking-widest">{t('esg.carbonDetailSub')}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      <div className="glass-card p-8 border-white/10 bg-slate-800/20">
+                        <h3 className="text-lg font-bold text-white mb-6 underline decoration-emerald-500/30 underline-offset-8 decoration-2">Net Emissions Performance</h3>
+                        <div className="h-64">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={[
+                              { m: 'Jan', val: -8 }, { m: 'Feb', val: -9 }, { m: 'Mar', val: -10 }, { m: 'Apr', val: -12 }
+                            ]}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" />
+                              <XAxis dataKey="m" stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
+                              <YAxis stroke="#475569" fontSize={10} axisLine={false} tickLine={false} unit=" T" />
+                              <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '12px' }} />
+                              <Bar dataKey="val" fill="#10b981" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                      <div className="space-y-6">
+                        <div className="glass-card p-6 border-white/5 bg-slate-800/20">
+                          <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-widest mb-4">Carbon Credit Sources</h3>
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-slate-400">Solar Array Offset (Phase 1)</span>
+                              <span className="text-white font-mono">-4.5 Tons</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-slate-400">Low-Carbon Concrete (Purchase Order)</span>
+                              <span className="text-white font-mono">-5.2 Tons</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                              <span className="text-slate-400">EV Fleet Transition</span>
+                              <span className="text-white font-mono">-2.3 Tons</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-6 bg-emerald-500/10 rounded-3xl border border-emerald-500/20">
+                          <p className="text-xs text-emerald-500 font-bold uppercase tracking-widest mb-1">Compliance Status</p>
+                          <p className="text-2xl font-black text-white">SET Top-Tier Performer</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 7. HAPPINESS DETAIL DRILLDOWN */}
+                {strategicDrilldown.type === 'happiness_detail' && (
+                  <div className="space-y-8">
+                    <div className="flex items-center space-x-5 border-b border-white/5 pb-8">
+                      <div className="h-16 w-16 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-400">
+                        <Users className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-bold text-white tracking-tight">{t('esg.happinessDetailTitle')}</h2>
+                        <p className="text-slate-400 mt-1 uppercase text-xs font-bold tracking-widest">{t('esg.happinessDetailSub')}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      <div className="glass-card p-8 border-amber-500/20 bg-amber-500/5">
+                        <h3 className="text-lg font-bold text-white mb-6">Site Satisfaction Breakdown</h3>
+                        <div className="space-y-6">
+                           {[
+                             { site: 'Sukhumvit Site', score: 4.9, status: 'Excellent' },
+                             { site: 'Bangna Site', score: 4.2, status: 'Good' },
+                             { site: 'Riverfront', score: 5.0, status: 'Perfect' },
+                             { site: 'Chiang Mai', score: 4.6, status: 'Excellent' }
+                           ].map((s, i) => (
+                             <div key={i} className="space-y-2">
+                               <div className="flex justify-between text-sm">
+                                 <span className="text-slate-300 font-bold">{s.site}</span>
+                                 <span className="text-white">{s.score} / 5.0</span>
+                               </div>
+                               <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                                 <div className={`h-full ${s.score > 4.5 ? 'bg-emerald-500' : 'bg-amber-500'}`} style={{ width: `${s.score * 20}%` }}></div>
+                               </div>
+                             </div>
+                           ))}
+                        </div>
+                      </div>
+                      <div className="glass-card p-6 border-white/5 bg-slate-800/20 flex flex-col justify-center">
+                        <h3 className="text-sm font-bold text-amber-400 uppercase tracking-widest mb-4">Sentiment Word Cloud Trends</h3>
+                        <div className="flex flex-wrap gap-3">
+                           <span className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/30 text-lg font-bold">Safety First</span>
+                           <span className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-full border border-blue-500/30 text-base">New Equipment</span>
+                           <span className="px-4 py-2 bg-indigo-500/20 text-indigo-400 rounded-full border border-indigo-500/30 text-xl font-black">AI Efficiency</span>
+                           <span className="px-4 py-2 bg-rose-500/10 text-rose-400/50 rounded-full border border-rose-500/10 text-xs">Overtime</span>
+                           <span className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-full border border-amber-500/30 text-sm">Clear Instructions</span>
+                        </div>
+                        <div className="mt-10 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
+                          <p className="text-xs text-amber-500 font-bold uppercase mb-2">AI Recommendation</p>
+                          <p className="text-sm text-slate-300">Maintain current transparency levels. 82% of workforce reported AI-assisted scheduling reduced stress by 15%.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 8. NEURAL STRATEGY DRILLDOWN */}
+                {strategicDrilldown.type === 'strategic_insights' && (
+                  <div className="space-y-8">
+                    <div className="flex items-center space-x-5 border-b border-white/5 pb-8">
+                      <div className="h-16 w-16 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400">
+                        <Zap className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-bold text-white tracking-tight">{t('ai.reasoningTitle')}</h2>
+                        <p className="text-slate-400 mt-1 uppercase text-xs font-bold tracking-widest">{t('ai.reasoningSub')}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                      {/* Reasoning Flow */}
+                      <div className="lg:col-span-2 space-y-6">
+                        <div className="glass-card p-8 border-white/5 bg-slate-800/40 relative overflow-hidden">
+                           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><Radar className="w-48 h-48 text-blue-500" /></div>
+                           <h3 className="text-lg font-bold text-white mb-8 flex items-center underline decoration-blue-500/30 underline-offset-8 decoration-2">
+                             Neural Logic Chain
+                           </h3>
+                           
+                           <div className="space-y-12 relative">
+                              {/* Connector Line */}
+                              <div className="absolute left-6 top-8 bottom-8 w-0.5 bg-gradient-to-b from-blue-500 via-indigo-500 to-purple-500 opacity-20"></div>
+
+                              {[
+                                { title: 'Data Ingestion', desc: 'Real-time monitoring of 1,200+ material SKUs and macro-economic volatility indices.', status: 'COMPLETED', color: 'text-blue-400' },
+                                { title: 'Constraint Mapping', desc: 'Cross-referencing site labor availability with Q4 delivery milestones.', status: 'ACTIVE', color: 'text-indigo-400' },
+                                { title: 'Strategy Synthesis', desc: 'Executing Monte Carlo simulations for margin protection directives.', status: 'IN-PROGRESS', color: 'text-yellow-400' },
+                                { title: 'Action Authorization', desc: 'Pushing tactical interventions to project managers via mobile edge.', status: 'PENDING', color: 'text-slate-500' }
+                              ].map((step, i) => (
+                                <div key={i} className="flex items-start space-x-8 relative group">
+                                  <div className={`p-4 rounded-2xl bg-slate-900 border border-white/10 z-10 ${step.color} group-hover:scale-110 transition-transform`}>
+                                    {i === 0 ? <Globe className="w-5 h-5"/> : i === 1 ? <Target className="w-5 h-5"/> : i === 2 ? <Zap className="w-5 h-5"/> : <CheckCircle2 className="w-5 h-5"/>}
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center space-x-3 mb-1">
+                                      <h4 className="text-white font-bold">{step.title}</h4>
+                                      <span className={`text-[8px] font-black px-2 py-0.5 rounded-full border ${i === 1 ? 'bg-indigo-500/20 border-indigo-500/30 text-indigo-400 animate-pulse' : 'bg-white/5 border-white/10 text-slate-500'}`}>
+                                        {step.status}
+                                      </span>
+                                    </div>
+                                    <p className="text-sm text-slate-400 max-w-md leading-relaxed">{step.desc}</p>
+                                  </div>
+                                </div>
+                              ))}
+                           </div>
+                        </div>
+                      </div>
+
+                      {/* AI Performance Metrics */}
+                      <div className="space-y-6">
+                        <div className="glass-card p-6 bg-indigo-500/5 border-indigo-500/20">
+                          <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest mb-6">Processing Dynamics</h3>
+                          <div className="space-y-6">
+                            <div>
+                               <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-2">
+                                 <span>inference latency</span>
+                                 <span className="text-white">124ms</span>
+                               </div>
+                               <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                  <div className="h-full bg-blue-500" style={{ width: '85%' }}></div>
+                               </div>
+                            </div>
+                            <div>
+                               <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-2">
+                                 <span>data coverage</span>
+                                 <span className="text-white">99.8%</span>
+                               </div>
+                               <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                  <div className="h-full bg-indigo-500" style={{ width: '99%' }}></div>
+                               </div>
+                            </div>
+                            <div>
+                               <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-2">
+                                 <span>decision confidence</span>
+                                 <span className="text-white">94.2%</span>
+                               </div>
+                               <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                  <div className="h-full bg-emerald-500" style={{ width: '94%' }}></div>
+                               </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-8 bg-slate-900 border border-white/5 rounded-3xl relative overflow-hidden">
+                           <div className="absolute inset-0 bg-blue-500/5 pointer-events-none"></div>
+                           <h4 className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-4">Strategic Recommendation</h4>
+                           <p className="text-white text-base italic leading-relaxed">
+                             "Correlation analysis suggests a 30% probability of regional cement shortages. Authorization requested to pre-purchase 5,000 tons under current price lock protocol."
+                           </p>
+                           <button className="w-full mt-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-2xl uppercase tracking-widest text-xs transition-all shadow-lg shadow-indigo-500/30">
+                             AUTHORIZE PRE-EMPTIVE BUY
+                           </button>
+                        </div>
                       </div>
                     </div>
                   </div>

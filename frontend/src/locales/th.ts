@@ -54,6 +54,8 @@ export const th = {
             consensus: 'ฉันทามติ',
         },
         portfolioNarrative: 'Margin at Risk: 3 ปัจจัยที่อาจกระทบ Q4 - ต้นทุนวัสดุผันผวน, ความเสี่ยงด้านการเบิกจ่ายภาครัฐ, และอุบัติเหตุหน้างานที่โครงการเชียงใหม่',
+        marginDetailTitle: 'รายละเอียดการคาดการณ์อัตรากำไร',
+        marginDetailSub: 'ผลการดำเนินงาน EBITDA แยกตามโครงการและการปรับปรุงโดย AI',
     },
     // Projects Tab
     project: {
@@ -139,6 +141,10 @@ export const th = {
         recycleCircular: 'รีไซเคิล / เศรษฐกิจหมุนเวียน',
         macroHeadwinds: 'เจาะลึกเศรษฐกิจมหภาค (Macro Intelligence)',
         marketInsight: 'ข้อมูลเจาะลึกคู่แข่ง (Competitive Intelligence)',
+        carbonDetailTitle: 'รายละเอียดคาร์บอนเครดิตและผลการดำเนินงาน',
+        carbonDetailSub: 'การแจกแจงรายละเอียดการชดเชยคาร์บอนและผลการลดก๊าซเรือนกระจก',
+        happinessDetailTitle: 'การวิเคราะห์ความสุขของบุคลากร',
+        happinessDetailSub: 'การแผนที่ความรู้สึกแบบเรียลไทม์และดัชนีความพึงพอใจของแรงงาน',
         riskMatrix: 'แผนภูมิวิเคราะห์ความเสี่ยงเชิงยุทธวิธี (Risk & Impact Matrix)',
         probability: 'โอกาสการเกิด (%)',
         impact: 'ผลกระทบเชิงธุรกิจ (Score)',
@@ -287,7 +293,16 @@ export const th = {
         connected: 'เชื่อมต่อกับ OpenClaw Engine (kimi 2.5) แล้ว',
         analyzing: 'กำลังวิเคราะห์ข้อมูล...',
         inputPlaceholder: 'ตั้งคำถามเพื่อวิเคราะห์โครงการ หรือความเสี่ยง...',
-        liveInsights: 'ข้อมูลเจาะลึกจาก AI เชิงรุก',
+        liveInsights: 'LIVE AI INSIGHTS',
+        neuralStrategy: 'การเจาะลึกยุทธวิธีจาก AI',
+        activeMonitoring: 'ระบบเฝ้าระวังพอร์ตโฟลิโอทำงานอยู่',
+        reasoningTitle: 'ตรรกะเชิงยุทธศาสตร์ของ AI',
+        reasoningSub: 'การเชื่อมโยงข้อมูลสู่การปฏิบัติการจริง',
+        event1: 'กำลังสแกนซัพพลายเออร์วัสดุ 14 รายเพื่อวิเคราะห์ความผันผวน Q4',
+        event2: 'ความรู้สึกทางสังคมที่ไซต์งานสุขุมวิทดีขึ้น +4%',
+        event3: 'ตรวจพบโอกาสเพิ่มอัตรากำไรในระบบโลจิสติกส์บางนา',
+        event4: 'เริ่มโปรโตคอลป้องกันความเสี่ยงอัตราดอกเบี้ย',
+        event5: 'การสับเปลี่ยนเส้นทางซัพพลายเชนเสร็จสมบูรณ์',
     },
     // Directives
     directives: {

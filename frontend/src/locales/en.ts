@@ -54,6 +54,8 @@ export const en = {
             consensus: 'Consensus',
         },
         portfolioNarrative: 'Margin at Risk: 3 factors affecting Q4 - Material volatility, Government payment cycle risks, and On-site accidents at Chiang Mai project.',
+        marginDetailTitle: 'Margin Forecast Detail',
+        marginDetailSub: 'Project-by-project EBITDA performance and predictive AI adjustments.',
     },
     // Projects Tab
     project: {
@@ -140,6 +142,10 @@ export const en = {
         recycleCircular: 'Recycle / Circular Economy',
         macroHeadwinds: 'Macro Economic Headwinds',
         marketInsight: 'Market Sentiment Insight',
+        carbonDetailTitle: 'Carbon Credit & Performance',
+        carbonDetailSub: 'Detailed breakdown of carbon offsets and operational reduction results.',
+        happinessDetailTitle: 'Workforce Happiness Analysis',
+        happinessDetailSub: 'Real-time sentiment mapping and labor satisfaction metrics.',
         
         // Strategic Oversight Matrix
         riskMatrix: 'Risk & Impact Matrix',
@@ -291,6 +297,15 @@ export const en = {
         analyzing: 'Analyzing data...',
         inputPlaceholder: 'Ask a question to analyze a project or risk...',
         liveInsights: 'LIVE AI INSIGHTS',
+        neuralStrategy: 'Neural Strategy Deep-Dive',
+        activeMonitoring: 'Continuous Monitoring Active',
+        reasoningTitle: 'Neural Engine Strategic Reasoning',
+        reasoningSub: 'Tracing data correlations to strategic actions.',
+        event1: 'Scanning 14 material suppliers for Q4 volatility',
+        event2: 'Social sentiment at Sukhumvit Site improved +4%',
+        event3: 'Detecting margin uplift opportunity in Bangna logistics',
+        event4: 'Interest rate hedge protocol initiated',
+        event5: 'Supply chain re-routing complete',
     },
     // Directives
     directives: {
