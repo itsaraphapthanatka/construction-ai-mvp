@@ -171,9 +171,9 @@ app.post('/api/ai/forecast-profit', async (req, res) => {
       currentProfit += (Math.random() - 0.4) * 2;
       forecast.push({
         month: i + 1,
-        predicted: Math.max(0, currentProfit.toFixed(2)),
+        predicted: Math.max(0, currentProfit).toFixed(2),
         optimistic: (currentProfit + 2).toFixed(2),
-        pessimistic: Math.max(0, (currentProfit - 2).toFixed(2))
+        pessimistic: Math.max(0, currentProfit - 2).toFixed(2)
       });
     }
 

@@ -1661,8 +1661,8 @@ export default function Dashboard() {
                   </div>
                   <div className="flex items-center space-x-3">
                     <span className="text-xs text-slate-400 uppercase tracking-widest font-bold">AI Recommendation:</span>
-                    <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border ${selectedBidding.riskScore < 40 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30'}`}>
-                      {selectedBidding.riskScore < 40 ? 'Go / High Priority' : 'Caution / Review'}
+                    <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border ${selectedBidding.aiRiskScore < 40 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30'}`}>
+                      {selectedBidding.aiRiskScore < 40 ? 'Go / High Priority' : 'Caution / Review'}
                     </span>
                   </div>
                 </div>
@@ -1671,11 +1671,11 @@ export default function Dashboard() {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="glass-card p-4 border-slate-700">
                     <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">AI Risk Score</p>
-                    <p className={`text-2xl font-bold ${selectedBidding.riskScore < 40 ? 'text-emerald-400' : 'text-rose-400'}`}>{selectedBidding.riskScore}/100</p>
+                    <p className={`text-2xl font-bold ${selectedBidding.aiRiskScore < 40 ? 'text-emerald-400' : 'text-rose-400'}`}>{selectedBidding.aiRiskScore}/100</p>
                   </div>
                   <div className="glass-card p-4 border-slate-700">
                     <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Expected Margin</p>
-                    <p className="text-2xl font-bold text-indigo-400">{selectedBidding.predictedMargin}%</p>
+                    <p className="text-2xl font-bold text-indigo-400">{selectedBidding.aiExpectedMargin}%</p>
                   </div>
                   <div className="glass-card p-4 border-slate-700">
                     <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Win Probability</p>
