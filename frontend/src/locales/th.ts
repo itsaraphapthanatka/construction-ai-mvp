@@ -1,14 +1,18 @@
 export const th = {
     // Navigation
     nav: {
-        boardroom: 'Strategic Boardroom',
-        overview: 'Strategic Overview',
-        projects: 'Asset Portfolio',
-        bidding: 'Opportunity Intelligence',
-        cSuiteBoardroom: 'Executive Boardroom',
-        aiAnalytics: 'Deep Intelligence',
-        esg: 'ESG & Sustainability',
-        alerts: 'Command Protocol',
+        groupStrategic: 'การกำกับดูแลเชิงกลยุทธ์',
+        groupOperations: 'การจัดการโครงการและปฏิบัติการ',
+        groupIntelligence: 'การวิเคราะห์อัจฉริยะและ ESG',
+        boardroom: 'บอร์ดบริหารยุทธศาสตร์',
+        board: 'บอร์ด',
+        overview: 'ภาพรวมผู้บริหาร',
+        projects: 'พอร์ตโฟลิโอโครงการ',
+        bidding: 'วิเคราะห์การประมูล',
+        cSuiteBoardroom: 'ห้องบอร์ดบริหาร',
+        aiAnalytics: 'วิเคราะห์อัจฉริยะ AI',
+        esg: 'ความยั่งยืน ESG',
+        alerts: 'ศูนย์บัญชาการ',
     },
     // Header
     header: {
@@ -98,7 +102,7 @@ export const th = {
         allProjects: 'ทุกโครงการ',
         sukhumvitSite: 'ไซต์งานสุขุมวิท',
         bangnaSite: 'ไซต์งานบางนา',
-        aiExecutiveSummary: 'AI Executive Summary',
+        aiExecutiveSummary: 'บทสรุปผู้บริหารโดย AI',
         summaryOnTrack: 'อยู่ในเส้นทางบรรลุเป้าหมายคาร์บอน Q3 แต่ความเสี่ยงด้านความปลอดภัยที่ไซต์งานบางนาต้องได้รับการจัดการทันที',
         environment: 'คาร์บอนและสิ่งแวดล้อม',
         tons: 'ตัน',
@@ -256,8 +260,8 @@ export const th = {
     },
     // C-Suite Boardroom Tab
     boardroom: {
-        aiStrategyActive: 'AI Enterprise Strategy Active',
-        title: ['Strategic ', 'Governance'],
+        aiStrategyActive: 'ยุทธศาสตร์องค์กรโดย AI เปิดใช้งาน',
+        title: ['การกำกับดูแล', 'เชิงกลยุทธ์'],
         subtitle: 'ชุดข้อมูลตรวจจับการเปลี่ยนแปลงทางเศรษฐกิจมหภาคและการควบรวมกิจการในอุตสาหกรรม โปรดอนุมัติคำสั่งเชิงยุทธวิธีเพื่อเพิ่มมูลค่าองค์กรสูงสุด',
         totalRevenue: 'รายได้รวม',
         yoy: 'เมื่อเทียบกับปีก่อน',

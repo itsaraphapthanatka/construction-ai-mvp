@@ -1,7 +1,11 @@
 export const en = {
     // Navigation
     nav: {
+        groupStrategic: 'Strategic Oversight',
+        groupOperations: 'Project Operations',
+        groupIntelligence: 'Advanced Analytics',
         boardroom: 'C-Suite Boardroom',
+        board: 'Board',
         overview: 'Executive Overview',
         projects: 'Project Portfolio',
         bidding: 'Opportunity Scanner',

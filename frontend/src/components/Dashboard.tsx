@@ -316,14 +316,29 @@ export default function Dashboard() {
     );
   }
 
-  const navItems = [
-    { id: 'c-suite', label: t('nav.cSuiteBoardroom'), icon: Briefcase },
-    { id: 'overview', label: t('nav.overview'), icon: Activity },
-    { id: 'projects', label: t('nav.projects'), icon: Building2 },
-    { id: 'bidding', label: t('nav.bidding'), icon: Target },
-    { id: 'ai-predict', label: t('nav.aiAnalytics'), icon: TrendingUp },
-    { id: 'esg', label: t('nav.esg'), icon: Leaf },
-    { id: 'alerts', label: t('nav.alerts'), icon: AlertTriangle },
+  const groupedNavItems = [
+    {
+      group: t('nav.groupStrategic'),
+      items: [
+        { id: 'c-suite', label: t('nav.cSuiteBoardroom'), icon: Briefcase },
+        { id: 'overview', label: t('nav.overview'), icon: Activity },
+      ]
+    },
+    {
+      group: t('nav.groupOperations'),
+      items: [
+        { id: 'projects', label: t('nav.projects'), icon: Building2 },
+        { id: 'bidding', label: t('nav.bidding'), icon: Target },
+      ]
+    },
+    {
+      group: t('nav.groupIntelligence'),
+      items: [
+        { id: 'ai-predict', label: t('nav.aiAnalytics'), icon: TrendingUp },
+        { id: 'esg', label: t('nav.esg'), icon: Leaf },
+        { id: 'alerts', label: t('nav.alerts'), icon: AlertTriangle },
+      ]
+    }
   ];
 
   return (
@@ -365,38 +380,50 @@ export default function Dashboard() {
           </button>
         </div>
 
-        <nav className="flex-1 mt-6 px-4 space-y-2 overflow-y-auto min-w-[280px]">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setActiveTab(item.id);
-                if (isMobile) setSidebarOpen(false);
-              }}
-              className={`w-full flex items-center px-4 py-3.5 rounded-xl transition-all duration-300 group ${activeTab === item.id
-                ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)]'
-                : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent'
-                }`}
-            >
-              <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
-              <AnimatePresence>
-                {sidebarOpen && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    className="ml-4 font-medium whitespace-nowrap"
-                  >
-                    {item.label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-              {sidebarOpen && activeTab === item.id && (
-                <motion.div layoutId="activeNav" className="ml-auto">
-                  <ChevronRight className="h-4 w-4" />
-                </motion.div>
+        <nav className="flex-1 mt-6 px-4 space-y-8 overflow-y-auto min-w-[280px]">
+          {groupedNavItems.map((group, groupIdx) => (
+            <div key={groupIdx} className="space-y-2">
+              {sidebarOpen && (
+                <div className="px-4 mb-2">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">{group.group}</p>
+                </div>
               )}
-            </button>
+              {!sidebarOpen && groupIdx > 0 && (
+                <div className="mx-4 h-px bg-white/5 mb-4" />
+              )}
+              {group.items.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    if (isMobile) setSidebarOpen(false);
+                  }}
+                  className={`w-full flex items-center px-4 py-3.5 rounded-xl transition-all duration-300 group ${activeTab === item.id
+                    ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)]'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent'
+                    }`}
+                >
+                  <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
+                  <AnimatePresence>
+                    {sidebarOpen && (
+                      <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: 'auto' }}
+                        exit={{ opacity: 0, width: 0 }}
+                        className="ml-4 font-medium whitespace-nowrap"
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  {sidebarOpen && activeTab === item.id && (
+                    <motion.div layoutId="activeNav" className="ml-auto">
+                      <ChevronRight className="h-4 w-4" />
+                    </motion.div>
+                  )}
+                </button>
+              ))}
+            </div>
           ))}
         </nav>
 
@@ -511,7 +538,12 @@ export default function Dashboard() {
                 <motion.div 
                   variants={fadeUp} 
                   className="glass-card p-6 border-indigo-500/20 relative overflow-hidden cursor-pointer"
-                  onClick={() => setStrategicDrilldown({ type: 'risk_matrix', data: summary?.riskMatrix })}
+                  onClick={() => {
+                    if (summary?.riskMatrix && summary.riskMatrix.length > 0) {
+                      const highestRisk = [...summary.riskMatrix].sort((a, b) => (b.impact * b.probability) - (a.impact * a.probability))[0];
+                      setStrategicDrilldown({ type: 'risk_matrix', data: highestRisk });
+                    }
+                  }}
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center space-x-3">
@@ -532,22 +564,24 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  <div className="relative h-64 md:h-80 border-l border-b border-slate-700/50 mb-4 bg-slate-900/30 rounded-bl-xl overflow-hidden mt-6">
-                    {/* Grid Labels */}
+                  <div className="relative h-64 md:h-80 border-l border-b border-slate-700/50 mb-4 bg-slate-900/30 rounded-bl-xl mt-6">
+                    {/* Grid Labels (Behind) */}
                     <div className="absolute left-3 top-3 text-[10px] font-black uppercase text-rose-500/80 tracking-tighter z-0">{t('esg.criticalThreat')}</div>
                     <div className="absolute right-3 bottom-3 text-[10px] font-black uppercase text-emerald-500/80 tracking-tighter z-0">{t('esg.operationalTarget')}</div>
+
+                    {/* Quadrant Backgrounds with Clipping */}
+                    <div className="absolute inset-0 rounded-bl-xl overflow-hidden pointer-events-none">
+                      <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-15">
+                        <div className="border-r border-b border-slate-700 bg-rose-500"></div>
+                        <div className="border-b border-slate-700 bg-amber-500"></div>
+                        <div className="border-r border-slate-700 bg-amber-500"></div>
+                        <div className="bg-emerald-500"></div>
+                      </div>
+                    </div>
                     
                     {/* Axis Labels */}
                     <div className="absolute -left-12 top-1/2 -rotate-90 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.impact')} →</div>
                     <div className="absolute left-1/2 -bottom-8 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.probability')} →</div>
-
-                    {/* Matrix Quadrants (Made them more visible) */}
-                    <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-15 pointer-events-none">
-                      <div className="border-r border-b border-slate-700 bg-rose-500"></div>
-                      <div className="border-b border-slate-700 bg-amber-500"></div>
-                      <div className="border-r border-slate-700 bg-amber-500"></div>
-                      <div className="bg-emerald-500"></div>
-                    </div>
 
                     {/* Matrix Axis Lines */}
                     <div className="absolute inset-0 pointer-events-none border border-slate-700/30">
@@ -555,7 +589,7 @@ export default function Dashboard() {
                        <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-slate-600/50" />
                     </div>
 
-                    {/* Data Points */}
+                    {/* Data Points (Overflow Visible) */}
                     {summary?.riskMatrix && summary.riskMatrix.length > 0 ? (
                       summary.riskMatrix.map((point: any) => (
                         <div
@@ -1105,7 +1139,12 @@ export default function Dashboard() {
                 <motion.div 
                   variants={fadeUp} 
                   className="glass-card p-6 border-indigo-500/20 relative overflow-hidden cursor-pointer mt-6"
-                  onClick={() => setStrategicDrilldown({ type: 'risk_matrix', data: summary?.riskMatrix })}
+                  onClick={() => {
+                    if (summary?.riskMatrix && summary.riskMatrix.length > 0) {
+                      const highestRisk = [...summary.riskMatrix].sort((a, b) => (b.impact * b.probability) - (a.impact * a.probability))[0];
+                      setStrategicDrilldown({ type: 'risk_matrix', data: highestRisk });
+                    }
+                  }}
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center space-x-3">
@@ -1126,22 +1165,24 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  <div className="relative h-64 md:h-80 border-l border-b border-slate-700/50 mb-4 bg-slate-900/30 rounded-bl-xl overflow-hidden mt-6">
-                    {/* Grid Labels */}
+                  <div className="relative h-64 md:h-80 border-l border-b border-slate-700/50 mb-4 bg-slate-900/30 rounded-bl-xl mt-6">
+                    {/* Grid Labels (Behind) */}
                     <div className="absolute left-3 top-3 text-[10px] font-black uppercase text-rose-500/80 tracking-tighter z-0">{t('esg.criticalThreat')}</div>
                     <div className="absolute right-3 bottom-3 text-[10px] font-black uppercase text-emerald-500/80 tracking-tighter z-0">{t('esg.operationalTarget')}</div>
+
+                    {/* Quadrant Backgrounds with Clipping */}
+                    <div className="absolute inset-0 rounded-bl-xl overflow-hidden pointer-events-none">
+                      <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-15">
+                        <div className="border-r border-b border-slate-700 bg-rose-500"></div>
+                        <div className="border-b border-slate-700 bg-amber-500"></div>
+                        <div className="border-r border-slate-700 bg-amber-500"></div>
+                        <div className="bg-emerald-500"></div>
+                      </div>
+                    </div>
                     
                     {/* Axis Labels */}
                     <div className="absolute -left-12 top-1/2 -rotate-90 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.impact')} →</div>
                     <div className="absolute left-1/2 -bottom-8 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.probability')} →</div>
-
-                    {/* Matrix Quadrants (Made them more visible) */}
-                    <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-15 pointer-events-none">
-                      <div className="border-r border-b border-slate-700 bg-rose-500"></div>
-                      <div className="border-b border-slate-700 bg-amber-500"></div>
-                      <div className="border-r border-slate-700 bg-amber-500"></div>
-                      <div className="bg-emerald-500"></div>
-                    </div>
 
                     {/* Matrix Axis Lines */}
                     <div className="absolute inset-0 pointer-events-none border border-slate-700/30">
@@ -1149,7 +1190,7 @@ export default function Dashboard() {
                        <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-slate-600/50" />
                     </div>
 
-                    {/* Data Points */}
+                    {/* Data Points (Overflow Visible) */}
                     {summary?.riskMatrix && summary.riskMatrix.length > 0 ? (
                       summary.riskMatrix.map((point: any) => (
                         <div
@@ -1407,7 +1448,12 @@ export default function Dashboard() {
                   <motion.div 
                     variants={fadeUp} 
                     className="glass-card p-6 border-indigo-500/20 relative overflow-hidden cursor-pointer"
-                    onClick={() => setStrategicDrilldown({ type: 'risk_matrix', data: summary?.riskMatrix })}
+                    onClick={() => {
+                      if (summary?.riskMatrix && summary.riskMatrix.length > 0) {
+                        const highestRisk = [...summary.riskMatrix].sort((a, b) => (b.impact * b.probability) - (a.impact * a.probability))[0];
+                        setStrategicDrilldown({ type: 'risk_matrix', data: highestRisk });
+                      }
+                    }}
                   >
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center space-x-3">
@@ -1428,7 +1474,17 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    <div className="relative h-64 md:h-80 border-l border-b border-slate-700/50 mb-4 bg-slate-900/30 rounded-bl-xl overflow-hidden mt-6">
+                    <div className="relative h-64 md:h-80 border-l border-b border-slate-700/50 mb-4 bg-slate-900/30 rounded-bl-xl mt-6">
+                      {/* Background Quadrant Clipping */}
+                      <div className="absolute inset-0 rounded-bl-xl overflow-hidden pointer-events-none">
+                        <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-15">
+                          <div className="border-r border-b border-slate-700 bg-rose-500"></div>
+                          <div className="border-b border-slate-700 bg-amber-500"></div>
+                          <div className="border-r border-slate-700 bg-amber-500"></div>
+                          <div className="bg-emerald-500"></div>
+                        </div>
+                      </div>
+
                       {/* Grid Labels */}
                       <div className="absolute left-3 top-3 text-[10px] font-black uppercase text-rose-500/80 tracking-tighter z-0">{t('esg.criticalThreat')}</div>
                       <div className="absolute right-3 bottom-3 text-[10px] font-black uppercase text-emerald-500/80 tracking-tighter z-0">{t('esg.operationalTarget')}</div>
@@ -1437,21 +1493,13 @@ export default function Dashboard() {
                       <div className="absolute -left-12 top-1/2 -rotate-90 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.impact')} →</div>
                       <div className="absolute left-1/2 -bottom-8 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.probability')} →</div>
 
-                      {/* Matrix Quadrants (Made them more visible) */}
-                      <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-15 pointer-events-none">
-                        <div className="border-r border-b border-slate-700 bg-rose-500"></div>
-                        <div className="border-b border-slate-700 bg-amber-500"></div>
-                        <div className="border-r border-slate-700 bg-amber-500"></div>
-                        <div className="bg-emerald-500"></div>
-                      </div>
-
                       {/* Matrix Axis Lines */}
                       <div className="absolute inset-0 pointer-events-none border border-slate-700/30">
                          <div className="absolute left-1/2 top-0 bottom-0 border-l border-dashed border-slate-600/50" />
                          <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-slate-600/50" />
                       </div>
 
-                      {/* Data Points */}
+                      {/* Data Points (Overflow OK) */}
                       {summary?.riskMatrix && summary.riskMatrix.length > 0 ? (
                         summary.riskMatrix.map((point: any) => (
                           <div
@@ -2515,10 +2563,10 @@ export default function Dashboard() {
         <div className="md:hidden fixed bottom-0 left-0 w-full z-50 bg-slate-900/90 backdrop-blur-xl border-t border-white/10 pb-env-safe">
           <div className="flex items-center justify-around h-20 px-2 pb-2">
             {[
-              { id: 'c-suite', icon: Briefcase, label: 'Board' },
-              { id: 'overview', icon: Activity, label: 'Overview' },
-              { id: 'projects', icon: Building2, label: 'Field' },
-              { id: 'alerts', icon: AlertTriangle, label: 'Alerts' },
+              { id: 'c-suite', icon: Briefcase, label: t('nav.board') || 'Board' },
+              { id: 'overview', icon: Activity, label: t('nav.overview') || 'Overview' },
+              { id: 'projects', icon: Building2, label: t('nav.projects') || 'Field' },
+              { id: 'alerts', icon: AlertTriangle, label: t('nav.alerts') || 'Alerts' },
             ].map((item) => (
               <button
                 key={item.id}
