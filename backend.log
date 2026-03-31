@@ -1,0 +1,30 @@
+
+> construction-ai-backend@1.0.0 dev
+> tsx src/server.ts
+
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::4001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (/root/construction-ai-mvp/backend/node_modules/express/lib/application.js:635:24)
+    at axios (/root/construction-ai-mvp/backend/src/server.ts:342:5)
+    at Object.<anonymous> (/root/construction-ai-mvp/backend/src/server.ts:344:2)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object.transformer (/root/construction-ai-mvp/backend/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 4001
+}
+
+Node.js v24.13.0

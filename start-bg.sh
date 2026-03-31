@@ -1,4 +1,3 @@
-cat << 'EOF' > ~/construction-ai-mvp/start-bg.sh
 #!/bin/bash
 ROOT_DIR=~/construction-ai-mvp
 
@@ -23,6 +22,3 @@ cd $ROOT_DIR/ai-service && ./venv/bin/python3 -m uvicorn main:app --host 0.0.0.0
 echo ""
 echo "✅ All services are starting in background!"
 echo "Check status: netstat -tunlp | grep -E '4000|4001|8100'"
-EOF
-
-chmod +x ~/construction-ai-mvp/start-bg.sh

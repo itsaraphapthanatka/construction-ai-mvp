@@ -1,13 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'http://localhost:4001/api/:path*',
-      },
-    ];
-  },
-};
+  // สำคัญมาก: ต้องมี basePath
+  basePath: '/ai_dashboard',
+  
+  // เพิ่ม assetPrefix เพื่อให้ไฟล์ CSS/JS โหลดผ่าน path ที่ถูกต้อง
+  assetPrefix: '/ai_dashboard',
 
-module.exports = nextConfig;
+  reactStrictMode: true,
+  // ถ้ามีการใช้ image จากโดเมนภายนอก อย่าลืมตั้งค่า images: { domains: [...] }
+}
+
+module.exports = nextConfig

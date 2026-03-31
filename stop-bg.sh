@@ -1,4 +1,3 @@
-cat << 'EOF' > stop-bg.sh
 #!/bin/bash
 
 echo "🛑 Stopping Construction AI services..."
@@ -12,4 +11,3 @@ fuser -k 3000/tcp 3001/tcp 8001/tcp 2>/dev/null
 # pkill -f python
 
 echo "✅ All services stopped."
-EOF
