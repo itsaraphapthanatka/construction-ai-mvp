@@ -27,7 +27,8 @@ import {
   Search,
   Radar,
   Zap,
-  Camera
+  Camera,
+  HardHat
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
@@ -44,7 +45,11 @@ import {
   BarChart,
   Bar,
   ScatterChart,
-  Scatter
+  Scatter,
+  LineChart,
+  Line,
+  Legend,
+  ReferenceLine
 } from 'recharts';
 
 // Types
@@ -124,6 +129,16 @@ const esgData = [
   { name: 'Governance', value: 88, color: '#8b5cf6' }, // violet-500
 ];
 
+const duringConScurveData = [
+  { q: "Q1 '25", planned: 1.8, actual: 1.65, esgCo2: 1.55 },
+  { q: "Q2 '25", planned: 3.4, actual: 3.1, esgCo2: 2.9 },
+  { q: "Q3 '25", planned: 5.2, actual: 5.0, esgCo2: 4.6 },
+  { q: "Q4 '25", planned: 6.8, actual: 6.4, esgCo2: 6.0 },
+  { q: "Q1 '26", planned: 8.2, actual: 6.9, esgCo2: 7.0 },
+];
+
+const duringConScopeColors = ['#34d399', '#22d3ee', '#a78bfa'];
+
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
@@ -168,7 +183,7 @@ export default function Dashboard() {
   });
   const [projects, setProjects] = useState<Project[]>([]);
   const [biddingOps, setBiddingOps] = useState<BiddingOpportunity[]>([]);
-  const [activeTab, setActiveTab] = useState('c-suite');
+  const [activeTab, setActiveTab] = useState('during-con');
   const [esgSummary, setEsgSummary] = useState<any>(null);
   const [activeDrilldown, setActiveDrilldown] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -341,7 +356,20 @@ export default function Dashboard() {
     );
   }
 
+  const navPillClass = (id: string) =>
+    activeTab === id
+      ? id === 'during-con'
+        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 shadow-[inset_0_0_20px_rgba(16,185,129,0.08)]'
+        : 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)]'
+      : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent';
+
   const groupedNavItems = [
+    {
+      group: t('nav.groupPhase'),
+      items: [
+        { id: 'during-con', label: t('nav.duringCon'), icon: HardHat, badge: 3 },
+      ]
+    },
     {
       group: t('nav.groupStrategic'),
       items: [
@@ -423,10 +451,7 @@ export default function Dashboard() {
                     setActiveTab(item.id);
                     if (isMobile) setSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center px-4 py-3.5 rounded-xl transition-all duration-300 group ${activeTab === item.id
-                    ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)]'
-                    : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent'
-                    }`}
+                  className={`w-full flex items-center px-4 py-3.5 rounded-xl transition-all duration-300 group ${navPillClass(item.id)}`}
                 >
                   <item.icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
                   <AnimatePresence>
@@ -435,14 +460,19 @@ export default function Dashboard() {
                         initial={{ opacity: 0, width: 0 }}
                         animate={{ opacity: 1, width: 'auto' }}
                         exit={{ opacity: 0, width: 0 }}
-                        className="ml-4 font-medium whitespace-nowrap"
+                        className="ml-4 font-medium whitespace-nowrap flex items-center gap-2"
                       >
                         {item.label}
+                        {'badge' in item && item.badge != null && (
+                          <span className="min-w-[1.25rem] h-5 px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center">
+                            {item.badge}
+                          </span>
+                        )}
                       </motion.span>
                     )}
                   </AnimatePresence>
                   {sidebarOpen && activeTab === item.id && (
-                    <motion.div layoutId="activeNav" className="ml-auto">
+                    <motion.div layoutId="activeNav" className={`ml-auto ${item.id === 'during-con' ? 'text-emerald-400' : ''}`}>
                       <ChevronRight className="h-4 w-4" />
                     </motion.div>
                   )}
@@ -497,6 +527,7 @@ export default function Dashboard() {
           >
             <div>
               <h1 className="text-3xl md:text-4xl font-light text-white tracking-tight">
+                {activeTab === 'during-con' && <>{t('header.duringConTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">{t('header.duringConTitle')[1]}</span></>}
                 {activeTab === 'c-suite' && <>{t('header.boardroomTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.boardroomTitle')[1]}</span></>}
                 {activeTab === 'overview' && <>{t('header.overviewTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.overviewTitle')[1]}</span></>}
                 {activeTab === 'projects' && <>{t('header.projectsTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.projectsTitle')[1]}</span></>}
@@ -506,11 +537,28 @@ export default function Dashboard() {
                 {activeTab === 'alerts' && <>{t('header.alertsTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.alertsTitle')[1]}</span></>}
               </h1>
               <p className="text-slate-400 mt-2 font-medium">
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                {activeTab === 'during-con'
+                  ? t('duringCon.subtitle')
+                  : new Date().toLocaleDateString(language === 'th' ? 'th-TH' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:space-x-4 sm:gap-0">
+              {activeTab === 'during-con' && (
+                <div className="flex flex-wrap items-center gap-2 order-first sm:order-none">
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    {t('duringCon.aiLive')}
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-[10px] font-bold text-cyan-400 uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                    {t('duringCon.serverTp')}
+                  </div>
+                  <div className="px-3 py-1.5 rounded-xl bg-[#00ff9d]/15 border border-[#00ff9d]/30 text-[#00ff9d] text-sm font-black tabular-nums">
+                    87
+                  </div>
+                </div>
+              )}
               {/* Language Switcher */}
               <button
                 onClick={() => setLanguage(language === 'en' ? 'th' : 'en')}
@@ -532,6 +580,329 @@ export default function Dashboard() {
           </motion.header>
 
           <AnimatePresence mode="wait">
+
+            {/* ----------------- DURING-CON (ระหว่างก่อสร้าง) ----------------- */}
+            {activeTab === 'during-con' && (
+              <motion.div
+                key="during-con"
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0, y: -20 }}
+                variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
+                className="space-y-6"
+              >
+                <motion.div
+                  variants={fadeUp}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-4 glass-card p-4 border-emerald-500/20"
+                >
+                  {[
+                    { label: t('duringCon.safety'), pct: 94, color: 'bg-emerald-500' },
+                    { label: t('duringCon.budget'), pct: 87, color: 'bg-cyan-400' },
+                    { label: t('duringCon.timeline'), pct: 78, color: 'bg-amber-400' },
+                  ].map((row) => (
+                    <div key={row.label}>
+                      <div className="flex justify-between text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">
+                        <span>{row.label}</span>
+                        <span className="text-white tabular-nums">{row.pct}%</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+                        <div className={`h-full rounded-full ${row.color} shadow-[0_0_12px_rgba(52,211,153,0.35)]`} style={{ width: `${row.pct}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+
+                <motion.div variants={fadeUp} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    {
+                      title: t('duringCon.portfolioHealth'),
+                      value: '87',
+                      sub: t('duringCon.vitality'),
+                      accent: 'from-emerald-500/20 to-cyan-500/10 border-emerald-500/30',
+                    },
+                    {
+                      title: t('duringCon.activeProjects'),
+                      value: '3',
+                      sub: t('duringCon.activeProjectsSub', { count: 3, value: '16.2' }),
+                      accent: 'from-blue-500/15 to-indigo-500/10 border-blue-500/25',
+                    },
+                    {
+                      title: t('duringCon.co2Ytd'),
+                      value: '2,847',
+                      sub: t('duringCon.co2Target', { target: '4,050' }),
+                      accent: 'from-teal-500/15 to-emerald-500/10 border-teal-500/25',
+                    },
+                    {
+                      title: t('duringCon.compliance'),
+                      value: '100%',
+                      sub: t('duringCon.complianceDetail'),
+                      accent: 'from-violet-500/15 to-purple-500/10 border-violet-500/25',
+                    },
+                  ].map((c) => (
+                    <div
+                      key={c.title}
+                      className={`glass-card p-4 rounded-2xl border bg-gradient-to-br ${c.accent}`}
+                    >
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{c.title}</p>
+                      <p className="text-2xl md:text-3xl font-black text-white tabular-nums tracking-tight">{c.value}</p>
+                      <p className="text-xs text-slate-400 mt-1 leading-snug">{c.sub}</p>
+                    </div>
+                  ))}
+                </motion.div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+                  <motion.div variants={fadeUp} className="xl:col-span-4 space-y-4">
+                    <div className="glass-card p-5 border-white/10">
+                      <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4">
+                        {t('duringCon.portfolioListTitle', { count: 3 })}
+                      </h3>
+                      <div className="space-y-3">
+                        {[
+                          { nameKey: 'projectBangna' as const, score: 92, pct: 68, ok: true },
+                          { nameKey: 'projectEec' as const, score: 74, pct: 41, ok: false, wk: 2 },
+                          { nameKey: 'projectUtapao' as const, score: 81, pct: 29, ok: true },
+                        ].map((p) => (
+                          <div
+                            key={p.nameKey}
+                            className="p-3 rounded-xl bg-slate-900/60 border border-white/5 hover:border-emerald-500/20 transition-colors cursor-pointer"
+                            onClick={() => {
+                              const match = projects.find((pr) =>
+                                pr.name.toLowerCase().includes(p.nameKey.replace('project', '').toLowerCase())
+                              );
+                              if (match) setSelectedProject(match);
+                            }}
+                          >
+                            <div className="flex justify-between items-start gap-2 mb-2">
+                              <span className="font-bold text-white text-sm">
+                                {t(`duringCon.${p.nameKey}`)}
+                              </span>
+                              <span className="text-emerald-400 text-sm font-black tabular-nums">{p.score}/100</span>
+                            </div>
+                            <div className="h-1.5 rounded-full bg-slate-800 mb-2 overflow-hidden">
+                              <div
+                                className={`h-full rounded-full ${p.ok ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                                style={{ width: `${p.pct}%` }}
+                              />
+                            </div>
+                            <div className="flex justify-between text-[11px]">
+                              <span className="text-slate-500">{t('duringCon.completeLabel', { pct: p.pct })}</span>
+                              <span className={p.ok ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}>
+                                {p.ok ? t('duringCon.onTrack') : t('duringCon.delayWeeks', { n: p.wk ?? 2 })}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="glass-card p-5 border-emerald-500/20">
+                      <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-widest mb-3">
+                        {t('duringCon.healthBreakdown')}
+                      </h3>
+                      <div className="flex items-center gap-4 mb-4">
+                        <span className="text-5xl font-black text-white tabular-nums">87</span>
+                        <div className="text-xs text-slate-400 space-y-1 flex-1">
+                          <div className="flex justify-between">
+                            <span>{t('duringCon.safetyIndex')}</span>
+                            <span className="text-emerald-400 font-bold">94</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>{t('duringCon.budgetVariance')}</span>
+                            <span className="text-cyan-400 font-bold">87</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>{t('duringCon.timelineScore')}</span>
+                            <span className="text-amber-400 font-bold">78</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>{t('duringCon.esgRating')}</span>
+                            <span className="text-violet-400 font-bold">A-</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
+                        {t('duringCon.vitalityIndex')}
+                      </p>
+                      {[
+                        { label: t('duringCon.safety'), pct: 94, bar: 'bg-emerald-500' },
+                        { label: t('duringCon.budget'), pct: 87, bar: 'bg-cyan-400' },
+                        { label: t('duringCon.timeline'), pct: 78, bar: 'bg-amber-400' },
+                      ].map((v) => (
+                        <div key={v.label} className="mb-2 last:mb-0">
+                          <div className="flex justify-between text-[10px] text-slate-500 mb-0.5">
+                            <span>{v.label}</span>
+                            <span>{v.pct}%</span>
+                          </div>
+                          <div className="h-1 rounded-full bg-slate-800 overflow-hidden">
+                            <div className={`h-full ${v.bar}`} style={{ width: `${v.pct}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+
+                  <motion.div variants={fadeUp} className="xl:col-span-5 space-y-4">
+                    <div className="glass-card p-5 border-cyan-500/15 overflow-hidden">
+                      <div className="mb-2">
+                        <h3 className="text-lg font-bold text-white">{t('duringCon.twinTrackTitle')}</h3>
+                        <p className="text-xs text-slate-500 mt-0.5">{t('duringCon.twinTrackSub')} — {t('duringCon.projectBangna')}</p>
+                      </div>
+                      <div className="h-64 w-full mt-2 min-w-0">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={duringConScurveData} margin={{ top: 8, right: 8, left: -4, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff0c" />
+                            <XAxis dataKey="q" stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 10 }} axisLine={false} tickLine={false} />
+                            <YAxis stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 10 }} axisLine={false} tickLine={false} />
+                            <RechartsTooltip
+                              contentStyle={{
+                                background: 'rgba(15,23,42,0.95)',
+                                border: '1px solid rgba(56,189,248,0.25)',
+                                borderRadius: '12px',
+                              }}
+                            />
+                            <Legend wrapperStyle={{ fontSize: 11 }} />
+                            <ReferenceLine
+                              x="Q4 '25"
+                              stroke="#00ff9d"
+                              strokeDasharray="4 4"
+                              label={{ value: t('duringCon.now'), fill: '#00ff9d', fontSize: 10, position: 'top' }}
+                            />
+                            <Line type="monotone" dataKey="planned" name={t('duringCon.plannedCost')} stroke="#6366f1" strokeWidth={2} dot={{ r: 3 }} />
+                            <Line type="monotone" dataKey="actual" name={t('duringCon.actualCost')} stroke="#22d3ee" strokeWidth={2} dot={{ r: 3 }} />
+                            <Line type="monotone" dataKey="esgCo2" name={t('duringCon.esgCo2')} stroke="#34d399" strokeWidth={2} strokeDasharray="6 4" dot={{ r: 2 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    <div className="glass-card p-5 border-teal-500/20 overflow-hidden">
+                      <h3 className="text-sm font-bold text-teal-400 uppercase tracking-widest mb-2">
+                        {t('duringCon.co2Meter')}
+                      </h3>
+                      <p className="text-xs text-slate-500 mb-4">{t('duringCon.toTarget', { pct: 70 })}</p>
+                      <div className="flex flex-col sm:flex-row gap-5 sm:items-center min-w-0">
+                        <div className="relative h-36 w-36 mx-auto sm:mx-0 shrink-0 overflow-hidden rounded-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                              <Pie
+                                data={[
+                                  { name: t('duringCon.scope1'), value: 420 },
+                                  { name: t('duringCon.scope2'), value: 890 },
+                                  { name: t('duringCon.scope3'), value: 1537 },
+                                ]}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius="58%"
+                                outerRadius="82%"
+                                paddingAngle={2}
+                                dataKey="value"
+                                stroke="none"
+                              >
+                                {duringConScopeColors.map((col, i) => (
+                                  <Cell key={i} fill={col} />
+                                ))}
+                              </Pie>
+                            </PieChart>
+                          </ResponsiveContainer>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+                            <span className="text-xl font-black text-white leading-none">70%</span>
+                            <span className="text-[8px] text-slate-500 uppercase font-bold mt-1">{t('duringCon.tco2')}</span>
+                          </div>
+                        </div>
+                        <div className="text-xs space-y-2 flex-1 min-w-0">
+                          {[
+                            { name: t('duringCon.scope1'), val: '420', color: 'bg-emerald-400' },
+                            { name: t('duringCon.scope2'), val: '890', color: 'bg-cyan-400' },
+                            { name: t('duringCon.scope3'), val: '1,537', color: 'bg-violet-400' },
+                          ].map((s) => (
+                            <div key={s.name} className="flex justify-between items-center gap-2">
+                              <span className="flex items-center gap-2 text-slate-400 min-w-0">
+                                <span className={`w-2 h-2 rounded-full shrink-0 ${s.color}`} />
+                                <span className="truncate">{s.name}</span>
+                              </span>
+                              <span className="font-mono text-slate-200 shrink-0">{s.val}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="glass-card p-5 border-indigo-500/20">
+                      <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <Zap className="w-4 h-4" />
+                        {t('duringCon.agenticFeed')}
+                      </h3>
+                      <div className="space-y-3">
+                        <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                          <p className="text-xs font-black text-emerald-400 uppercase tracking-wide mb-1">{t('duringCon.costSave')}</p>
+                          <p className="text-sm text-slate-300 leading-relaxed">{t('duringCon.costSaveBody')}</p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
+                          <p className="text-xs font-black text-cyan-400 uppercase tracking-wide mb-1">{t('duringCon.esgWin')}</p>
+                          <p className="text-sm text-slate-300 leading-relaxed">{t('duringCon.esgWinBody')}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="glass-card p-5 border-[#00ff9d]/25 bg-gradient-to-br from-[#00ff9d]/5 to-transparent">
+                      <h3 className="text-lg font-bold text-white mb-1">{t('duringCon.askTREE')}</h3>
+                      <p className="text-xs text-slate-400 mb-4">{t('duringCon.askHint')}</p>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {language === 'th' ? (
+                          <>
+                            <span className="text-[11px] px-2 py-1 rounded-lg bg-slate-800/80 border border-white/10 text-slate-300">วิเคราะห์ความเสี่ยงไซต์</span>
+                            <span className="text-[11px] px-2 py-1 rounded-lg bg-slate-800/80 border border-white/10 text-slate-300">ลด CO₂ ด่วน</span>
+                            <span className="text-[11px] px-2 py-1 rounded-lg bg-slate-800/80 border border-white/10 text-slate-300">ทางเลือกซัพพลาย</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-[11px] px-2 py-1 rounded-lg bg-slate-800/80 border border-white/10 text-slate-300">Site risk scan</span>
+                            <span className="text-[11px] px-2 py-1 rounded-lg bg-slate-800/80 border border-white/10 text-slate-300">CO₂ quick wins</span>
+                            <span className="text-[11px] px-2 py-1 rounded-lg bg-slate-800/80 border border-white/10 text-slate-300">Vendor options</span>
+                          </>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('ai-predict')}
+                        className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-widest bg-[#00ff9d] text-slate-900 hover:brightness-110 transition-all shadow-[0_0_24px_rgba(0,255,157,0.25)]"
+                      >
+                        {t('duringCon.openChat')}
+                      </button>
+                    </div>
+                  </motion.div>
+
+                  <motion.div variants={fadeUp} className="xl:col-span-3 space-y-4">
+                    <div className="glass-card p-5 border-amber-500/20">
+                      <h3 className="text-sm font-bold text-amber-400 uppercase tracking-widest mb-4">
+                        {t('duringCon.thaiMaterialIndex')}
+                      </h3>
+                      <div className="space-y-3">
+                        {[
+                          { key: 'steelRebar' as const, price: '24,850', change: '+1.98%', pos: true },
+                          { key: 'cementTpi' as const, price: '3,120', change: '-1.27%', pos: false },
+                          { key: 'copperLme' as const, price: '312,400', change: '+0.38%', pos: true },
+                        ].map((m) => (
+                          <div
+                            key={m.key}
+                            className="flex justify-between items-center p-3 rounded-xl bg-slate-900/50 border border-white/5"
+                          >
+                            <div>
+                              <p className="text-xs font-bold text-white">{t(`duringCon.${m.key}`)}</p>
+                              <p className="text-[10px] text-slate-500 uppercase tracking-wider">THB / unit</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-mono font-bold text-white">{m.price}</p>
+                              <p className={`text-xs font-bold ${m.pos ? 'text-emerald-400' : 'text-rose-400'}`}>{m.change}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
 
             {/* ----------------- OVERVIEW TAB ----------------- */}
             {activeTab === 'overview' && summary && (
@@ -980,7 +1351,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* ESG Opportunity Insight (The raak.life style) */}
+                {/* ESG Opportunity Insight (The TREE.life style) */}
                 {esgSummary?.carbon?.opportunity && (
                   <motion.div variants={fadeUp} className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 backdrop-blur-md relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
@@ -2897,23 +3268,27 @@ export default function Dashboard() {
         <div className="md:hidden fixed bottom-0 left-0 w-full z-50 bg-slate-900/90 backdrop-blur-xl border-t border-white/10 pb-env-safe">
           <div className="flex items-center justify-around h-20 px-2 pb-2">
             {[
-              { id: 'c-suite', icon: Briefcase, label: t('nav.board') || 'Board' },
-              { id: 'overview', icon: Activity, label: t('nav.overview') || 'Overview' },
-              { id: 'projects', icon: Building2, label: t('nav.projects') || 'Field' },
-              { id: 'alerts', icon: AlertTriangle, label: t('nav.alerts') || 'Alerts' },
-            ].map((item) => (
+              { id: 'during-con', icon: HardHat, label: t('nav.duringConShort') },
+              { id: 'overview', icon: Activity, label: t('nav.overview') },
+              { id: 'projects', icon: Building2, label: t('nav.projects') },
+              { id: 'alerts', icon: AlertTriangle, label: t('nav.alerts') },
+            ].map((item) => {
+              const mobileActive = activeTab === item.id;
+              const emerald = item.id === 'during-con' && mobileActive;
+              return (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${activeTab === item.id ? 'text-blue-400' : 'text-slate-500'}`}
+                className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${mobileActive ? (emerald ? 'text-emerald-400' : 'text-blue-400') : 'text-slate-500'}`}
               >
-                <div className={`p-1.5 rounded-xl transition-all ${activeTab === item.id ? 'bg-blue-500/20 shadow-inner overflow-hidden relative' : ''}`}>
-                  <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'relative z-10' : ''}`} />
-                  {activeTab === item.id && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-400 blur-[2px]"></div>}
+                <div className={`p-1.5 rounded-xl transition-all overflow-hidden relative ${mobileActive ? (emerald ? 'bg-emerald-500/20 shadow-inner' : 'bg-blue-500/20 shadow-inner') : ''}`}>
+                  <item.icon className={`h-5 w-5 ${mobileActive ? 'relative z-10' : ''}`} />
+                  {mobileActive && <div className={`absolute bottom-0 left-0 w-full h-0.5 blur-[2px] ${emerald ? 'bg-emerald-400' : 'bg-blue-400'}`}></div>}
                 </div>
                 <span className="text-[10px] font-black tracking-widest uppercase">{item.label}</span>
               </button>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
