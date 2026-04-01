@@ -588,7 +588,7 @@ export default function Dashboard() {
                 <span className="font-bold text-lg text-white">Construction AI</span>
               </div>
               <div className="flex items-center space-x-2">
-                 <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-[10px] font-bold uppercase rounded-full border border-blue-500/30">Field Mode</span>
+                <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-[10px] font-bold uppercase rounded-full border border-blue-500/30">Field Mode</span>
               </div>
             </div>
           )}
@@ -621,7 +621,7 @@ export default function Dashboard() {
                       ? t('financials.subtitle')
                       : activeTab === 'post-con'
                         ? t('postCon.subtitle')
-                    : new Date().toLocaleDateString(language === 'th' ? 'th-TH' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        : new Date().toLocaleDateString(language === 'th' ? 'th-TH' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
 
@@ -856,145 +856,144 @@ export default function Dashboard() {
 
                 {/* 2. Post-Construction Completion Section */}
                 <motion.div variants={fadeUp} className="glass-card p-6 border-white/5 bg-slate-900/20">
-                   <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest">{t('postCon.completionTitle')}</h3>
-                      <span className="text-sm font-black text-emerald-400">33%</span>
-                   </div>
-                   <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden mb-4">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: '33%' }}
-                        transition={{ duration: 1, ease: 'easeOut' }}
-                        className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-                      />
-                   </div>
-                   <div className="flex flex-wrap gap-6">
-                      <div className="flex items-center gap-2">
-                         <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                         <span className="text-xs text-slate-300 font-bold">{t('postCon.legendDone')}: <span className="text-white">2</span></span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                         <div className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-                         <span className="text-xs text-slate-300 font-bold">{t('postCon.legendDoing')}: <span className="text-white">2</span></span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                         <div className="w-2 h-2 rounded-full bg-slate-600" />
-                         <span className="text-xs text-slate-300 font-bold">{t('postCon.legendTodo')}: <span className="text-white">2</span></span>
-                      </div>
-                   </div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest">{t('postCon.completionTitle')}</h3>
+                    <span className="text-sm font-black text-emerald-400">33%</span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden mb-4">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: '33%' }}
+                      transition={{ duration: 1, ease: 'easeOut' }}
+                      className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-6">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                      <span className="text-xs text-slate-300 font-bold">{t('postCon.legendDone')}: <span className="text-white">2</span></span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                      <span className="text-xs text-slate-300 font-bold">{t('postCon.legendDoing')}: <span className="text-white">2</span></span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-slate-600" />
+                      <span className="text-xs text-slate-300 font-bold">{t('postCon.legendTodo')}: <span className="text-white">2</span></span>
+                    </div>
+                  </div>
                 </motion.div>
 
                 {/* 3. Toggles */}
                 <motion.div variants={fadeUp} className="flex gap-2 p-1 bg-slate-900/60 rounded-xl border border-white/5 w-fit">
-                   <button 
-                      onClick={() => setPostConMode('punch-list')}
-                      className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${postConMode === 'punch-list' ? 'bg-emerald-500 text-slate-900 shadow-lg shadow-emerald-500/20' : 'text-slate-500 hover:text-slate-300'}`}
-                   >
-                      <div className={`w-2 h-2 rounded-full animate-pulse ${postConMode === 'punch-list' ? 'bg-white' : 'bg-slate-700'}`} />
-                      {t('postCon.digitalPunchList')}
-                   </button>
-                   <button 
-                      onClick={() => setPostConMode('warranty')}
-                      className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${postConMode === 'warranty' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-slate-300'}`}
-                   >
-                      {t('postCon.warrantyTracking')}
-                   </button>
+                  <button
+                    onClick={() => setPostConMode('punch-list')}
+                    className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${postConMode === 'punch-list' ? 'bg-emerald-500 text-slate-900 shadow-lg shadow-emerald-500/20' : 'text-slate-500 hover:text-slate-300'}`}
+                  >
+                    <div className={`w-2 h-2 rounded-full animate-pulse ${postConMode === 'punch-list' ? 'bg-white' : 'bg-slate-700'}`} />
+                    {t('postCon.digitalPunchList')}
+                  </button>
+                  <button
+                    onClick={() => setPostConMode('warranty')}
+                    className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${postConMode === 'warranty' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-slate-300'}`}
+                  >
+                    {t('postCon.warrantyTracking')}
+                  </button>
                 </motion.div>
 
                 {/* 4. Detailed Table Section */}
                 <motion.div variants={fadeUp} className="glass-card border-white/5 bg-slate-900/30 overflow-hidden">
-                   {/* Table Header Area */}
-                   <div className="p-6 border-b border-white/5 bg-white/[0.01] flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                         <div className="p-2 bg-slate-800 rounded-lg"><ClipboardList className="w-4 h-4 text-slate-400" /></div>
-                         <h3 className="text-sm font-black text-white uppercase tracking-widest">{t('postCon.bangnaHeader')}</h3>
-                      </div>
-                      <div className="flex items-center gap-2">
-                         <button className="px-4 py-2 rounded-xl bg-slate-800 border border-white/5 text-xs font-bold text-slate-300 flex items-center gap-2 hover:bg-slate-700 transition-colors uppercase tracking-widest">
-                            <FileSpreadsheet className="w-4 h-4 text-cyan-400" /> {t('postCon.exportPdf')}
-                         </button>
-                         <button className="px-4 py-2 rounded-xl bg-emerald-500 text-slate-900 text-xs font-black flex items-center gap-2 hover:brightness-110 transition-all uppercase tracking-widest">
-                            + {t('postCon.addItem')}
-                         </button>
-                      </div>
-                   </div>
+                  {/* Table Header Area */}
+                  <div className="p-6 border-b border-white/5 bg-white/[0.01] flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-slate-800 rounded-lg"><ClipboardList className="w-4 h-4 text-slate-400" /></div>
+                      <h3 className="text-sm font-black text-white uppercase tracking-widest">{t('postCon.bangnaHeader')}</h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button className="px-4 py-2 rounded-xl bg-slate-800 border border-white/5 text-xs font-bold text-slate-300 flex items-center gap-2 hover:bg-slate-700 transition-colors uppercase tracking-widest">
+                        <FileSpreadsheet className="w-4 h-4 text-cyan-400" /> {t('postCon.exportPdf')}
+                      </button>
+                      <button className="px-4 py-2 rounded-xl bg-emerald-500 text-slate-900 text-xs font-black flex items-center gap-2 hover:brightness-110 transition-all uppercase tracking-widest">
+                        + {t('postCon.addItem')}
+                      </button>
+                    </div>
+                  </div>
 
-                   {/* Filters */}
-                   <div className="px-6 py-4 flex flex-wrap gap-2 border-b border-white/5 bg-black/10">
-                      {[
-                        { id: 'all', label: t('postCon.all') },
-                        { id: 'done', label: t('postCon.legendDone') },
-                        { id: 'doing', label: t('postCon.legendDoing') },
-                        { id: 'todo', label: t('postCon.legendTodo') },
-                        { id: 'pending', label: t('postCon.waitingApproval') },
-                      ].map((f) => (
-                        <button 
-                          key={f.id}
-                          onClick={() => setPunchListFilter(f.id)}
-                          className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${punchListFilter === f.id ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-500 hover:text-slate-300 border border-transparent'}`}
-                        >
-                          {f.label}
-                        </button>
-                      ))}
-                   </div>
+                  {/* Filters */}
+                  <div className="px-6 py-4 flex flex-wrap gap-2 border-b border-white/5 bg-black/10">
+                    {[
+                      { id: 'all', label: t('postCon.all') },
+                      { id: 'done', label: t('postCon.legendDone') },
+                      { id: 'doing', label: t('postCon.legendDoing') },
+                      { id: 'todo', label: t('postCon.legendTodo') },
+                      { id: 'pending', label: t('postCon.waitingApproval') },
+                    ].map((f) => (
+                      <button
+                        key={f.id}
+                        onClick={() => setPunchListFilter(f.id)}
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${punchListFilter === f.id ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-500 hover:text-slate-300 border border-transparent'}`}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
 
-                   {/* Table Body */}
-                   <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                           <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white/[0.02]">
-                              <th className="px-6 py-4">{t('postCon.colId')}</th>
-                              <th className="px-6 py-4">{t('postCon.colZone')}</th>
-                              <th className="px-6 py-4">{t('postCon.colTask')}</th>
-                              <th className="px-6 py-4">{t('postCon.colPriority')}</th>
-                              <th className="px-6 py-4">{t('postCon.colResponsibility')}</th>
-                              <th className="px-6 py-4">{t('postCon.colDueDate')}</th>
-                              <th className="px-6 py-4">{t('postCon.colStatus')}</th>
-                           </tr>
-                        </thead>
-                        <tbody>
-                           {mockPunchList.filter(item => punchListFilter === 'all' || item.status === punchListFilter).map((item) => (
-                              <tr key={item.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
-                                 <td className="px-6 py-5 font-mono text-xs text-cyan-400/70">{item.id}</td>
-                                 <td className="px-6 py-5 text-xs text-slate-400">{item.zone}</td>
-                                 <td className="px-6 py-5 font-medium text-slate-200">
-                                    <div className="flex items-center gap-3">
-                                       <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.dot, boxShadow: `0 0 8px ${item.dot}` }} />
-                                       {item.task}
-                                    </div>
-                                 </td>
-                                 <td className="px-6 py-5">
-                                    <span className={`text-[10px] font-black uppercase tracking-widest tabular-nums italic ${item.priority === 'critical' ? 'text-rose-500' : item.priority === 'high' ? 'text-amber-500' : 'text-cyan-400'}`}>
-                                       {t(`postCon.prio${item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}`)}
-                                    </span>
-                                 </td>
-                                 <td className="px-6 py-5 text-xs text-slate-400">{item.responsible}</td>
-                                 <td className="px-6 py-5 text-xs text-slate-500 font-mono tracking-tighter">{item.due}</td>
-                                 <td className="px-6 py-5 whitespace-nowrap">
-                                    <div className="flex items-center gap-2">
-                                       <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border transition-all ${
-                                          item.status === 'done' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
-                                          item.status === 'doing' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
-                                          item.status === 'pending' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
-                                          'bg-slate-800 border-white/10 text-slate-500'
-                                       }`}>
-                                          {t(item.status === 'done' ? 'postCon.legendDone' : item.status === 'doing' ? 'postCon.legendDoing' : item.status === 'pending' ? 'postCon.waitingApproval' : 'postCon.legendTodo')}
-                                       </span>
-                                       {item.status !== 'done' && (
-                                          <button className="px-3 py-1 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[9px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-slate-900 transition-all opacity-0 group-hover:opacity-100">
-                                             {t('postCon.doneBtn')}
-                                          </button>
-                                       )}
-                                       {item.status === 'done' && (
-                                          <div className="w-5 h-5 rounded bg-slate-800 border border-white/5 flex items-center justify-center text-slate-600 opacity-50"><CheckCircle2 className="w-3 h-3" /></div>
-                                       )}
-                                    </div>
-                                 </td>
-                              </tr>
-                           ))}
-                        </tbody>
-                      </table>
-                   </div>
+                  {/* Table Body */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white/[0.02]">
+                          <th className="px-6 py-4">{t('postCon.colId')}</th>
+                          <th className="px-6 py-4">{t('postCon.colZone')}</th>
+                          <th className="px-6 py-4">{t('postCon.colTask')}</th>
+                          <th className="px-6 py-4">{t('postCon.colPriority')}</th>
+                          <th className="px-6 py-4">{t('postCon.colResponsibility')}</th>
+                          <th className="px-6 py-4">{t('postCon.colDueDate')}</th>
+                          <th className="px-6 py-4">{t('postCon.colStatus')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {mockPunchList.filter(item => punchListFilter === 'all' || item.status === punchListFilter).map((item) => (
+                          <tr key={item.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
+                            <td className="px-6 py-5 font-mono text-xs text-cyan-400/70">{item.id}</td>
+                            <td className="px-6 py-5 text-xs text-slate-400">{item.zone}</td>
+                            <td className="px-6 py-5 font-medium text-slate-200">
+                              <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.dot, boxShadow: `0 0 8px ${item.dot}` }} />
+                                {item.task}
+                              </div>
+                            </td>
+                            <td className="px-6 py-5">
+                              <span className={`text-[10px] font-black uppercase tracking-widest tabular-nums italic ${item.priority === 'critical' ? 'text-rose-500' : item.priority === 'high' ? 'text-amber-500' : 'text-cyan-400'}`}>
+                                {t(`postCon.prio${item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}`)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-5 text-xs text-slate-400">{item.responsible}</td>
+                            <td className="px-6 py-5 text-xs text-slate-500 font-mono tracking-tighter">{item.due}</td>
+                            <td className="px-6 py-5 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border transition-all ${item.status === 'done' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                                    item.status === 'doing' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+                                      item.status === 'pending' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
+                                        'bg-slate-800 border-white/10 text-slate-500'
+                                  }`}>
+                                  {t(item.status === 'done' ? 'postCon.legendDone' : item.status === 'doing' ? 'postCon.legendDoing' : item.status === 'pending' ? 'postCon.waitingApproval' : 'postCon.legendTodo')}
+                                </span>
+                                {item.status !== 'done' && (
+                                  <button className="px-3 py-1 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[9px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-slate-900 transition-all opacity-0 group-hover:opacity-100">
+                                    {t('postCon.doneBtn')}
+                                  </button>
+                                )}
+                                {item.status === 'done' && (
+                                  <div className="w-5 h-5 rounded bg-slate-800 border border-white/5 flex items-center justify-center text-slate-600 opacity-50"><CheckCircle2 className="w-3 h-3" /></div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </motion.div>
               </motion.div>
             )}
@@ -1384,7 +1383,7 @@ export default function Dashboard() {
                     </div>
 
                     <div className="glass-card p-5 border-[#00ff9d]/25 bg-gradient-to-br from-[#00ff9d]/5 to-transparent">
-                      <h3 className="text-lg font-bold text-white mb-1">{t('duringCon.askRaak')}</h3>
+                      <h3 className="text-lg font-bold text-white mb-1">{t('duringCon.askTREE')}</h3>
                       <p className="text-xs text-slate-400 mb-4">{t('duringCon.askHint')}</p>
                       <div className="flex flex-wrap gap-2 mb-4">
                         {language === 'th' ? (
@@ -1470,8 +1469,8 @@ export default function Dashboard() {
                 </motion.div>
 
                 {/* Risk & Impact Matrix (Executive Decision Matrix) */}
-                <motion.div 
-                  variants={fadeUp} 
+                <motion.div
+                  variants={fadeUp}
                   className="glass-card p-6 border-indigo-500/20 relative overflow-hidden cursor-pointer"
                   onClick={() => {
                     if (summary?.riskMatrix && summary.riskMatrix.length > 0) {
@@ -1513,15 +1512,15 @@ export default function Dashboard() {
                         <div className="bg-emerald-500"></div>
                       </div>
                     </div>
-                    
+
                     {/* Axis Labels */}
                     <div className="absolute -left-12 top-1/2 -rotate-90 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.impact')} →</div>
                     <div className="absolute left-1/2 -bottom-8 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.probability')} →</div>
 
                     {/* Matrix Axis Lines */}
                     <div className="absolute inset-0 pointer-events-none border border-slate-700/30">
-                       <div className="absolute left-1/2 top-0 bottom-0 border-l border-dashed border-slate-600/50" />
-                       <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-slate-600/50" />
+                      <div className="absolute left-1/2 top-0 bottom-0 border-l border-dashed border-slate-600/50" />
+                      <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-slate-600/50" />
                     </div>
 
                     {/* Data Points (Overflow Visible) */}
@@ -1532,14 +1531,13 @@ export default function Dashboard() {
                           className="absolute group z-20 animate-pulse-glow"
                           style={{ left: `${point.probability}%`, bottom: `${point.impact}%` }}
                         >
-                          <div className={`w-4 h-4 rounded-full shadow-lg cursor-pointer transform -translate-x-1/2 translate-y-1/2 transition-all hover:scale-150 border-2 border-slate-900 ${
-                            point.impact > 80 ? 'bg-rose-500 shadow-rose-500/50' : 
-                            point.impact > 60 ? 'bg-amber-500 shadow-amber-500/50' : 'bg-blue-500 shadow-blue-500/50'
-                          }`}
-                          onClick={(e) => { e.stopPropagation(); setStrategicDrilldown({ type: 'risk_matrix', data: point }); }}
+                          <div className={`w-4 h-4 rounded-full shadow-lg cursor-pointer transform -translate-x-1/2 translate-y-1/2 transition-all hover:scale-150 border-2 border-slate-900 ${point.impact > 80 ? 'bg-rose-500 shadow-rose-500/50' :
+                              point.impact > 60 ? 'bg-amber-500 shadow-amber-500/50' : 'bg-blue-500 shadow-blue-500/50'
+                            }`}
+                            onClick={(e) => { e.stopPropagation(); setStrategicDrilldown({ type: 'risk_matrix', data: point }); }}
                           >
                             <div className="absolute inset-0 w-full h-full rounded-full animate-ping opacity-75" style={{ backgroundColor: point.impact > 80 ? '#f43f5e' : point.impact > 60 ? '#f59e0b' : '#3b82f6' }}></div>
-                            
+
                             {/* Point Label Text (always visible on desktop) */}
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 whitespace-nowrap text-[9px] font-bold text-slate-300 pointer-events-none hidden md:block mix-blend-screen drop-shadow-md">
                               {point.label}
@@ -1560,16 +1558,16 @@ export default function Dashboard() {
                         </div>
                       ))
                     ) : (
-                       <div className="absolute inset-0 flex p-4 items-center justify-center text-slate-500 text-xs text-center z-10 animate-pulse">
-                         Analyzing risk dynamics & building operational impact model...<br/>Awaiting AI compilation.
-                       </div>
+                      <div className="absolute inset-0 flex p-4 items-center justify-center text-slate-500 text-xs text-center z-10 animate-pulse">
+                        Analyzing risk dynamics & building operational impact model...<br />Awaiting AI compilation.
+                      </div>
                     )}
                   </div>
                 </motion.div>
 
                 {/* Portfolio Health Summary Card (Premium) */}
-                <motion.div 
-                  variants={fadeUp} 
+                <motion.div
+                  variants={fadeUp}
                   className="grid grid-cols-1 md:grid-cols-4 gap-6 cursor-pointer"
                   onClick={() => setStrategicDrilldown({ type: 'health', data: summary?.healthPillers })}
                 >
@@ -1700,8 +1698,8 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   <div className="lg:col-span-2 space-y-8">
                     {/* Macro Economic Intelligence & Headwinds */}
-                    <motion.div 
-                      variants={fadeUp} 
+                    <motion.div
+                      variants={fadeUp}
                       className="glass-card p-6 border-blue-500/20 cursor-pointer"
                       onClick={() => setStrategicDrilldown({ type: 'macro_intel', data: (cSuiteIntel || mockCSuiteIntel)?.macroHeadwinds })}
                     >
@@ -1711,7 +1709,7 @@ export default function Dashboard() {
                         </div>
                         <h3 className="text-xl font-bold text-white uppercase tracking-tight">{t('esg.macroHeadwinds')}</h3>
                       </div>
-                      
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         {[
                           { label: t('esg.interestRateTrend'), val: '+50 bps forecast', trend: 'down', color: 'text-amber-400' },
@@ -1756,8 +1754,8 @@ export default function Dashboard() {
                       <p className="text-sm text-slate-400 mt-2">{t('overview.activeDevelopments').replace('{count}', summary.totalProjects.toString())}</p>
                     </motion.div>
 
-                    <motion.div 
-                      variants={fadeUp} 
+                    <motion.div
+                      variants={fadeUp}
                       className="glass-card flex-1 flex flex-col justify-center cursor-pointer hover:bg-white/5 transition-colors"
                       onClick={() => setStrategicDrilldown({ type: 'margin_detail', data: {} })}
                     >
@@ -1928,9 +1926,9 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                   {/* CARBON (Environment) */}
-                  <motion.div 
-                    variants={fadeUp} 
-                    onClick={() => setStrategicDrilldown({ type: 'carbon_detail', data: {} })} 
+                  <motion.div
+                    variants={fadeUp}
+                    onClick={() => setStrategicDrilldown({ type: 'carbon_detail', data: {} })}
                     className="glass-card flex flex-col p-6 border-t-2 border-t-emerald-500 space-y-6 flex-1 cursor-pointer hover:border-emerald-500/50 hover:bg-slate-800/80 transition-all group relative overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-emerald-500/20 transition-colors pointer-events-none"></div>
@@ -2011,9 +2009,9 @@ export default function Dashboard() {
                   </motion.div>
 
                   {/* PEOPLE & GOVERNANCE */}
-                  <motion.div 
-                    variants={fadeUp} 
-                    onClick={() => setStrategicDrilldown({ type: 'happiness_detail', data: {} })} 
+                  <motion.div
+                    variants={fadeUp}
+                    onClick={() => setStrategicDrilldown({ type: 'happiness_detail', data: {} })}
                     className="glass-card flex flex-col p-6 border-t-2 border-t-violet-500 space-y-6 flex-1 cursor-pointer hover:border-violet-500/50 hover:bg-slate-800/80 transition-all group relative overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:bg-violet-500/20 transition-colors pointer-events-none"></div>
@@ -2083,8 +2081,8 @@ export default function Dashboard() {
                 </motion.div>
 
                 {/* Strategic Risk & Impact Matrix (Executive Decision Matrix) */}
-                <motion.div 
-                  variants={fadeUp} 
+                <motion.div
+                  variants={fadeUp}
                   className="glass-card p-6 border-indigo-500/20 relative overflow-hidden cursor-pointer mt-6"
                   onClick={() => {
                     if (summary?.riskMatrix && summary.riskMatrix.length > 0) {
@@ -2126,15 +2124,15 @@ export default function Dashboard() {
                         <div className="bg-emerald-500"></div>
                       </div>
                     </div>
-                    
+
                     {/* Axis Labels */}
                     <div className="absolute -left-12 top-1/2 -rotate-90 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.impact')} →</div>
                     <div className="absolute left-1/2 -bottom-8 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.probability')} →</div>
 
                     {/* Matrix Axis Lines */}
                     <div className="absolute inset-0 pointer-events-none border border-slate-700/30">
-                       <div className="absolute left-1/2 top-0 bottom-0 border-l border-dashed border-slate-600/50" />
-                       <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-slate-600/50" />
+                      <div className="absolute left-1/2 top-0 bottom-0 border-l border-dashed border-slate-600/50" />
+                      <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-slate-600/50" />
                     </div>
 
                     {/* Data Points (Overflow Visible) */}
@@ -2145,14 +2143,13 @@ export default function Dashboard() {
                           className="absolute group z-20 animate-pulse-glow"
                           style={{ left: `${point.probability}%`, bottom: `${point.impact}%` }}
                         >
-                          <div className={`w-4 h-4 rounded-full shadow-lg cursor-pointer transform -translate-x-1/2 translate-y-1/2 transition-all hover:scale-150 border-2 border-slate-900 ${
-                            point.impact > 80 ? 'bg-rose-500 shadow-rose-500/50' : 
-                            point.impact > 60 ? 'bg-amber-500 shadow-amber-500/50' : 'bg-blue-500 shadow-blue-500/50'
-                          }`}
-                          onClick={(e) => { e.stopPropagation(); setStrategicDrilldown({ type: 'risk_matrix', data: point }); }}
+                          <div className={`w-4 h-4 rounded-full shadow-lg cursor-pointer transform -translate-x-1/2 translate-y-1/2 transition-all hover:scale-150 border-2 border-slate-900 ${point.impact > 80 ? 'bg-rose-500 shadow-rose-500/50' :
+                              point.impact > 60 ? 'bg-amber-500 shadow-amber-500/50' : 'bg-blue-500 shadow-blue-500/50'
+                            }`}
+                            onClick={(e) => { e.stopPropagation(); setStrategicDrilldown({ type: 'risk_matrix', data: point }); }}
                           >
                             <div className="absolute inset-0 w-full h-full rounded-full animate-ping opacity-75" style={{ backgroundColor: point.impact > 80 ? '#f43f5e' : point.impact > 60 ? '#f59e0b' : '#3b82f6' }}></div>
-                            
+
                             {/* Point Label Text (always visible on desktop) */}
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 whitespace-nowrap text-[9px] font-bold text-slate-300 pointer-events-none hidden md:block mix-blend-screen drop-shadow-md">
                               {point.label}
@@ -2173,9 +2170,9 @@ export default function Dashboard() {
                         </div>
                       ))
                     ) : (
-                       <div className="absolute inset-0 flex p-4 items-center justify-center text-slate-500 text-xs text-center z-10 animate-pulse">
-                         Analyzing risk dynamics & building operational impact model...<br/>Awaiting AI compilation.
-                       </div>
+                      <div className="absolute inset-0 flex p-4 items-center justify-center text-slate-500 text-xs text-center z-10 animate-pulse">
+                        Analyzing risk dynamics & building operational impact model...<br />Awaiting AI compilation.
+                      </div>
                     )}
                   </div>
                 </motion.div>
@@ -2306,8 +2303,8 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                   {/* Macro Financials Grid (Left 2 columns) */}
                   <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-                    <motion.div 
-                      variants={fadeUp} 
+                    <motion.div
+                      variants={fadeUp}
                       className="glass-card p-6 border-t-2 border-t-purple-500 relative overflow-hidden cursor-pointer hover:bg-white/5 transition-colors group"
                       onClick={() => setStrategicDrilldown({ type: 'macro_intel', data: mockCSuiteIntel.macroHeadwinds })}
                     >
@@ -2316,8 +2313,8 @@ export default function Dashboard() {
                       <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.totalRevenue}</h3>
                       <p className="text-sm text-emerald-400 font-medium flex items-center"><TrendingUp className="w-4 h-4 mr-1" /> {mockCSuiteIntel.macroFinancials.revenueGrowth} {t('boardroom.yoy')}</p>
                     </motion.div>
-                    <motion.div 
-                      variants={fadeUp} 
+                    <motion.div
+                      variants={fadeUp}
                       className="glass-card p-6 border-t-2 border-t-blue-500 relative overflow-hidden cursor-pointer hover:bg-white/5 transition-colors group"
                       onClick={() => setStrategicDrilldown({ type: 'margin_detail', data: {} })}
                     >
@@ -2326,8 +2323,8 @@ export default function Dashboard() {
                       <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.ebitdaMargin}</h3>
                       <p className="text-sm text-emerald-400 font-medium flex items-center"><TrendingUp className="w-4 h-4 mr-1" /> {mockCSuiteIntel.macroFinancials.ebitdaGrowth} {t('boardroom.expanding')}</p>
                     </motion.div>
-                    <motion.div 
-                      variants={fadeUp} 
+                    <motion.div
+                      variants={fadeUp}
                       className="glass-card p-6 border-t-2 border-t-emerald-500 relative overflow-hidden cursor-pointer hover:bg-white/5 transition-colors group"
                       onClick={() => setStrategicDrilldown({ type: 'macro_intel', data: mockCSuiteIntel.macroHeadwinds })}
                     >
@@ -2336,8 +2333,8 @@ export default function Dashboard() {
                       <h3 className="text-4xl font-bold text-white mb-2">{mockCSuiteIntel.macroFinancials.cashRunway}</h3>
                       <p className="text-sm text-slate-400 font-medium flex items-center"><CheckCircle2 className="w-4 h-4 mr-1" /> {t('boardroom.optimalLiquidity')}</p>
                     </motion.div>
-                    <motion.div 
-                      variants={fadeUp} 
+                    <motion.div
+                      variants={fadeUp}
                       className="glass-card p-6 border-t-2 border-t-rose-500 relative overflow-hidden cursor-pointer hover:bg-white/5 transition-colors group"
                       onClick={() => setStrategicDrilldown({ type: 'macro_intel', data: mockCSuiteIntel.macroHeadwinds })}
                     >
@@ -2349,8 +2346,8 @@ export default function Dashboard() {
                   </div>
 
                   {/* Market Dominance Radar (Neon Donut Graph) */}
-                  <motion.div 
-                    variants={fadeUp} 
+                  <motion.div
+                    variants={fadeUp}
                     className="glass-card p-6 flex flex-col relative overflow-hidden items-center justify-center cursor-pointer hover:bg-white/5 transition-colors group"
                     onClick={() => setStrategicDrilldown({ type: 'market_intel', data: mockCSuiteIntel.marketDominance })}
                   >
@@ -2391,8 +2388,8 @@ export default function Dashboard() {
                 </div>
 
                 {/* Live AI Insights Feed (Wide Card) */}
-                <motion.div 
-                  variants={fadeUp} 
+                <motion.div
+                  variants={fadeUp}
                   className="glass-card p-6 border border-blue-500/30 bg-blue-500/5 relative overflow-hidden cursor-pointer hover:bg-blue-500/10 transition-all group"
                   onClick={() => setStrategicDrilldown({ type: 'strategic_insights', data: {} })}
                 >
@@ -2417,7 +2414,7 @@ export default function Dashboard() {
                     <div className="flex-1 max-w-2xl bg-slate-900/50 border border-white/5 rounded-2xl p-4 flex items-center overflow-hidden">
                       <div className="w-2 h-2 rounded-full bg-blue-500 mr-4 shadow-[0_0_10px_rgba(59,130,246,0.5)] shrink-0"></div>
                       <AnimatePresence mode="wait">
-                        <motion.p 
+                        <motion.p
                           key={liveEventIndex}
                           initial={{ opacity: 0, x: 20 }}
                           animate={{ opacity: 1, x: 0 }}
@@ -2438,8 +2435,8 @@ export default function Dashboard() {
 
                 <div className="grid grid-cols-1 gap-6">
                   {/* Strategic Risk & Impact Matrix (Executive Decision Matrix) */}
-                  <motion.div 
-                    variants={fadeUp} 
+                  <motion.div
+                    variants={fadeUp}
                     className="glass-card p-6 border-indigo-500/20 relative overflow-hidden cursor-pointer"
                     onClick={() => {
                       if (summary?.riskMatrix && summary.riskMatrix.length > 0) {
@@ -2481,15 +2478,15 @@ export default function Dashboard() {
                       {/* Grid Labels */}
                       <div className="absolute left-3 top-3 text-[10px] font-black uppercase text-rose-500/80 tracking-tighter z-0">{t('esg.criticalThreat')}</div>
                       <div className="absolute right-3 bottom-3 text-[10px] font-black uppercase text-emerald-500/80 tracking-tighter z-0">{t('esg.operationalTarget')}</div>
-                      
+
                       {/* Axis Labels */}
                       <div className="absolute -left-12 top-1/2 -rotate-90 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.impact')} →</div>
                       <div className="absolute left-1/2 -bottom-8 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.probability')} →</div>
 
                       {/* Matrix Axis Lines */}
                       <div className="absolute inset-0 pointer-events-none border border-slate-700/30">
-                         <div className="absolute left-1/2 top-0 bottom-0 border-l border-dashed border-slate-600/50" />
-                         <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-slate-600/50" />
+                        <div className="absolute left-1/2 top-0 bottom-0 border-l border-dashed border-slate-600/50" />
+                        <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-slate-600/50" />
                       </div>
 
                       {/* Data Points (Overflow OK) */}
@@ -2500,14 +2497,13 @@ export default function Dashboard() {
                             className="absolute group z-20 animate-pulse-glow"
                             style={{ left: `${point.probability}%`, bottom: `${point.impact}%` }}
                           >
-                            <div className={`w-4 h-4 rounded-full shadow-lg cursor-pointer transform -translate-x-1/2 translate-y-1/2 transition-all hover:scale-150 border-2 border-slate-900 ${
-                              point.impact > 80 ? 'bg-rose-500 shadow-rose-500/50' : 
-                              point.impact > 60 ? 'bg-amber-500 shadow-amber-500/50' : 'bg-blue-500 shadow-blue-500/50'
-                            }`}
-                            onClick={(e) => { e.stopPropagation(); setStrategicDrilldown({ type: 'risk_matrix', data: point }); }}
+                            <div className={`w-4 h-4 rounded-full shadow-lg cursor-pointer transform -translate-x-1/2 translate-y-1/2 transition-all hover:scale-150 border-2 border-slate-900 ${point.impact > 80 ? 'bg-rose-500 shadow-rose-500/50' :
+                                point.impact > 60 ? 'bg-amber-500 shadow-amber-500/50' : 'bg-blue-500 shadow-blue-500/50'
+                              }`}
+                              onClick={(e) => { e.stopPropagation(); setStrategicDrilldown({ type: 'risk_matrix', data: point }); }}
                             >
                               <div className="absolute inset-0 w-full h-full rounded-full animate-ping opacity-75" style={{ backgroundColor: point.impact > 80 ? '#f43f5e' : point.impact > 60 ? '#f59e0b' : '#3b82f6' }}></div>
-                              
+
                               {/* Point Label Text (always visible on desktop) */}
                               <span className="absolute left-4 top-1/2 -translate-y-1/2 whitespace-nowrap text-[9px] font-bold text-slate-300 pointer-events-none hidden md:block mix-blend-screen drop-shadow-md">
                                 {point.label}
@@ -2528,9 +2524,9 @@ export default function Dashboard() {
                           </div>
                         ))
                       ) : (
-                         <div className="absolute inset-0 flex p-4 items-center justify-center text-slate-500 text-xs text-center z-10 animate-pulse">
-                           Analyzing risk dynamics & building operational impact model...<br/>Awaiting AI compilation.
-                         </div>
+                        <div className="absolute inset-0 flex p-4 items-center justify-center text-slate-500 text-xs text-center z-10 animate-pulse">
+                          Analyzing risk dynamics & building operational impact model...<br />Awaiting AI compilation.
+                        </div>
                       )}
                     </div>
                   </motion.div>
@@ -2542,11 +2538,11 @@ export default function Dashboard() {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {mockCSuiteIntel.aiStrategicDirectives.map((directive) => (
-                        <div 
-                            key={directive.id} 
-                            className="group bg-slate-900/40 border border-white/5 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all flex flex-col relative cursor-pointer"
-                            onClick={() => setStrategicDrilldown({ type: 'directive', data: directive })}
-                          >
+                        <div
+                          key={directive.id}
+                          className="group bg-slate-900/40 border border-white/5 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all flex flex-col relative cursor-pointer"
+                          onClick={() => setStrategicDrilldown({ type: 'directive', data: directive })}
+                        >
                           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-[40px] -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
 
                           <div className="p-6 flex-1 relative z-10">
@@ -2562,7 +2558,7 @@ export default function Dashboard() {
                               <TrendingUp className="w-5 h-5 text-emerald-400 shrink-0" />
                               <span className="text-sm font-bold text-emerald-400 leading-tight">{directive.impact}</span>
                             </div>
-                            <button 
+                            <button
                               className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 hover:from-blue-500 to-indigo-600 hover:to-indigo-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.2)] hover:shadow-[0_0_30px_rgba(79,70,229,0.4)] flex items-center justify-center uppercase tracking-wider text-xs group/btn relative overflow-hidden"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -3037,7 +3033,7 @@ export default function Dashboard() {
               </button>
 
               <div className="space-y-8">
-                
+
                 {/* 1. STRATEGIC DIRECTIVE DRILLDOWN */}
                 {strategicDrilldown.type === 'directive' && (
                   <div className="space-y-8">
@@ -3128,12 +3124,11 @@ export default function Dashboard() {
                             {t('directives.impactForecast')}: Implementation triggers an immediate liquidity delta of +฿45M within 30 days.
                           </p>
                         </div>
-                        <button 
-                          className={`w-full py-5 px-6 rounded-2xl transition-all uppercase tracking-[0.2em] text-sm flex items-center justify-center group overflow-hidden relative font-black shadow-lg ${
-                            executing === strategicDrilldown.data?.id 
-                              ? 'bg-emerald-500 text-white' 
+                        <button
+                          className={`w-full py-5 px-6 rounded-2xl transition-all uppercase tracking-[0.2em] text-sm flex items-center justify-center group overflow-hidden relative font-black shadow-lg ${executing === strategicDrilldown.data?.id
+                              ? 'bg-emerald-500 text-white'
                               : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-indigo-500/30 hover:shadow-indigo-500/50'
-                          }`}
+                            }`}
                           onClick={() => {
                             if (executing) return;
                             setExecuting(strategicDrilldown.data?.id);
@@ -3260,12 +3255,12 @@ export default function Dashboard() {
                         <div className="p-6 bg-slate-800/40 rounded-3xl border border-white/5">
                           <h4 className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-4">{t('directives.growthProjection')}</h4>
                           <div className="h-40">
-                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={mockCSuiteIntel.marketDominance}>
-                                   <Bar dataKey="growth" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                                   <XAxis dataKey="competitor" hide />
-                                </BarChart>
-                             </ResponsiveContainer>
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart data={mockCSuiteIntel.marketDominance}>
+                                <Bar dataKey="growth" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                                <XAxis dataKey="competitor" hide />
+                              </BarChart>
+                            </ResponsiveContainer>
                           </div>
                         </div>
                       </div>
@@ -3308,25 +3303,25 @@ export default function Dashboard() {
                       </div>
                       <div className="space-y-4">
                         <div className="glass-card p-8 border-emerald-500/20 bg-emerald-500/5">
-                           <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-widest mb-4 flex items-center">
-                             <Bot className="w-4 h-4 mr-2" /> {t('directives.aiAuditor')}
-                           </h3>
-                           <p className="text-white text-lg font-light leading-relaxed">
-                             {summary?.portfolioNarrative}
-                           </p>
+                          <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-widest mb-4 flex items-center">
+                            <Bot className="w-4 h-4 mr-2" /> {t('directives.aiAuditor')}
+                          </h3>
+                          <p className="text-white text-lg font-light leading-relaxed">
+                            {summary?.portfolioNarrative}
+                          </p>
                         </div>
                         <div className="grid grid-cols-1 gap-2">
-                           {(summary?.healthPillers || []).map((p, i) => (
-                             <div key={i} className="flex items-center justify-between p-4 bg-white/[0.02] rounded-2xl border border-white/5">
-                               <span className="text-slate-200 font-medium">{t(`directives.${p.name.toLowerCase()}`)}</span>
-                               <div className="flex items-center space-x-3">
-                                  <span className={`text-xs font-bold uppercase ${p.score > 80 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                                    {p.score > 90 ? t('directives.excellent') : p.score > 80 ? t('directives.stable') : t('directives.atrisk')}
-                                  </span>
-                                  <span className="text-white font-black">{p.score}%</span>
-                               </div>
-                             </div>
-                           ))}
+                          {(summary?.healthPillers || []).map((p, i) => (
+                            <div key={i} className="flex items-center justify-between p-4 bg-white/[0.02] rounded-2xl border border-white/5">
+                              <span className="text-slate-200 font-medium">{t(`directives.${p.name.toLowerCase()}`)}</span>
+                              <div className="flex items-center space-x-3">
+                                <span className={`text-xs font-bold uppercase ${p.score > 80 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                  {p.score > 90 ? t('directives.excellent') : p.score > 80 ? t('directives.stable') : t('directives.atrisk')}
+                                </span>
+                                <span className="text-white font-black">{p.score}%</span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -3348,29 +3343,29 @@ export default function Dashboard() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                       <div className="glass-card p-6 border-white/10 bg-slate-800/40">
-                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-white font-bold">{strategicDrilldown.data?.label}</h3>
-                            <span className="px-3 py-1 bg-rose-500/20 text-rose-400 text-[10px] font-black rounded-full uppercase tracking-widest">{t('directives.atrisk')}</span>
-                         </div>
-                         <div className="space-y-6">
-                            <div>
-                               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">{t('directives.riskSeverity')}</p>
-                               <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden">
-                                  <div className="h-full bg-rose-500" style={{ width: `${strategicDrilldown.data?.impact}%` }}></div>
-                               </div>
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className="text-white font-bold">{strategicDrilldown.data?.label}</h3>
+                          <span className="px-3 py-1 bg-rose-500/20 text-rose-400 text-[10px] font-black rounded-full uppercase tracking-widest">{t('directives.atrisk')}</span>
+                        </div>
+                        <div className="space-y-6">
+                          <div>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">{t('directives.riskSeverity')}</p>
+                            <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden">
+                              <div className="h-full bg-rose-500" style={{ width: `${strategicDrilldown.data?.impact}%` }}></div>
                             </div>
-                            <div>
-                               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">{t('directives.targetProject')}</p>
-                               <p className="text-white font-bold flex items-center"><Building2 className="w-4 h-4 mr-2 text-blue-400" /> {strategicDrilldown.data?.project}</p>
-                            </div>
-                         </div>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">{t('directives.targetProject')}</p>
+                            <p className="text-white font-bold flex items-center"><Building2 className="w-4 h-4 mr-2 text-blue-400" /> {strategicDrilldown.data?.project}</p>
+                          </div>
+                        </div>
                       </div>
                       <div className="glass-card p-8 border-blue-500/20 bg-blue-500/5 flex flex-col justify-center">
-                         <h3 className="text-lg font-bold text-blue-400 mb-4 flex items-center"><Zap className="w-5 h-5 mr-3" /> AI Tactical Mitigation</h3>
-                         <p className="text-white text-xl font-light italic leading-relaxed">
-                            "{strategicDrilldown.data?.mitigation}"
-                         </p>
-                         <button className="mt-8 py-4 bg-white text-slate-900 font-black rounded-2xl uppercase tracking-widest text-xs hover:bg-slate-200 transition-all">Close Mitigated Thread</button>
+                        <h3 className="text-lg font-bold text-blue-400 mb-4 flex items-center"><Zap className="w-5 h-5 mr-3" /> AI Tactical Mitigation</h3>
+                        <p className="text-white text-xl font-light italic leading-relaxed">
+                          "{strategicDrilldown.data?.mitigation}"
+                        </p>
+                        <button className="mt-8 py-4 bg-white text-slate-900 font-black rounded-2xl uppercase tracking-widest text-xs hover:bg-slate-200 transition-all">Close Mitigated Thread</button>
                       </div>
                     </div>
                   </div>
@@ -3390,29 +3385,29 @@ export default function Dashboard() {
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                       <div className="glass-card p-6 border-white/10 bg-slate-800/40">
-                         <h3 className="text-white font-bold mb-6">EBITDA Trajectory by Project</h3>
-                         <div className="space-y-4">
-                            {[
-                              { name: 'The Riverfront Condo', margin: '21.2%', trend: '+2.4%' },
-                              { name: 'Sukhumvit Luxury Hub', margin: '19.5%', trend: '+1.1%' },
-                              { name: 'Chiang Mai Eco-Resort', margin: '14.8%', trend: '-0.5%' },
-                              { name: 'Bangna Logistics Park', margin: '18.5%', trend: '+0.8%' }
-                            ].map((p, i) => (
-                              <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5">
-                                <span className="text-slate-300 font-medium">{p.name}</span>
-                                <div className="text-right">
-                                  <span className="text-white font-bold block">{p.margin}</span>
-                                  <span className={`text-[10px] ${p.trend.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}`}>{p.trend} vs target</span>
-                                </div>
+                        <h3 className="text-white font-bold mb-6">EBITDA Trajectory by Project</h3>
+                        <div className="space-y-4">
+                          {[
+                            { name: 'The Riverfront Condo', margin: '21.2%', trend: '+2.4%' },
+                            { name: 'Sukhumvit Luxury Hub', margin: '19.5%', trend: '+1.1%' },
+                            { name: 'Chiang Mai Eco-Resort', margin: '14.8%', trend: '-0.5%' },
+                            { name: 'Bangna Logistics Park', margin: '18.5%', trend: '+0.8%' }
+                          ].map((p, i) => (
+                            <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5">
+                              <span className="text-slate-300 font-medium">{p.name}</span>
+                              <div className="text-right">
+                                <span className="text-white font-bold block">{p.margin}</span>
+                                <span className={`text-[10px] ${p.trend.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}`}>{p.trend} vs target</span>
                               </div>
-                            ))}
-                         </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                       <div className="glass-card p-8 border-indigo-500/20 bg-indigo-500/5 flex flex-col justify-center">
-                         <h3 className="text-lg font-bold text-indigo-400 mb-4 flex items-center"><Zap className="w-5 h-5 mr-3" /> AI Margin Optimization</h3>
-                         <p className="text-white text-xl font-light italic leading-relaxed">
-                            "Current predictive model shows a 1.2% uplift opportunity by re-allocating idle equipment from Chiang Mai to the Bangna site, reducing operational overhead by ฿2.4M."
-                         </p>
+                        <h3 className="text-lg font-bold text-indigo-400 mb-4 flex items-center"><Zap className="w-5 h-5 mr-3" /> AI Margin Optimization</h3>
+                        <p className="text-white text-xl font-light italic leading-relaxed">
+                          "Current predictive model shows a 1.2% uplift opportunity by re-allocating idle equipment from Chiang Mai to the Bangna site, reducing operational overhead by ฿2.4M."
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -3490,32 +3485,32 @@ export default function Dashboard() {
                       <div className="glass-card p-8 border-amber-500/20 bg-amber-500/5">
                         <h3 className="text-lg font-bold text-white mb-6">Site Satisfaction Breakdown</h3>
                         <div className="space-y-6">
-                           {[
-                             { site: 'Sukhumvit Site', score: 4.9, status: 'Excellent' },
-                             { site: 'Bangna Site', score: 4.2, status: 'Good' },
-                             { site: 'Riverfront', score: 5.0, status: 'Perfect' },
-                             { site: 'Chiang Mai', score: 4.6, status: 'Excellent' }
-                           ].map((s, i) => (
-                             <div key={i} className="space-y-2">
-                               <div className="flex justify-between text-sm">
-                                 <span className="text-slate-300 font-bold">{s.site}</span>
-                                 <span className="text-white">{s.score} / 5.0</span>
-                               </div>
-                               <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-                                 <div className={`h-full ${s.score > 4.5 ? 'bg-emerald-500' : 'bg-amber-500'}`} style={{ width: `${s.score * 20}%` }}></div>
-                               </div>
-                             </div>
-                           ))}
+                          {[
+                            { site: 'Sukhumvit Site', score: 4.9, status: 'Excellent' },
+                            { site: 'Bangna Site', score: 4.2, status: 'Good' },
+                            { site: 'Riverfront', score: 5.0, status: 'Perfect' },
+                            { site: 'Chiang Mai', score: 4.6, status: 'Excellent' }
+                          ].map((s, i) => (
+                            <div key={i} className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-slate-300 font-bold">{s.site}</span>
+                                <span className="text-white">{s.score} / 5.0</span>
+                              </div>
+                              <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                                <div className={`h-full ${s.score > 4.5 ? 'bg-emerald-500' : 'bg-amber-500'}`} style={{ width: `${s.score * 20}%` }}></div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                       <div className="glass-card p-6 border-white/5 bg-slate-800/20 flex flex-col justify-center">
                         <h3 className="text-sm font-bold text-amber-400 uppercase tracking-widest mb-4">Sentiment Word Cloud Trends</h3>
                         <div className="flex flex-wrap gap-3">
-                           <span className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/30 text-lg font-bold">Safety First</span>
-                           <span className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-full border border-blue-500/30 text-base">New Equipment</span>
-                           <span className="px-4 py-2 bg-indigo-500/20 text-indigo-400 rounded-full border border-indigo-500/30 text-xl font-black">AI Efficiency</span>
-                           <span className="px-4 py-2 bg-rose-500/10 text-rose-400/50 rounded-full border border-rose-500/10 text-xs">Overtime</span>
-                           <span className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-full border border-amber-500/30 text-sm">Clear Instructions</span>
+                          <span className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/30 text-lg font-bold">Safety First</span>
+                          <span className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-full border border-blue-500/30 text-base">New Equipment</span>
+                          <span className="px-4 py-2 bg-indigo-500/20 text-indigo-400 rounded-full border border-indigo-500/30 text-xl font-black">AI Efficiency</span>
+                          <span className="px-4 py-2 bg-rose-500/10 text-rose-400/50 rounded-full border border-rose-500/10 text-xs">Overtime</span>
+                          <span className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-full border border-amber-500/30 text-sm">Clear Instructions</span>
                         </div>
                         <div className="mt-10 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
                           <p className="text-xs text-amber-500 font-bold uppercase mb-2">AI Recommendation</p>
@@ -3543,37 +3538,37 @@ export default function Dashboard() {
                       {/* Reasoning Flow */}
                       <div className="lg:col-span-2 space-y-6">
                         <div className="glass-card p-8 border-white/5 bg-slate-800/40 relative overflow-hidden">
-                           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><Radar className="w-48 h-48 text-blue-500" /></div>
-                           <h3 className="text-lg font-bold text-white mb-8 flex items-center underline decoration-blue-500/30 underline-offset-8 decoration-2">
-                             Neural Logic Chain
-                           </h3>
-                           
-                           <div className="space-y-12 relative">
-                              {/* Connector Line */}
-                              <div className="absolute left-6 top-8 bottom-8 w-0.5 bg-gradient-to-b from-blue-500 via-indigo-500 to-purple-500 opacity-20"></div>
+                          <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><Radar className="w-48 h-48 text-blue-500" /></div>
+                          <h3 className="text-lg font-bold text-white mb-8 flex items-center underline decoration-blue-500/30 underline-offset-8 decoration-2">
+                            Neural Logic Chain
+                          </h3>
 
-                              {[
-                                { title: 'Data Ingestion', desc: 'Real-time monitoring of 1,200+ material SKUs and macro-economic volatility indices.', status: 'COMPLETED', color: 'text-blue-400' },
-                                { title: 'Constraint Mapping', desc: 'Cross-referencing site labor availability with Q4 delivery milestones.', status: 'ACTIVE', color: 'text-indigo-400' },
-                                { title: 'Strategy Synthesis', desc: 'Executing Monte Carlo simulations for margin protection directives.', status: 'IN-PROGRESS', color: 'text-yellow-400' },
-                                { title: 'Action Authorization', desc: 'Pushing tactical interventions to project managers via mobile edge.', status: 'PENDING', color: 'text-slate-500' }
-                              ].map((step, i) => (
-                                <div key={i} className="flex items-start space-x-8 relative group">
-                                  <div className={`p-4 rounded-2xl bg-slate-900 border border-white/10 z-10 ${step.color} group-hover:scale-110 transition-transform`}>
-                                    {i === 0 ? <Globe className="w-5 h-5"/> : i === 1 ? <Target className="w-5 h-5"/> : i === 2 ? <Zap className="w-5 h-5"/> : <CheckCircle2 className="w-5 h-5"/>}
-                                  </div>
-                                  <div>
-                                    <div className="flex items-center space-x-3 mb-1">
-                                      <h4 className="text-white font-bold">{step.title}</h4>
-                                      <span className={`text-[8px] font-black px-2 py-0.5 rounded-full border ${i === 1 ? 'bg-indigo-500/20 border-indigo-500/30 text-indigo-400 animate-pulse' : 'bg-white/5 border-white/10 text-slate-500'}`}>
-                                        {step.status}
-                                      </span>
-                                    </div>
-                                    <p className="text-sm text-slate-400 max-w-md leading-relaxed">{step.desc}</p>
-                                  </div>
+                          <div className="space-y-12 relative">
+                            {/* Connector Line */}
+                            <div className="absolute left-6 top-8 bottom-8 w-0.5 bg-gradient-to-b from-blue-500 via-indigo-500 to-purple-500 opacity-20"></div>
+
+                            {[
+                              { title: 'Data Ingestion', desc: 'Real-time monitoring of 1,200+ material SKUs and macro-economic volatility indices.', status: 'COMPLETED', color: 'text-blue-400' },
+                              { title: 'Constraint Mapping', desc: 'Cross-referencing site labor availability with Q4 delivery milestones.', status: 'ACTIVE', color: 'text-indigo-400' },
+                              { title: 'Strategy Synthesis', desc: 'Executing Monte Carlo simulations for margin protection directives.', status: 'IN-PROGRESS', color: 'text-yellow-400' },
+                              { title: 'Action Authorization', desc: 'Pushing tactical interventions to project managers via mobile edge.', status: 'PENDING', color: 'text-slate-500' }
+                            ].map((step, i) => (
+                              <div key={i} className="flex items-start space-x-8 relative group">
+                                <div className={`p-4 rounded-2xl bg-slate-900 border border-white/10 z-10 ${step.color} group-hover:scale-110 transition-transform`}>
+                                  {i === 0 ? <Globe className="w-5 h-5" /> : i === 1 ? <Target className="w-5 h-5" /> : i === 2 ? <Zap className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
                                 </div>
-                              ))}
-                           </div>
+                                <div>
+                                  <div className="flex items-center space-x-3 mb-1">
+                                    <h4 className="text-white font-bold">{step.title}</h4>
+                                    <span className={`text-[8px] font-black px-2 py-0.5 rounded-full border ${i === 1 ? 'bg-indigo-500/20 border-indigo-500/30 text-indigo-400 animate-pulse' : 'bg-white/5 border-white/10 text-slate-500'}`}>
+                                      {step.status}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-slate-400 max-w-md leading-relaxed">{step.desc}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
 
@@ -3583,44 +3578,44 @@ export default function Dashboard() {
                           <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest mb-6">Processing Dynamics</h3>
                           <div className="space-y-6">
                             <div>
-                               <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-2">
-                                 <span>inference latency</span>
-                                 <span className="text-white">124ms</span>
-                               </div>
-                               <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                                  <div className="h-full bg-blue-500" style={{ width: '85%' }}></div>
-                               </div>
+                              <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-2">
+                                <span>inference latency</span>
+                                <span className="text-white">124ms</span>
+                              </div>
+                              <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                <div className="h-full bg-blue-500" style={{ width: '85%' }}></div>
+                              </div>
                             </div>
                             <div>
-                               <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-2">
-                                 <span>data coverage</span>
-                                 <span className="text-white">99.8%</span>
-                               </div>
-                               <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                                  <div className="h-full bg-indigo-500" style={{ width: '99%' }}></div>
-                               </div>
+                              <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-2">
+                                <span>data coverage</span>
+                                <span className="text-white">99.8%</span>
+                              </div>
+                              <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                <div className="h-full bg-indigo-500" style={{ width: '99%' }}></div>
+                              </div>
                             </div>
                             <div>
-                               <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-2">
-                                 <span>decision confidence</span>
-                                 <span className="text-white">94.2%</span>
-                               </div>
-                               <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                                  <div className="h-full bg-emerald-500" style={{ width: '94%' }}></div>
-                               </div>
+                              <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase mb-2">
+                                <span>decision confidence</span>
+                                <span className="text-white">94.2%</span>
+                              </div>
+                              <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                <div className="h-full bg-emerald-500" style={{ width: '94%' }}></div>
+                              </div>
                             </div>
                           </div>
                         </div>
 
                         <div className="p-8 bg-slate-900 border border-white/5 rounded-3xl relative overflow-hidden">
-                           <div className="absolute inset-0 bg-blue-500/5 pointer-events-none"></div>
-                           <h4 className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-4">Strategic Recommendation</h4>
-                           <p className="text-white text-base italic leading-relaxed">
-                             "Correlation analysis suggests a 30% probability of regional cement shortages. Authorization requested to pre-purchase 5,000 tons under current price lock protocol."
-                           </p>
-                           <button className="w-full mt-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-2xl uppercase tracking-widest text-xs transition-all shadow-lg shadow-indigo-500/30">
-                             AUTHORIZE PRE-EMPTIVE BUY
-                           </button>
+                          <div className="absolute inset-0 bg-blue-500/5 pointer-events-none"></div>
+                          <h4 className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-4">Strategic Recommendation</h4>
+                          <p className="text-white text-base italic leading-relaxed">
+                            "Correlation analysis suggests a 30% probability of regional cement shortages. Authorization requested to pre-purchase 5,000 tons under current price lock protocol."
+                          </p>
+                          <button className="w-full mt-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-2xl uppercase tracking-widest text-xs transition-all shadow-lg shadow-indigo-500/30">
+                            AUTHORIZE PRE-EMPTIVE BUY
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -3661,7 +3656,7 @@ export default function Dashboard() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                   <div className="flex items-center space-x-4">
-                      <div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-400">
+                    <div className="p-3 bg-indigo-500/20 rounded-xl text-indigo-400">
                       <Building2 className="w-6 h-6" />
                     </div>
                     <div>
@@ -3796,9 +3791,9 @@ export default function Dashboard() {
       {/* Floating Action Button (FAB) - Mobile Only */}
       {isMobile && (
         <button className="md:hidden fixed z-40 bottom-24 right-4 w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full shadow-[0_0_30px_rgba(59,130,246,0.5)] flex items-center justify-center text-white focus:outline-none focus:ring-4 focus:ring-blue-500/30 overflow-hidden group">
-           <Camera className="w-6 h-6 transition-transform group-hover:scale-110" />
-           <span className="sr-only">{t('field.captureHazard')}</span>
-           <div className="absolute inset-0 bg-white/20 scale-0 group-active:scale-100 transition-transform rounded-full"></div>
+          <Camera className="w-6 h-6 transition-transform group-hover:scale-110" />
+          <span className="sr-only">{t('field.captureHazard')}</span>
+          <div className="absolute inset-0 bg-white/20 scale-0 group-active:scale-100 transition-transform rounded-full"></div>
         </button>
       )}
 
@@ -3821,17 +3816,17 @@ export default function Dashboard() {
               const activeBg = emerald ? 'bg-emerald-500/20' : amber ? 'bg-amber-500/20' : cyan ? 'bg-cyan-500/20' : violet ? 'bg-violet-500/20' : 'bg-blue-500/20';
               const activeLine = emerald ? 'bg-emerald-400' : amber ? 'bg-amber-300' : cyan ? 'bg-cyan-300' : violet ? 'bg-violet-300' : 'bg-blue-400';
               return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${mobileActive ? activeColor : 'text-slate-500'}`}
-              >
-                <div className={`p-1.5 rounded-xl transition-all overflow-hidden relative ${mobileActive ? `${activeBg} shadow-inner` : ''}`}>
-                  <item.icon className={`h-5 w-5 ${mobileActive ? 'relative z-10' : ''}`} />
-                  {mobileActive && <div className={`absolute bottom-0 left-0 w-full h-0.5 blur-[2px] ${activeLine}`}></div>}
-                </div>
-                <span className="text-[10px] font-black tracking-widest uppercase">{item.label}</span>
-              </button>
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${mobileActive ? activeColor : 'text-slate-500'}`}
+                >
+                  <div className={`p-1.5 rounded-xl transition-all overflow-hidden relative ${mobileActive ? `${activeBg} shadow-inner` : ''}`}>
+                    <item.icon className={`h-5 w-5 ${mobileActive ? 'relative z-10' : ''}`} />
+                    {mobileActive && <div className={`absolute bottom-0 left-0 w-full h-0.5 blur-[2px] ${activeLine}`}></div>}
+                  </div>
+                  <span className="text-[10px] font-black tracking-widest uppercase">{item.label}</span>
+                </button>
               );
             })}
           </div>
