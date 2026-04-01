@@ -336,9 +336,16 @@ export default function Dashboard() {
         { id: 5, label: language === 'th' ? 'ความเสี่ยงด้านการออกแบบ' : 'Design Clashes', probability: 20, impact: 95, project: 'U-Tapao', mitigation: 'BIM Clash Detection' }
       ];
 
+      const mockHealthPillersFallback = [
+        { name: language === 'th' ? 'สิ่งแวดล้อม (E)' : 'Environment', score: 92, status: language === 'th' ? 'ดีเยี่ยม' : 'Excellent' },
+        { name: language === 'th' ? 'สังคม (S)' : 'Social', score: 85, status: language === 'th' ? 'คงที่' : 'Stable' },
+        { name: language === 'th' ? 'ธรรมาภิบาล (G)' : 'Governance', score: 95, status: language === 'th' ? 'ดีเยี่ยม' : 'Excellent' }
+      ];
+
       setSummary({
         ...summaryRes.data,
-        riskMatrix: summaryRes.data.riskMatrix?.length ? summaryRes.data.riskMatrix : mockRiskMatrixFallback
+        riskMatrix: summaryRes.data.riskMatrix?.length ? summaryRes.data.riskMatrix : mockRiskMatrixFallback,
+        healthPillers: summaryRes.data.healthPillers?.length ? summaryRes.data.healthPillers : mockHealthPillersFallback
       });
       setProjects(projectsRes.data);
       setBiddingOps(biddingRes.data);
