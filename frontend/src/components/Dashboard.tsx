@@ -30,7 +30,8 @@ import {
   Camera,
   HardHat,
   ClipboardList,
-  FileSpreadsheet
+  FileSpreadsheet,
+  FileText
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
@@ -142,6 +143,7 @@ const duringConScurveData = [
 const duringConScopeColors = ['#34d399', '#22d3ee', '#a78bfa'];
 
 type PreConFilter = 'boq' | 'vendor' | 'contracts';
+type FinancialsView = 'invoices' | 'progress-billing' | 'retention';
 
 const preConBoqRows = [
   { code: 'A.01', desc: 'งานโครงสร้างคอนกรีต', unit: 'ตร.ม.', qty: 2400, unitPrice: 4200, status: 'approved' as const },
@@ -150,6 +152,38 @@ const preConBoqRows = [
   { code: 'C.01', desc: 'ระบบไฟฟ้าและแสงสว่าง', unit: 'จุด', qty: 1200, unitPrice: 4200, status: 'pending' as const },
   { code: 'C.02', desc: 'ระบบปรับอากาศ (HVAC)', unit: 'ชุด', qty: 240, unitPrice: 35000, status: 'pending' as const },
   { code: 'D.01', desc: 'งานภูมิทัศน์และภายนอก', unit: 'ตร.ม.', qty: 3200, unitPrice: 1800, status: 'risk' as const },
+];
+
+const financialsCashflow = [
+  { m: 'Jan', cashIn: 18.2, cashOut: 14.6 },
+  { m: 'Feb', cashIn: 16.9, cashOut: 15.8 },
+  { m: 'Mar', cashIn: 20.1, cashOut: 18.4 },
+  { m: 'Apr', cashIn: 17.4, cashOut: 19.2 },
+  { m: 'May', cashIn: 22.8, cashOut: 17.1 },
+  { m: 'Jun', cashIn: 21.6, cashOut: 18.9 },
+].map((r) => ({ ...r, net: +(r.cashIn - r.cashOut).toFixed(1) }));
+
+const financialsPayables = [
+  { vendor: 'SCG Materials', invoice: 'INV-2403-1182', amount: 4.8, due: '12 Apr', risk: 'low' as const },
+  { vendor: 'PowerGrid Co.', invoice: 'INV-2403-2044', amount: 3.1, due: '18 Apr', risk: 'medium' as const },
+  { vendor: 'HVAC Prime', invoice: 'INV-2403-3310', amount: 5.6, due: '27 Apr', risk: 'high' as const },
+  { vendor: 'Concrete Works', invoice: 'INV-2403-0907', amount: 2.4, due: '02 May', risk: 'low' as const },
+];
+
+const financialInvoices = [
+  { id: 'INV-2025-041', project: 'Bangna', vendor: 'Thai Steel Co.', boq: 8.2, wht: 0.2472, net: 7.99, date: '15 Mar 2025', etax: 'ET-20250315-001', status: 'approved' as const },
+  { id: 'INV-2025-042', project: 'EEC', vendor: 'Siam Cement', boq: 4.5, wht: 0.1360, net: 4.37, date: '20 Mar 2025', etax: 'ET-20250320-002', status: 'queued' as const },
+  { id: 'INV-2025-043', project: 'U‑Tapao', vendor: 'AutoBuild Systems', boq: 2.3, wht: 0.0690, net: 2.23, date: '25 Mar 2025', etax: '—', status: 'queued' as const },
+  { id: 'INV-2025-044', project: 'Bangna', vendor: 'Eastern Electrical', boq: 1.8, wht: 0.0540, net: 1.75, date: '01 Apr 2025', etax: '—', status: 'pending' as const },
+  { id: 'INV-2025-045', project: 'EEC', vendor: 'Premium Tiles TH', boq: 0.95, wht: 0.0285, net: 0.92, date: '05 Apr 2025', etax: '—', status: 'pending' as const },
+];
+
+const postConChecklist = [
+  { key: 'inspections' as const, done: true },
+  { key: 'asBuilt' as const, done: true },
+  { key: 'punchList' as const, done: false },
+  { key: 'training' as const, done: false },
+  { key: 'retentionRelease' as const, done: false },
 ];
 
 const fadeUp = {
@@ -210,6 +244,18 @@ export default function Dashboard() {
   const [executing, setExecuting] = useState<string | null>(null);
   const [liveEventIndex, setLiveEventIndex] = useState(0);
   const [preConFilter, setPreConFilter] = useState<PreConFilter>('boq');
+  const [financialsView, setFinancialsView] = useState<FinancialsView>('invoices');
+  const [postConMode, setPostConMode] = useState<'punch-list' | 'warranty'>('punch-list');
+  const [punchListFilter, setPunchListFilter] = useState('all');
+
+  const mockPunchList = [
+    { id: 'PL-001', zone: t('postCon.zoneA'), task: t('postCon.item1'), priority: 'high', responsible: 'ช่างวิชัย', due: '20 Mar', status: 'doing', dot: '#eab308' },
+    { id: 'PL-002', zone: t('postCon.zoneA'), task: t('postCon.item2'), priority: 'medium', responsible: 'ช่างสมศักดิ์', due: '22 Mar', status: 'done', dot: '#22c55e' },
+    { id: 'PL-003', zone: t('postCon.zoneB'), task: t('postCon.item3'), priority: 'critical', responsible: 'Eastern Electrical', due: '18 Mar', status: 'doing', dot: '#ef4444' },
+    { id: 'PL-004', zone: t('postCon.zoneC'), task: t('postCon.item4'), priority: 'high', responsible: 'Thai Waterproof Co.', due: '25 Mar', status: 'pending', dot: '#eab308' },
+    { id: 'PL-005', zone: t('postCon.zoneD'), task: t('postCon.item5'), priority: 'medium', responsible: 'ช่างพิมพ์', due: '30 Mar', status: 'todo', dot: '#3b82f6' },
+    { id: 'PL-006', zone: t('postCon.zoneD'), task: t('postCon.item6'), priority: 'high', responsible: 'HVAC Service', due: '21 Mar', status: 'done', dot: '#22c55e' },
+  ];
 
   // Cycle live AI events
   useEffect(() => {
@@ -378,6 +424,12 @@ export default function Dashboard() {
     if (id === 'pre-con') {
       return 'bg-amber-500/10 text-amber-300 border border-amber-500/25 shadow-[inset_0_0_20px_rgba(245,158,11,0.08)]';
     }
+    if (id === 'financials') {
+      return 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/25 shadow-[inset_0_0_20px_rgba(34,211,238,0.08)]';
+    }
+    if (id === 'post-con') {
+      return 'bg-violet-500/10 text-violet-300 border border-violet-500/25 shadow-[inset_0_0_20px_rgba(167,139,250,0.08)]';
+    }
     return 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)]';
   };
 
@@ -387,6 +439,8 @@ export default function Dashboard() {
       items: [
         { id: 'during-con', label: t('nav.duringCon'), icon: HardHat, badge: 3 },
         { id: 'pre-con', label: t('nav.preCon'), icon: ClipboardList, badge: 1 },
+        { id: 'financials', label: t('nav.financials'), icon: DollarSign },
+        { id: 'post-con', label: t('nav.postCon'), icon: CheckCircle2, badge: 2 },
       ]
     },
     {
@@ -548,6 +602,8 @@ export default function Dashboard() {
               <h1 className="text-3xl md:text-4xl font-light text-white tracking-tight">
                 {activeTab === 'during-con' && <>{t('header.duringConTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">{t('header.duringConTitle')[1]}</span></>}
                 {activeTab === 'pre-con' && <>{t('header.preConTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-emerald-300">{t('header.preConTitle')[1]}</span></>}
+                {activeTab === 'financials' && <>{t('header.financialsTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-indigo-300">{t('header.financialsTitle')[1]}</span></>}
+                {activeTab === 'post-con' && <>{t('header.postConTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-300 to-emerald-300">{t('header.postConTitle')[1]}</span></>}
                 {activeTab === 'c-suite' && <>{t('header.boardroomTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.boardroomTitle')[1]}</span></>}
                 {activeTab === 'overview' && <>{t('header.overviewTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.overviewTitle')[1]}</span></>}
                 {activeTab === 'projects' && <>{t('header.projectsTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.projectsTitle')[1]}</span></>}
@@ -561,6 +617,10 @@ export default function Dashboard() {
                   ? t('duringCon.subtitle')
                   : activeTab === 'pre-con'
                     ? t('preCon.subtitle')
+                    : activeTab === 'financials'
+                      ? t('financials.subtitle')
+                      : activeTab === 'post-con'
+                        ? t('postCon.subtitle')
                     : new Date().toLocaleDateString(language === 'th' ? 'th-TH' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
@@ -602,6 +662,342 @@ export default function Dashboard() {
           </motion.header>
 
           <AnimatePresence mode="wait">
+
+            {/* ----------------- FINANCIALS (การเงินโครงการ) ----------------- */}
+            {activeTab === 'financials' && (
+              <motion.div
+                key="financials"
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0, y: -20 }}
+                variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
+                className="space-y-6"
+              >
+                {/* Top Summary Cards */}
+                <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {[
+                    { title: t('financials.totalPayable'), value: '฿9.3M', sub: language === 'th' ? '4 invoices pending' : '4 invoices pending', accent: 'border-amber-500/25 from-amber-500/10 to-transparent', valCls: 'text-amber-200' },
+                    { title: t('financials.whtCollected'), value: '฿534K', sub: language === 'th' ? 'Auto 1% & 3%' : 'Auto 1% & 3%', accent: 'border-emerald-500/25 from-emerald-500/10 to-transparent', valCls: 'text-emerald-300' },
+                    { title: t('financials.retentionHold'), value: '฿20.6M', sub: language === 'th' ? '3 Projects · 5% escrow' : '3 Projects · 5% escrow', accent: 'border-cyan-500/25 from-cyan-500/10 to-transparent', valCls: 'text-cyan-200' },
+                    { title: t('financials.eTaxSync'), value: '2/5', sub: language === 'th' ? 'รอเอกสารแนบอีก 3' : '3 blocked by docs', accent: 'border-violet-500/25 from-violet-500/10 to-transparent', valCls: 'text-violet-200' },
+                  ].map((c) => (
+                    <div key={c.title} className={`glass-card p-4 border bg-gradient-to-br ${c.accent}`}>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{c.title}</p>
+                      <p className={`text-2xl md:text-3xl font-black tabular-nums tracking-tight ${c.valCls}`}>{c.value}</p>
+                      <p className="text-xs text-slate-400 mt-1">{c.sub}</p>
+                    </div>
+                  ))}
+                </motion.div>
+
+                {/* Thai Financial Engine Strip */}
+                <motion.div variants={fadeUp} className="glass-card p-5 border-white/10">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        {t('financials.engineTitle')}
+                      </p>
+                      <p className="text-sm text-slate-300 mt-1 leading-relaxed">
+                        {t('financials.engineDesc')}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2 mt-3">
+                        {[
+                          { label: t('financials.auto'), cls: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' },
+                          { label: t('financials.auto'), cls: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' },
+                          { label: t('financials.connected'), cls: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-200' },
+                          { label: t('financials.tracking'), cls: 'bg-amber-500/10 border-amber-500/20 text-amber-200' },
+                          { label: '100%', cls: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-200' },
+                        ].map((tag, i) => (
+                          <span key={i} className={`px-2 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest ${tag.cls}`}>
+                            {tag.label}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                      <button type="button" className="px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-emerald-500/15 border border-emerald-500/25 text-emerald-300 hover:bg-emerald-500/20 transition-colors">
+                        {t('financials.btnWht13')}
+                      </button>
+                      <button type="button" className="px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-slate-900/60 border border-white/10 hover:bg-white/5 transition-colors text-slate-200">
+                        {t('financials.btnWht53')}
+                      </button>
+                      <button type="button" className="px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-slate-900/60 border border-white/10 hover:bg-white/5 transition-colors text-slate-200">
+                        {t('financials.btnETaxSync')}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    {[
+                      { id: 'invoices' as const, label: t('financials.viewInvoices') },
+                      { id: 'progress-billing' as const, label: t('financials.viewProgressBilling') },
+                      { id: 'retention' as const, label: t('financials.viewRetention') },
+                    ].map((v) => {
+                      const on = financialsView === v.id;
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => setFinancialsView(v.id)}
+                          className={`px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest border transition-colors ${on ? 'bg-emerald-500/15 border-emerald-500/25 text-emerald-300' : 'bg-slate-900/40 border-white/10 text-slate-400 hover:bg-white/5 hover:text-slate-200'}`}
+                        >
+                          {v.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+
+                {/* Invoice Management Table */}
+                <motion.div variants={fadeUp} className="glass-card p-5 border-white/10 overflow-hidden">
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <h3 className="text-sm font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-cyan-300" />
+                      {t('financials.invoiceManagement')}
+                    </h3>
+                    <button
+                      type="button"
+                      className="px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-emerald-500/15 border border-emerald-500/25 text-emerald-300 hover:bg-emerald-500/20 transition-colors"
+                    >
+                      + {t('financials.newInvoice')}
+                    </button>
+                  </div>
+
+                  {financialsView !== 'invoices' ? (
+                    <div className="p-8 text-center text-slate-500 text-sm">
+                      {language === 'th' ? 'กำลังพัฒนา...' : 'Coming soon...'}
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[980px] text-sm">
+                        <thead>
+                          <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                            <th className="text-left py-3 px-3">{t('financials.colInvoiceId')}</th>
+                            <th className="text-left py-3 px-3">{t('financials.colProject')}</th>
+                            <th className="text-left py-3 px-3">{t('financials.colVendor')}</th>
+                            <th className="text-right py-3 px-3">{t('financials.colBoq')}</th>
+                            <th className="text-right py-3 px-3">{t('financials.colWht')}</th>
+                            <th className="text-right py-3 px-3">{t('financials.colNet')}</th>
+                            <th className="text-left py-3 px-3">{t('financials.colDate')}</th>
+                            <th className="text-left py-3 px-3">{t('financials.colETax')}</th>
+                            <th className="text-left py-3 px-3">{t('financials.colStatus')}</th>
+                            <th className="text-right py-3 px-3">{t('financials.colAction')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {financialInvoices.map((r) => {
+                            const status =
+                              r.status === 'approved'
+                                ? { label: t('financials.statusApproved'), cls: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' }
+                                : r.status === 'queued'
+                                  ? { label: t('financials.statusQueued'), cls: 'bg-amber-500/10 text-amber-200 border-amber-500/20' }
+                                  : { label: t('financials.statusPending'), cls: 'bg-slate-800/60 text-slate-300 border-white/10' };
+                            return (
+                              <tr key={r.id} className="border-t border-white/5 hover:bg-white/[0.02] transition-colors">
+                                <td className="py-3 px-3 font-mono text-xs text-cyan-300">{r.id}</td>
+                                <td className="py-3 px-3 text-slate-200">{r.project}</td>
+                                <td className="py-3 px-3 text-slate-200">{r.vendor}</td>
+                                <td className="py-3 px-3 text-right font-mono text-slate-200">฿{r.boq.toFixed(2)}M</td>
+                                <td className="py-3 px-3 text-right font-mono text-amber-200">฿{r.wht.toFixed(4)}M</td>
+                                <td className="py-3 px-3 text-right font-mono text-emerald-300">฿{r.net.toFixed(2)}M</td>
+                                <td className="py-3 px-3 text-slate-400 font-mono text-xs">{r.date}</td>
+                                <td className="py-3 px-3 font-mono text-xs text-emerald-200">{r.etax}</td>
+                                <td className="py-3 px-3">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest ${status.cls}`}>
+                                    {status.label}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-3 text-right">
+                                  <button
+                                    type="button"
+                                    className="px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest bg-emerald-500/15 border border-emerald-500/25 text-emerald-300 hover:bg-emerald-500/20 transition-colors"
+                                  >
+                                    {t('financials.actionApprove')}
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </motion.div>
+              </motion.div>
+            )}
+
+            {/* ----------------- POST-CON (หลังส่งมอบ) ----------------- */}
+            {activeTab === 'post-con' && (
+              <motion.div
+                key="post-con"
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0, y: -20 }}
+                variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
+                className="space-y-6"
+              >
+                {/* 1. Summary Cards */}
+                <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {[
+                    { title: t('postCon.punchListItems'), value: '2/6', sub: t('postCon.completedCount'), accent: 'border-emerald-500/30 shadow-emerald-500/5', icon: ClipboardList, iconColor: 'text-emerald-400' },
+                    { title: t('postCon.criticalIssuesTitle'), value: '1', sub: t('postCon.mustFixNow'), accent: 'border-rose-500/30 shadow-rose-500/5', icon: AlertTriangle, iconColor: 'text-rose-400' },
+                    { title: t('postCon.warrantiesActiveTitle'), value: '4/5', sub: t('postCon.pendingItem'), accent: 'border-blue-500/30 shadow-blue-500/5', icon: ShieldCheck, iconColor: 'text-blue-400' },
+                    { title: t('postCon.handoverTitle'), value: '85%', sub: t('postCon.readyForHandover'), accent: 'border-amber-500/30 shadow-amber-500/5', icon: CheckCircle2, iconColor: 'text-amber-400' },
+                  ].map((c) => (
+                    <div key={c.title} className={`glass-card p-5 border-l-4 bg-slate-900/40 ${c.accent}`}>
+                      <div className="flex justify-between items-start mb-2">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{c.title}</p>
+                        <c.icon className={`w-4 h-4 ${c.iconColor} opacity-50`} />
+                      </div>
+                      <p className="text-3xl font-black text-white tabular-nums tracking-tighter">{c.value}</p>
+                      <p className="text-xs text-slate-400 mt-1">{c.sub}</p>
+                    </div>
+                  ))}
+                </motion.div>
+
+                {/* 2. Post-Construction Completion Section */}
+                <motion.div variants={fadeUp} className="glass-card p-6 border-white/5 bg-slate-900/20">
+                   <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest">{t('postCon.completionTitle')}</h3>
+                      <span className="text-sm font-black text-emerald-400">33%</span>
+                   </div>
+                   <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden mb-4">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: '33%' }}
+                        transition={{ duration: 1, ease: 'easeOut' }}
+                        className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                      />
+                   </div>
+                   <div className="flex flex-wrap gap-6">
+                      <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                         <span className="text-xs text-slate-300 font-bold">{t('postCon.legendDone')}: <span className="text-white">2</span></span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                         <span className="text-xs text-slate-300 font-bold">{t('postCon.legendDoing')}: <span className="text-white">2</span></span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                         <div className="w-2 h-2 rounded-full bg-slate-600" />
+                         <span className="text-xs text-slate-300 font-bold">{t('postCon.legendTodo')}: <span className="text-white">2</span></span>
+                      </div>
+                   </div>
+                </motion.div>
+
+                {/* 3. Toggles */}
+                <motion.div variants={fadeUp} className="flex gap-2 p-1 bg-slate-900/60 rounded-xl border border-white/5 w-fit">
+                   <button 
+                      onClick={() => setPostConMode('punch-list')}
+                      className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${postConMode === 'punch-list' ? 'bg-emerald-500 text-slate-900 shadow-lg shadow-emerald-500/20' : 'text-slate-500 hover:text-slate-300'}`}
+                   >
+                      <div className={`w-2 h-2 rounded-full animate-pulse ${postConMode === 'punch-list' ? 'bg-white' : 'bg-slate-700'}`} />
+                      {t('postCon.digitalPunchList')}
+                   </button>
+                   <button 
+                      onClick={() => setPostConMode('warranty')}
+                      className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${postConMode === 'warranty' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-slate-300'}`}
+                   >
+                      {t('postCon.warrantyTracking')}
+                   </button>
+                </motion.div>
+
+                {/* 4. Detailed Table Section */}
+                <motion.div variants={fadeUp} className="glass-card border-white/5 bg-slate-900/30 overflow-hidden">
+                   {/* Table Header Area */}
+                   <div className="p-6 border-b border-white/5 bg-white/[0.01] flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                         <div className="p-2 bg-slate-800 rounded-lg"><ClipboardList className="w-4 h-4 text-slate-400" /></div>
+                         <h3 className="text-sm font-black text-white uppercase tracking-widest">{t('postCon.bangnaHeader')}</h3>
+                      </div>
+                      <div className="flex items-center gap-2">
+                         <button className="px-4 py-2 rounded-xl bg-slate-800 border border-white/5 text-xs font-bold text-slate-300 flex items-center gap-2 hover:bg-slate-700 transition-colors uppercase tracking-widest">
+                            <FileSpreadsheet className="w-4 h-4 text-cyan-400" /> {t('postCon.exportPdf')}
+                         </button>
+                         <button className="px-4 py-2 rounded-xl bg-emerald-500 text-slate-900 text-xs font-black flex items-center gap-2 hover:brightness-110 transition-all uppercase tracking-widest">
+                            + {t('postCon.addItem')}
+                         </button>
+                      </div>
+                   </div>
+
+                   {/* Filters */}
+                   <div className="px-6 py-4 flex flex-wrap gap-2 border-b border-white/5 bg-black/10">
+                      {[
+                        { id: 'all', label: t('postCon.all') },
+                        { id: 'done', label: t('postCon.legendDone') },
+                        { id: 'doing', label: t('postCon.legendDoing') },
+                        { id: 'todo', label: t('postCon.legendTodo') },
+                        { id: 'pending', label: t('postCon.waitingApproval') },
+                      ].map((f) => (
+                        <button 
+                          key={f.id}
+                          onClick={() => setPunchListFilter(f.id)}
+                          className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${punchListFilter === f.id ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-500 hover:text-slate-300 border border-transparent'}`}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                   </div>
+
+                   {/* Table Body */}
+                   <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                           <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white/[0.02]">
+                              <th className="px-6 py-4">{t('postCon.colId')}</th>
+                              <th className="px-6 py-4">{t('postCon.colZone')}</th>
+                              <th className="px-6 py-4">{t('postCon.colTask')}</th>
+                              <th className="px-6 py-4">{t('postCon.colPriority')}</th>
+                              <th className="px-6 py-4">{t('postCon.colResponsibility')}</th>
+                              <th className="px-6 py-4">{t('postCon.colDueDate')}</th>
+                              <th className="px-6 py-4">{t('postCon.colStatus')}</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {mockPunchList.filter(item => punchListFilter === 'all' || item.status === punchListFilter).map((item) => (
+                              <tr key={item.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
+                                 <td className="px-6 py-5 font-mono text-xs text-cyan-400/70">{item.id}</td>
+                                 <td className="px-6 py-5 text-xs text-slate-400">{item.zone}</td>
+                                 <td className="px-6 py-5 font-medium text-slate-200">
+                                    <div className="flex items-center gap-3">
+                                       <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.dot, boxShadow: `0 0 8px ${item.dot}` }} />
+                                       {item.task}
+                                    </div>
+                                 </td>
+                                 <td className="px-6 py-5">
+                                    <span className={`text-[10px] font-black uppercase tracking-widest tabular-nums italic ${item.priority === 'critical' ? 'text-rose-500' : item.priority === 'high' ? 'text-amber-500' : 'text-cyan-400'}`}>
+                                       {t(`postCon.prio${item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}`)}
+                                    </span>
+                                 </td>
+                                 <td className="px-6 py-5 text-xs text-slate-400">{item.responsible}</td>
+                                 <td className="px-6 py-5 text-xs text-slate-500 font-mono tracking-tighter">{item.due}</td>
+                                 <td className="px-6 py-5 whitespace-nowrap">
+                                    <div className="flex items-center gap-2">
+                                       <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border transition-all ${
+                                          item.status === 'done' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                                          item.status === 'doing' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+                                          item.status === 'pending' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
+                                          'bg-slate-800 border-white/10 text-slate-500'
+                                       }`}>
+                                          {t(item.status === 'done' ? 'postCon.legendDone' : item.status === 'doing' ? 'postCon.legendDoing' : item.status === 'pending' ? 'postCon.waitingApproval' : 'postCon.legendTodo')}
+                                       </span>
+                                       {item.status !== 'done' && (
+                                          <button className="px-3 py-1 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[9px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-slate-900 transition-all opacity-0 group-hover:opacity-100">
+                                             {t('postCon.doneBtn')}
+                                          </button>
+                                       )}
+                                       {item.status === 'done' && (
+                                          <div className="w-5 h-5 rounded bg-slate-800 border border-white/5 flex items-center justify-center text-slate-600 opacity-50"><CheckCircle2 className="w-3 h-3" /></div>
+                                       )}
+                                    </div>
+                                 </td>
+                              </tr>
+                           ))}
+                        </tbody>
+                      </table>
+                   </div>
+                </motion.div>
+              </motion.div>
+            )}
 
             {/* ----------------- PRE-CON (ก่อนก่อสร้าง) ----------------- */}
             {activeTab === 'pre-con' && (
@@ -3412,21 +3808,27 @@ export default function Dashboard() {
           <div className="flex items-center justify-around h-20 px-2 pb-2">
             {[
               { id: 'during-con', icon: HardHat, label: t('nav.duringConShort') },
-              { id: 'overview', icon: Activity, label: t('nav.overview') },
-              { id: 'projects', icon: Building2, label: t('nav.projects') },
-              { id: 'alerts', icon: AlertTriangle, label: t('nav.alerts') },
+              { id: 'pre-con', icon: ClipboardList, label: t('nav.preConShort') },
+              { id: 'financials', icon: DollarSign, label: t('nav.financialsShort') },
+              { id: 'post-con', icon: CheckCircle2, label: t('nav.postConShort') },
             ].map((item) => {
               const mobileActive = activeTab === item.id;
               const emerald = item.id === 'during-con' && mobileActive;
+              const amber = item.id === 'pre-con' && mobileActive;
+              const cyan = item.id === 'financials' && mobileActive;
+              const violet = item.id === 'post-con' && mobileActive;
+              const activeColor = emerald ? 'text-emerald-400' : amber ? 'text-amber-300' : cyan ? 'text-cyan-300' : violet ? 'text-violet-300' : 'text-blue-400';
+              const activeBg = emerald ? 'bg-emerald-500/20' : amber ? 'bg-amber-500/20' : cyan ? 'bg-cyan-500/20' : violet ? 'bg-violet-500/20' : 'bg-blue-500/20';
+              const activeLine = emerald ? 'bg-emerald-400' : amber ? 'bg-amber-300' : cyan ? 'bg-cyan-300' : violet ? 'bg-violet-300' : 'bg-blue-400';
               return (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${mobileActive ? (emerald ? 'text-emerald-400' : 'text-blue-400') : 'text-slate-500'}`}
+                className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${mobileActive ? activeColor : 'text-slate-500'}`}
               >
-                <div className={`p-1.5 rounded-xl transition-all overflow-hidden relative ${mobileActive ? (emerald ? 'bg-emerald-500/20 shadow-inner' : 'bg-blue-500/20 shadow-inner') : ''}`}>
+                <div className={`p-1.5 rounded-xl transition-all overflow-hidden relative ${mobileActive ? `${activeBg} shadow-inner` : ''}`}>
                   <item.icon className={`h-5 w-5 ${mobileActive ? 'relative z-10' : ''}`} />
-                  {mobileActive && <div className={`absolute bottom-0 left-0 w-full h-0.5 blur-[2px] ${emerald ? 'bg-emerald-400' : 'bg-blue-400'}`}></div>}
+                  {mobileActive && <div className={`absolute bottom-0 left-0 w-full h-0.5 blur-[2px] ${activeLine}`}></div>}
                 </div>
                 <span className="text-[10px] font-black tracking-widest uppercase">{item.label}</span>
               </button>
