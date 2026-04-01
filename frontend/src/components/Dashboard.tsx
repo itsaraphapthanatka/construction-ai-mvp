@@ -327,7 +327,7 @@ export default function Dashboard() {
         axios.get(`${API_BASE}/api/esg/summary`),
         axios.get(`${API_BASE}/api/c-suite-intel`)
       ]);
-      
+
       const mockRiskMatrixFallback = [
         { id: 1, label: language === 'th' ? 'ค่าวัสดุผันผวน' : 'Material Volatility', probability: 75, impact: 85, project: 'Network wide', mitigation: 'AI Procurement Locking' },
         { id: 2, label: language === 'th' ? 'ขาดแคลนแรงงาน' : 'Labor Shortage', probability: 60, impact: 50, project: 'EEC Phase 2', mitigation: 'Automated Rostering' },
@@ -1036,58 +1036,58 @@ export default function Dashboard() {
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white/[0.02]">
-                          <th className="px-6 py-4">{t('postCon.colId')}</th>
-                          <th className="px-6 py-4">{t('postCon.colZone')}</th>
-                          <th className="px-6 py-4">{t('postCon.colTask')}</th>
-                          <th className="px-6 py-4">{t('postCon.colPriority')}</th>
-                          <th className="px-6 py-4">{t('postCon.colResponsibility')}</th>
-                          <th className="px-6 py-4">{t('postCon.colDueDate')}</th>
-                          <th className="px-6 py-4">{t('postCon.colStatus')}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {mockPunchList.filter(item => punchListFilter === 'all' || item.status === punchListFilter).map((item) => (
-                          <tr key={item.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
-                            <td className="px-6 py-5 font-mono text-xs text-cyan-400/70">{item.id}</td>
-                            <td className="px-6 py-5 text-xs text-slate-400">{item.zone}</td>
-                            <td className="px-6 py-5 font-medium text-slate-200">
-                              <div className="flex items-center gap-3">
-                                <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.dot, boxShadow: `0 0 8px ${item.dot}` }} />
-                                {item.task}
-                              </div>
-                            </td>
-                            <td className="px-6 py-5">
-                              <span className={`text-[10px] font-black uppercase tracking-widest tabular-nums italic ${item.priority === 'critical' ? 'text-rose-500' : item.priority === 'high' ? 'text-amber-500' : 'text-cyan-400'}`}>
-                                {t(`postCon.prio${item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}`)}
-                              </span>
-                            </td>
-                            <td className="px-6 py-5 text-xs text-slate-400">{item.responsible}</td>
-                            <td className="px-6 py-5 text-xs text-slate-500 font-mono tracking-tighter">{item.due}</td>
-                            <td className="px-6 py-5 whitespace-nowrap">
-                              <div className="flex items-center gap-2">
-                                <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border transition-all ${item.status === 'done' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                            <th className="px-6 py-4">{t('postCon.colId')}</th>
+                            <th className="px-6 py-4">{t('postCon.colZone')}</th>
+                            <th className="px-6 py-4">{t('postCon.colTask')}</th>
+                            <th className="px-6 py-4">{t('postCon.colPriority')}</th>
+                            <th className="px-6 py-4">{t('postCon.colResponsibility')}</th>
+                            <th className="px-6 py-4">{t('postCon.colDueDate')}</th>
+                            <th className="px-6 py-4">{t('postCon.colStatus')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {mockPunchList.filter(item => punchListFilter === 'all' || item.status === punchListFilter).map((item) => (
+                            <tr key={item.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
+                              <td className="px-6 py-5 font-mono text-xs text-cyan-400/70">{item.id}</td>
+                              <td className="px-6 py-5 text-xs text-slate-400">{item.zone}</td>
+                              <td className="px-6 py-5 font-medium text-slate-200">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.dot, boxShadow: `0 0 8px ${item.dot}` }} />
+                                  {item.task}
+                                </div>
+                              </td>
+                              <td className="px-6 py-5">
+                                <span className={`text-[10px] font-black uppercase tracking-widest tabular-nums italic ${item.priority === 'critical' ? 'text-rose-500' : item.priority === 'high' ? 'text-amber-500' : 'text-cyan-400'}`}>
+                                  {t(`postCon.prio${item.priority.charAt(0).toUpperCase() + item.priority.slice(1)}`)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-5 text-xs text-slate-400">{item.responsible}</td>
+                              <td className="px-6 py-5 text-xs text-slate-500 font-mono tracking-tighter">{item.due}</td>
+                              <td className="px-6 py-5 whitespace-nowrap">
+                                <div className="flex items-center gap-2">
+                                  <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border transition-all ${item.status === 'done' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
                                     item.status === 'doing' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
                                       item.status === 'pending' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
                                         'bg-slate-800 border-white/10 text-slate-500'
-                                  }`}>
-                                  {t(item.status === 'done' ? 'postCon.legendDone' : item.status === 'doing' ? 'postCon.legendDoing' : item.status === 'pending' ? 'postCon.waitingApproval' : 'postCon.legendTodo')}
-                                </span>
-                                {item.status !== 'done' && (
-                                  <button className="px-3 py-1 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[9px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-slate-900 transition-all opacity-0 group-hover:opacity-100">
-                                    {t('postCon.doneBtn')}
-                                  </button>
-                                )}
-                                {item.status === 'done' && (
-                                  <div className="w-5 h-5 rounded bg-slate-800 border border-white/5 flex items-center justify-center text-slate-600 opacity-50"><CheckCircle2 className="w-3 h-3" /></div>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
+                                    }`}>
+                                    {t(item.status === 'done' ? 'postCon.legendDone' : item.status === 'doing' ? 'postCon.legendDoing' : item.status === 'pending' ? 'postCon.waitingApproval' : 'postCon.legendTodo')}
+                                  </span>
+                                  {item.status !== 'done' && (
+                                    <button className="px-3 py-1 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[9px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-slate-900 transition-all opacity-0 group-hover:opacity-100">
+                                      {t('postCon.doneBtn')}
+                                    </button>
+                                  )}
+                                  {item.status === 'done' && (
+                                    <div className="w-5 h-5 rounded bg-slate-800 border border-white/5 flex items-center justify-center text-slate-600 opacity-50"><CheckCircle2 className="w-3 h-3" /></div>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
                       </table>
                     )}
-                    
+
                     {postConMode === 'warranty' && (
                       <table className="w-full text-left border-collapse">
                         <thead>
@@ -1116,9 +1116,9 @@ export default function Dashboard() {
                               <td className="px-6 py-5 whitespace-nowrap">
                                 <div className="flex items-center gap-2">
                                   <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border transition-all ${item.status === 'done' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
-                                      item.status === 'doing' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
-                                        item.status === 'pending' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
-                                          'bg-slate-800 border-white/10 text-slate-500'
+                                    item.status === 'doing' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+                                      item.status === 'pending' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
+                                        'bg-slate-800 border-white/10 text-slate-500'
                                     }`}>
                                     {t(item.status === 'done' ? 'postCon.legendDone' : item.status === 'doing' ? 'postCon.legendDoing' : item.status === 'pending' ? 'postCon.waitingApproval' : 'postCon.legendTodo')}
                                   </span>
@@ -1246,7 +1246,7 @@ export default function Dashboard() {
                         </tbody>
                       </table>
                     )}
-                    
+
                     {preConFilter === 'vendor' && (
                       <table className="w-full min-w-[860px] text-sm">
                         <thead>
@@ -1724,7 +1724,7 @@ export default function Dashboard() {
                           style={{ left: `${point.probability}%`, bottom: `${point.impact}%` }}
                         >
                           <div className={`w-4 h-4 rounded-full shadow-lg cursor-pointer transform -translate-x-1/2 translate-y-1/2 transition-all hover:scale-150 border-2 border-slate-900 ${point.impact > 80 ? 'bg-rose-500 shadow-rose-500/50' :
-                              point.impact > 60 ? 'bg-amber-500 shadow-amber-500/50' : 'bg-blue-500 shadow-blue-500/50'
+                            point.impact > 60 ? 'bg-amber-500 shadow-amber-500/50' : 'bg-blue-500 shadow-blue-500/50'
                             }`}
                             onClick={(e) => { e.stopPropagation(); setStrategicDrilldown({ type: 'risk_matrix', data: point }); }}
                           >
@@ -2271,105 +2271,6 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </motion.div>
-
-                {/* Strategic Risk & Impact Matrix (Executive Decision Matrix) */}
-                <motion.div
-                  variants={fadeUp}
-                  className="glass-card p-6 border-indigo-500/20 relative overflow-hidden cursor-pointer mt-6"
-                  onClick={() => {
-                    if (summary?.riskMatrix && summary.riskMatrix.length > 0) {
-                      const highestRisk = [...summary.riskMatrix].sort((a, b) => (b.impact * b.probability) - (a.impact * a.probability))[0];
-                      setStrategicDrilldown({ type: 'risk_matrix', data: highestRisk });
-                    }
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
-                        <Radar className="w-5 h-5" />
-                      </div>
-                      <h3 className="text-xl font-bold text-white uppercase tracking-tight">{t('esg.riskMatrix')}</h3>
-                    </div>
-                    <div className="flex items-center space-x-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                      <div className="flex items-center space-x-1">
-                        <span className="w-2 h-2 rounded-full bg-rose-500"></span>
-                        <span>{t('esg.highImpact')}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                        <span>{t('esg.medium')}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="relative h-64 md:h-80 border-l border-b border-slate-700/50 mb-4 bg-slate-900/30 rounded-bl-xl mt-6">
-                    {/* Grid Labels (Behind) */}
-                    <div className="absolute left-3 top-3 text-[10px] font-black uppercase text-rose-500/80 tracking-tighter z-0">{t('esg.criticalThreat')}</div>
-                    <div className="absolute right-3 bottom-3 text-[10px] font-black uppercase text-emerald-500/80 tracking-tighter z-0">{t('esg.operationalTarget')}</div>
-
-                    {/* Quadrant Backgrounds with Clipping */}
-                    <div className="absolute inset-0 rounded-bl-xl overflow-hidden pointer-events-none">
-                      <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-15">
-                        <div className="border-r border-b border-slate-700 bg-rose-500"></div>
-                        <div className="border-b border-slate-700 bg-amber-500"></div>
-                        <div className="border-r border-slate-700 bg-amber-500"></div>
-                        <div className="bg-emerald-500"></div>
-                      </div>
-                    </div>
-
-                    {/* Axis Labels */}
-                    <div className="absolute -left-12 top-1/2 -rotate-90 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.impact')} →</div>
-                    <div className="absolute left-1/2 -bottom-8 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.probability')} →</div>
-
-                    {/* Matrix Axis Lines */}
-                    <div className="absolute inset-0 pointer-events-none border border-slate-700/30">
-                      <div className="absolute left-1/2 top-0 bottom-0 border-l border-dashed border-slate-600/50" />
-                      <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-slate-600/50" />
-                    </div>
-
-                    {/* Data Points (Overflow Visible) */}
-                    {summary?.riskMatrix && summary.riskMatrix.length > 0 ? (
-                      summary.riskMatrix.map((point: any) => (
-                        <div
-                          key={point.id}
-                          className="absolute group z-20 animate-pulse-glow"
-                          style={{ left: `${point.probability}%`, bottom: `${point.impact}%` }}
-                        >
-                          <div className={`w-4 h-4 rounded-full shadow-lg cursor-pointer transform -translate-x-1/2 translate-y-1/2 transition-all hover:scale-150 border-2 border-slate-900 ${point.impact > 80 ? 'bg-rose-500 shadow-rose-500/50' :
-                              point.impact > 60 ? 'bg-amber-500 shadow-amber-500/50' : 'bg-blue-500 shadow-blue-500/50'
-                            }`}
-                            onClick={(e) => { e.stopPropagation(); setStrategicDrilldown({ type: 'risk_matrix', data: point }); }}
-                          >
-                            <div className="absolute inset-0 w-full h-full rounded-full animate-ping opacity-75" style={{ backgroundColor: point.impact > 80 ? '#f43f5e' : point.impact > 60 ? '#f59e0b' : '#3b82f6' }}></div>
-
-                            {/* Point Label Text (always visible on desktop) */}
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 whitespace-nowrap text-[9px] font-bold text-slate-300 pointer-events-none hidden md:block mix-blend-screen drop-shadow-md">
-                              {point.label}
-                            </span>
-
-                            {/* Tooltip */}
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-2xl z-30">
-                              <p className="text-[11px] font-black text-white leading-tight mb-2 uppercase tracking-wide">{point.label}</p>
-                              <div className="flex flex-col gap-1 text-[9px]">
-                                <span className="text-slate-400">{t('esg.project')}: <b className="text-slate-200">{point.project}</b></span>
-                                <div className="flex justify-between mt-1 pt-1 border-t border-slate-800">
-                                  <span className="text-rose-400 font-bold">{t('esg.impact')}: {point.impact}%</span>
-                                  <span className="text-blue-400 font-bold">{t('esg.probability')}: {point.probability}%</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="absolute inset-0 flex p-4 items-center justify-center text-slate-500 text-xs text-center z-10 animate-pulse">
-                        Analyzing risk dynamics & building operational impact model...<br />Awaiting AI compilation.
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-
-
               </motion.div>
             )}
 
@@ -2626,102 +2527,7 @@ export default function Dashboard() {
                 </motion.div>
 
                 <div className="grid grid-cols-1 gap-6">
-                  {/* Strategic Risk & Impact Matrix (Executive Decision Matrix) */}
-                  <motion.div
-                    variants={fadeUp}
-                    className="glass-card p-6 border-indigo-500/20 relative overflow-hidden cursor-pointer"
-                    onClick={() => {
-                      if (summary?.riskMatrix && summary.riskMatrix.length > 0) {
-                        const highestRisk = [...summary.riskMatrix].sort((a, b) => (b.impact * b.probability) - (a.impact * a.probability))[0];
-                        setStrategicDrilldown({ type: 'risk_matrix', data: highestRisk });
-                      }
-                    }}
-                  >
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
-                          <Radar className="w-5 h-5" />
-                        </div>
-                        <h3 className="text-xl font-bold text-white uppercase tracking-tight">{t('esg.riskMatrix')}</h3>
-                      </div>
-                      <div className="flex items-center space-x-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                        <div className="flex items-center space-x-1">
-                          <span className="w-2 h-2 rounded-full bg-rose-500"></span>
-                          <span>{t('esg.highImpact')}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                          <span>{t('esg.medium')}</span>
-                        </div>
-                      </div>
-                    </div>
 
-                    <div className="relative h-64 md:h-80 border-l border-b border-slate-700/50 mb-4 bg-slate-900/30 rounded-bl-xl mt-6">
-                      {/* Background Quadrant Clipping */}
-                      <div className="absolute inset-0 rounded-bl-xl overflow-hidden pointer-events-none">
-                        <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-15">
-                          <div className="border-r border-b border-slate-700 bg-rose-500"></div>
-                          <div className="border-b border-slate-700 bg-amber-500"></div>
-                          <div className="border-r border-slate-700 bg-amber-500"></div>
-                          <div className="bg-emerald-500"></div>
-                        </div>
-                      </div>
-
-                      {/* Grid Labels */}
-                      <div className="absolute left-3 top-3 text-[10px] font-black uppercase text-rose-500/80 tracking-tighter z-0">{t('esg.criticalThreat')}</div>
-                      <div className="absolute right-3 bottom-3 text-[10px] font-black uppercase text-emerald-500/80 tracking-tighter z-0">{t('esg.operationalTarget')}</div>
-
-                      {/* Axis Labels */}
-                      <div className="absolute -left-12 top-1/2 -rotate-90 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.impact')} →</div>
-                      <div className="absolute left-1/2 -bottom-8 -translate-x-1/2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('esg.probability')} →</div>
-
-                      {/* Matrix Axis Lines */}
-                      <div className="absolute inset-0 pointer-events-none border border-slate-700/30">
-                        <div className="absolute left-1/2 top-0 bottom-0 border-l border-dashed border-slate-600/50" />
-                        <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-slate-600/50" />
-                      </div>
-
-                      {/* Data Points (Overflow OK) */}
-                      {summary?.riskMatrix && summary.riskMatrix.length > 0 ? (
-                        summary.riskMatrix.map((point: any) => (
-                          <div
-                            key={point.id}
-                            className="absolute group z-20 animate-pulse-glow"
-                            style={{ left: `${point.probability}%`, bottom: `${point.impact}%` }}
-                          >
-                            <div className={`w-4 h-4 rounded-full shadow-lg cursor-pointer transform -translate-x-1/2 translate-y-1/2 transition-all hover:scale-150 border-2 border-slate-900 ${point.impact > 80 ? 'bg-rose-500 shadow-rose-500/50' :
-                                point.impact > 60 ? 'bg-amber-500 shadow-amber-500/50' : 'bg-blue-500 shadow-blue-500/50'
-                              }`}
-                              onClick={(e) => { e.stopPropagation(); setStrategicDrilldown({ type: 'risk_matrix', data: point }); }}
-                            >
-                              <div className="absolute inset-0 w-full h-full rounded-full animate-ping opacity-75" style={{ backgroundColor: point.impact > 80 ? '#f43f5e' : point.impact > 60 ? '#f59e0b' : '#3b82f6' }}></div>
-
-                              {/* Point Label Text (always visible on desktop) */}
-                              <span className="absolute left-4 top-1/2 -translate-y-1/2 whitespace-nowrap text-[9px] font-bold text-slate-300 pointer-events-none hidden md:block mix-blend-screen drop-shadow-md">
-                                {point.label}
-                              </span>
-
-                              {/* Tooltip */}
-                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-2xl z-30">
-                                <p className="text-[11px] font-black text-white leading-tight mb-2 uppercase tracking-wide">{point.label}</p>
-                                <div className="flex flex-col gap-1 text-[9px]">
-                                  <span className="text-slate-400">{t('esg.project')}: <b className="text-slate-200">{point.project}</b></span>
-                                  <div className="flex justify-between mt-1 pt-1 border-t border-slate-800">
-                                    <span className="text-rose-400 font-bold">{t('esg.impact')}: {point.impact}%</span>
-                                    <span className="text-blue-400 font-bold">{t('esg.probability')}: {point.probability}%</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="absolute inset-0 flex p-4 items-center justify-center text-slate-500 text-xs text-center z-10 animate-pulse">
-                          Analyzing risk dynamics & building operational impact model...<br />Awaiting AI compilation.
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
 
                   {/* Strategic Directives */}
                   <motion.div variants={fadeUp} className="space-y-4">
@@ -3318,8 +3124,8 @@ export default function Dashboard() {
                         </div>
                         <button
                           className={`w-full py-5 px-6 rounded-2xl transition-all uppercase tracking-[0.2em] text-sm flex items-center justify-center group overflow-hidden relative font-black shadow-lg ${executing === strategicDrilldown.data?.id
-                              ? 'bg-emerald-500 text-white'
-                              : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-indigo-500/30 hover:shadow-indigo-500/50'
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-indigo-500/30 hover:shadow-indigo-500/50'
                             }`}
                           onClick={() => {
                             if (executing) return;
