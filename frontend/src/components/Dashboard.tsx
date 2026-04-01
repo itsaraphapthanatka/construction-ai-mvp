@@ -295,7 +295,19 @@ export default function Dashboard() {
         axios.get(`${API_BASE}/api/esg/summary`),
         axios.get(`${API_BASE}/api/c-suite-intel`)
       ]);
-      setSummary(summaryRes.data);
+      
+      const mockRiskMatrixFallback = [
+        { id: 1, label: language === 'th' ? 'ค่าวัสดุผันผวน' : 'Material Volatility', probability: 75, impact: 85, project: 'Network wide', mitigation: 'AI Procurement Locking' },
+        { id: 2, label: language === 'th' ? 'ขาดแคลนแรงงาน' : 'Labor Shortage', probability: 60, impact: 50, project: 'EEC Phase 2', mitigation: 'Automated Rostering' },
+        { id: 3, label: language === 'th' ? 'สภาพอากาศแปรปรวน' : 'Weather Delays', probability: 35, impact: 40, project: 'Q-Tower', mitigation: 'Dynamic Scheduling' },
+        { id: 4, label: language === 'th' ? 'ห่วงโซ่อุปทานล่าช้า' : 'Supply Chain Snags', probability: 80, impact: 90, project: 'Sukhumvit A', mitigation: 'Alternative Routing' },
+        { id: 5, label: language === 'th' ? 'ความเสี่ยงด้านการออกแบบ' : 'Design Clashes', probability: 20, impact: 95, project: 'U-Tapao', mitigation: 'BIM Clash Detection' }
+      ];
+
+      setSummary({
+        ...summaryRes.data,
+        riskMatrix: summaryRes.data.riskMatrix?.length ? summaryRes.data.riskMatrix : mockRiskMatrixFallback
+      });
       setProjects(projectsRes.data);
       setBiddingOps(biddingRes.data);
       setEsgSummary(esgRes.data);
