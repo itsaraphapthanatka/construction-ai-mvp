@@ -7,6 +7,8 @@ export const th = {
         groupIntelligence: 'การวิเคราะห์อัจฉริยะและ ESG',
         duringCon: 'ระหว่างก่อสร้าง',
         duringConShort: 'ก่อสร้าง',
+        preCon: 'ก่อนก่อสร้าง',
+        preConShort: 'ก่อน',
         boardroom: 'บอร์ดบริหารยุทธศาสตร์',
         board: 'บอร์ด',
         overview: 'ภาพรวมผู้บริหาร',
@@ -20,6 +22,7 @@ export const th = {
     // Header
     header: {
         duringConTitle: ['ระหว่าง', 'ก่อสร้าง'],
+        preConTitle: ['ก่อน', 'ก่อสร้าง'],
         boardroomTitle: ['บอร์ด', 'บริหาร'],
         overviewTitle: ['ภาพรวม', 'ผู้บริหาร'],
         projectsTitle: ['พอร์ตโฟลิโอ', 'โครงการ'],
@@ -419,5 +422,29 @@ export const th = {
         projectBangna: 'บางนา',
         projectEec: 'อีอีซี สมาร์ทซิตี้',
         projectUtapao: 'อู่ตะเภา',
+    }
+    ,
+    preCon: {
+        subtitle: 'ศูนย์ควบคุมก่อนก่อสร้าง — BOQ การประมูลผู้ขาย และสัญญา พร้อมอนุมัติด้วย AI',
+        totalBoqValue: 'มูลค่า BOQ รวม',
+        vendorBidding: 'ประมูลผู้ขาย',
+        contractsActive: 'สัญญาที่ใช้งาน',
+        bidProgress: 'ความคืบหน้าการประมูล',
+        filterBoq: 'BOQ',
+        filterVendorBidding: 'ประมูลผู้ขาย',
+        filterContracts: 'สัญญา',
+        exportExcel: 'ส่งออก Excel',
+        approveAi: 'อนุมัติ AI',
+        boqTitle: 'Bill of Quantities — โครงการ {project}',
+        colCode: 'รหัส',
+        colDescription: 'รายการ',
+        colUnit: 'หน่วย',
+        colQty: 'จำนวน',
+        colUnitPrice: 'ราคา/หน่วย',
+        colTotal: 'รวม',
+        colStatus: 'สถานะ',
+        statusApproved: 'อนุมัติแล้ว',
+        statusPending: 'รออนุมัติ',
+        statusRisk: 'เสี่ยง',
     }
 };

@@ -28,7 +28,9 @@ import {
   Radar,
   Zap,
   Camera,
-  HardHat
+  HardHat,
+  ClipboardList,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
@@ -139,6 +141,17 @@ const duringConScurveData = [
 
 const duringConScopeColors = ['#34d399', '#22d3ee', '#a78bfa'];
 
+type PreConFilter = 'boq' | 'vendor' | 'contracts';
+
+const preConBoqRows = [
+  { code: 'A.01', desc: 'งานโครงสร้างคอนกรีต', unit: 'ตร.ม.', qty: 2400, unitPrice: 4200, status: 'approved' as const },
+  { code: 'A.02', desc: 'งานก่ออิฐ/ฉาบ', unit: 'ตร.ม.', qty: 380, unitPrice: 28000, status: 'approved' as const },
+  { code: 'B.01', desc: 'งานสถาปัตยกรรม', unit: 'ตร.ม.', qty: 8500, unitPrice: 3500, status: 'risk' as const },
+  { code: 'C.01', desc: 'ระบบไฟฟ้าและแสงสว่าง', unit: 'จุด', qty: 1200, unitPrice: 4200, status: 'pending' as const },
+  { code: 'C.02', desc: 'ระบบปรับอากาศ (HVAC)', unit: 'ชุด', qty: 240, unitPrice: 35000, status: 'pending' as const },
+  { code: 'D.01', desc: 'งานภูมิทัศน์และภายนอก', unit: 'ตร.ม.', qty: 3200, unitPrice: 1800, status: 'risk' as const },
+];
+
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
@@ -196,6 +209,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState<string | null>(null);
   const [liveEventIndex, setLiveEventIndex] = useState(0);
+  const [preConFilter, setPreConFilter] = useState<PreConFilter>('boq');
 
   // Cycle live AI events
   useEffect(() => {
@@ -356,18 +370,23 @@ export default function Dashboard() {
     );
   }
 
-  const navPillClass = (id: string) =>
-    activeTab === id
-      ? id === 'during-con'
-        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 shadow-[inset_0_0_20px_rgba(16,185,129,0.08)]'
-        : 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)]'
-      : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent';
+  const navPillClass = (id: string) => {
+    if (activeTab !== id) return 'text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent';
+    if (id === 'during-con') {
+      return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 shadow-[inset_0_0_20px_rgba(16,185,129,0.08)]';
+    }
+    if (id === 'pre-con') {
+      return 'bg-amber-500/10 text-amber-300 border border-amber-500/25 shadow-[inset_0_0_20px_rgba(245,158,11,0.08)]';
+    }
+    return 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)]';
+  };
 
   const groupedNavItems = [
     {
       group: t('nav.groupPhase'),
       items: [
         { id: 'during-con', label: t('nav.duringCon'), icon: HardHat, badge: 3 },
+        { id: 'pre-con', label: t('nav.preCon'), icon: ClipboardList, badge: 1 },
       ]
     },
     {
@@ -528,6 +547,7 @@ export default function Dashboard() {
             <div>
               <h1 className="text-3xl md:text-4xl font-light text-white tracking-tight">
                 {activeTab === 'during-con' && <>{t('header.duringConTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">{t('header.duringConTitle')[1]}</span></>}
+                {activeTab === 'pre-con' && <>{t('header.preConTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-emerald-300">{t('header.preConTitle')[1]}</span></>}
                 {activeTab === 'c-suite' && <>{t('header.boardroomTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.boardroomTitle')[1]}</span></>}
                 {activeTab === 'overview' && <>{t('header.overviewTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.overviewTitle')[1]}</span></>}
                 {activeTab === 'projects' && <>{t('header.projectsTitle')[0]} <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{t('header.projectsTitle')[1]}</span></>}
@@ -539,7 +559,9 @@ export default function Dashboard() {
               <p className="text-slate-400 mt-2 font-medium">
                 {activeTab === 'during-con'
                   ? t('duringCon.subtitle')
-                  : new Date().toLocaleDateString(language === 'th' ? 'th-TH' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  : activeTab === 'pre-con'
+                    ? t('preCon.subtitle')
+                    : new Date().toLocaleDateString(language === 'th' ? 'th-TH' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
 
@@ -580,6 +602,127 @@ export default function Dashboard() {
           </motion.header>
 
           <AnimatePresence mode="wait">
+
+            {/* ----------------- PRE-CON (ก่อนก่อสร้าง) ----------------- */}
+            {activeTab === 'pre-con' && (
+              <motion.div
+                key="pre-con"
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0, y: -20 }}
+                variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
+                className="space-y-6"
+              >
+                <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {[
+                    { title: t('preCon.totalBoqValue'), value: '฿69.4M', sub: 'BANGNA PH.1', accent: 'border-emerald-500/20 from-emerald-500/10 to-transparent' },
+                    { title: t('preCon.vendorBidding'), value: '3/5', sub: language === 'th' ? 'รอผู้ขาย 2 ราย' : '2 vendors pending', accent: 'border-blue-500/20 from-blue-500/10 to-transparent' },
+                    { title: t('preCon.contractsActive'), value: '2', sub: language === 'th' ? 'กำลังร่าง 1' : '1 pending', accent: 'border-cyan-500/20 from-cyan-500/10 to-transparent' },
+                    { title: t('preCon.bidProgress'), value: '72%', sub: language === 'th' ? 'ก่อนเริ่มก่อสร้าง' : 'Phase: Pre-con', accent: 'border-amber-500/25 from-amber-500/10 to-transparent' },
+                  ].map((c) => (
+                    <div key={c.title} className={`glass-card p-4 border bg-gradient-to-br ${c.accent}`}>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{c.title}</p>
+                      <p className="text-2xl md:text-3xl font-black text-white tabular-nums tracking-tight">{c.value}</p>
+                      <p className="text-xs text-slate-400 mt-1">{c.sub}</p>
+                    </div>
+                  ))}
+                </motion.div>
+
+                <motion.div variants={fadeUp} className="glass-card p-5 border-white/10">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                        <ClipboardList className="w-4 h-4 text-amber-300" />
+                        {t('preCon.boqTitle', { project: 'Bangna' })}
+                      </h3>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        className="px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-slate-900/60 border border-white/10 hover:bg-white/5 transition-colors flex items-center gap-2"
+                      >
+                        <FileSpreadsheet className="w-4 h-4 text-slate-300" />
+                        {t('preCon.exportExcel')}
+                      </button>
+                      <button
+                        type="button"
+                        className="px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-emerald-500/15 border border-emerald-500/25 text-emerald-300 hover:bg-emerald-500/20 transition-colors"
+                      >
+                        {t('preCon.approveAi')}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    {[
+                      { id: 'boq' as const, label: t('preCon.filterBoq') },
+                      { id: 'vendor' as const, label: t('preCon.filterVendorBidding') },
+                      { id: 'contracts' as const, label: t('preCon.filterContracts') },
+                    ].map((f) => {
+                      const on = preConFilter === f.id;
+                      return (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() => setPreConFilter(f.id)}
+                          className={`px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest border transition-colors ${on ? 'bg-emerald-500/15 border-emerald-500/25 text-emerald-300' : 'bg-slate-900/40 border-white/10 text-slate-400 hover:bg-white/5 hover:text-slate-200'}`}
+                        >
+                          {f.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-4 overflow-x-auto">
+                    {preConFilter !== 'boq' ? (
+                      <div className="p-8 text-center text-slate-500 text-sm">
+                        {language === 'th' ? 'กำลังพัฒนา...' : 'Coming soon...'}
+                      </div>
+                    ) : (
+                      <table className="w-full min-w-[860px] text-sm">
+                        <thead>
+                          <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                            <th className="text-left py-3 px-3">{t('preCon.colCode')}</th>
+                            <th className="text-left py-3 px-3">{t('preCon.colDescription')}</th>
+                            <th className="text-left py-3 px-3">{t('preCon.colUnit')}</th>
+                            <th className="text-right py-3 px-3">{t('preCon.colQty')}</th>
+                            <th className="text-right py-3 px-3">{t('preCon.colUnitPrice')}</th>
+                            <th className="text-right py-3 px-3">{t('preCon.colTotal')}</th>
+                            <th className="text-left py-3 px-3">{t('preCon.colStatus')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {preConBoqRows.map((r) => {
+                            const total = r.qty * r.unitPrice;
+                            const status =
+                              r.status === 'approved'
+                                ? { label: t('preCon.statusApproved'), cls: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' }
+                                : r.status === 'pending'
+                                  ? { label: t('preCon.statusPending'), cls: 'bg-amber-500/10 text-amber-200 border-amber-500/20' }
+                                  : { label: t('preCon.statusRisk'), cls: 'bg-rose-500/10 text-rose-200 border-rose-500/20' };
+                            return (
+                              <tr key={r.code} className="border-t border-white/5 hover:bg-white/[0.02] transition-colors">
+                                <td className="py-3 px-3 font-mono text-xs text-emerald-300">{r.code}</td>
+                                <td className="py-3 px-3 text-slate-200">{r.desc}</td>
+                                <td className="py-3 px-3 text-slate-400">{r.unit}</td>
+                                <td className="py-3 px-3 text-right font-mono text-slate-200">{r.qty.toLocaleString()}</td>
+                                <td className="py-3 px-3 text-right font-mono text-slate-200">{r.unitPrice.toLocaleString()}</td>
+                                <td className="py-3 px-3 text-right font-mono text-emerald-300">{(total / 1_000_000).toFixed(2)}M</td>
+                                <td className="py-3 px-3">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest ${status.cls}`}>
+                                    {status.label}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
 
             {/* ----------------- DURING-CON (ระหว่างก่อสร้าง) ----------------- */}
             {activeTab === 'during-con' && (
@@ -845,7 +988,7 @@ export default function Dashboard() {
                     </div>
 
                     <div className="glass-card p-5 border-[#00ff9d]/25 bg-gradient-to-br from-[#00ff9d]/5 to-transparent">
-                      <h3 className="text-lg font-bold text-white mb-1">{t('duringCon.askTREE')}</h3>
+                      <h3 className="text-lg font-bold text-white mb-1">{t('duringCon.askRaak')}</h3>
                       <p className="text-xs text-slate-400 mb-4">{t('duringCon.askHint')}</p>
                       <div className="flex flex-wrap gap-2 mb-4">
                         {language === 'th' ? (

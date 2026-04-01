@@ -7,6 +7,8 @@ export const en = {
         groupIntelligence: 'Advanced Analytics',
         duringCon: 'During-Con',
         duringConShort: 'During',
+        preCon: 'Pre-Con',
+        preConShort: 'Pre',
         boardroom: 'C-Suite Boardroom',
         board: 'Board',
         overview: 'Executive Overview',
@@ -20,6 +22,7 @@ export const en = {
     // Header
     header: {
         duringConTitle: ['During ', 'Construction'],
+        preConTitle: ['Pre ', 'Construction'],
         boardroomTitle: ['C-Level ', 'Boardroom'],
         overviewTitle: ['Executive ', 'Overview'],
         projectsTitle: ['Project ', 'Portfolio'],
@@ -422,5 +425,29 @@ export const en = {
         projectBangna: 'Bangna',
         projectEec: 'EEC Smart City',
         projectUtapao: 'U-Tapao',
+    }
+    ,
+    preCon: {
+        subtitle: 'Pre-con control room — BOQ, vendor bidding, and contracts with AI-assisted approvals.',
+        totalBoqValue: 'Total BOQ value',
+        vendorBidding: 'Vendor bidding',
+        contractsActive: 'Contracts active',
+        bidProgress: 'Bid progress',
+        filterBoq: 'BOQ',
+        filterVendorBidding: 'Vendor bidding',
+        filterContracts: 'Contracts',
+        exportExcel: 'Export Excel',
+        approveAi: 'Approve AI',
+        boqTitle: 'Bill of Quantities — Project {project}',
+        colCode: 'Code',
+        colDescription: 'Description',
+        colUnit: 'Unit',
+        colQty: 'Qty',
+        colUnitPrice: 'Unit price',
+        colTotal: 'Total',
+        colStatus: 'Status',
+        statusApproved: 'Approved',
+        statusPending: 'Pending',
+        statusRisk: 'At risk',
     }
 };
