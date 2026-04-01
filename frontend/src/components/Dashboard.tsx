@@ -287,7 +287,7 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? 'https://appreview.cloud' : 'http://localhost:4001');
       const [summaryRes, projectsRes, biddingRes, esgRes, intelRes] = await Promise.all([
         axios.get(`${API_BASE}/api/dashboard/summary`),
         axios.get(`${API_BASE}/api/projects`),
