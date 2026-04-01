@@ -178,6 +178,31 @@ const financialInvoices = [
   { id: 'INV-2025-045', project: 'EEC', vendor: 'Premium Tiles TH', boq: 0.95, wht: 0.0285, net: 0.92, date: '05 Apr 2025', etax: '—', status: 'pending' as const },
 ];
 
+const preConVendorRows = [
+  { vendor: 'SCG Materials', type: 'Materials', status: 'bidding', score: 85, bidAmount: 4.8 },
+  { vendor: 'Thai Steel Co.', type: 'Steel', status: 'awarded', score: 92, bidAmount: 12.5 },
+  { vendor: 'Green Build Ltd', type: 'Architecture', status: 'rejected', score: 65, bidAmount: 3.2 },
+  { vendor: 'Eastern Electrical', type: 'Systems', status: 'reviewing', score: 78, bidAmount: 5.1 },
+];
+
+const preConContractRows = [
+  { contractId: 'CTR-2025-001', vendor: 'Thai Steel Co.', type: 'Lump Sum', value: 12.5, status: 'active', signedDate: '10 Feb 2025' },
+  { contractId: 'CTR-2025-002', vendor: 'SCG Materials', type: 'Unit Price', value: 4.8, status: 'draft', signedDate: '-' },
+  { contractId: 'CTR-2025-003', vendor: 'Eastern Electrical', type: 'Lump Sum', value: 5.1, status: 'pending', signedDate: '-' },
+];
+
+const financialsProgressBillingRows = [
+  { period: 'Period 1 (Jan 25)', project: 'Bangna', claimedAmount: 2.5, certifiedAmount: 2.5, status: 'paid' },
+  { period: 'Period 2 (Feb 25)', project: 'Bangna', claimedAmount: 3.2, certifiedAmount: 3.0, status: 'approved' },
+  { period: 'Period 1 (Feb 25)', project: 'EEC Phase 2', claimedAmount: 5.1, certifiedAmount: 4.8, status: 'reviewing' },
+];
+
+const financialsRetentionRows = [
+  { project: 'Bangna', vendor: 'Thai Steel Co.', retainedAmount: 0.625, releaseDate: '15 Dec 2025', status: 'held' },
+  { project: 'EEC Phase 2', vendor: 'Siam Cement', retainedAmount: 0.218, releaseDate: '20 Jan 2026', status: 'held' },
+  { project: 'Q-Tower', vendor: 'Concrete Works', retainedAmount: 1.200, releaseDate: '10 Mar 2025', status: 'processing' },
+];
+
 const postConChecklist = [
   { key: 'inspections' as const, done: true },
   { key: 'asBuilt' as const, done: true },
@@ -255,6 +280,13 @@ export default function Dashboard() {
     { id: 'PL-004', zone: t('postCon.zoneC'), task: t('postCon.item4'), priority: 'high', responsible: 'Thai Waterproof Co.', due: '25 Mar', status: 'pending', dot: '#eab308' },
     { id: 'PL-005', zone: t('postCon.zoneD'), task: t('postCon.item5'), priority: 'medium', responsible: 'ช่างพิมพ์', due: '30 Mar', status: 'todo', dot: '#3b82f6' },
     { id: 'PL-006', zone: t('postCon.zoneD'), task: t('postCon.item6'), priority: 'high', responsible: 'HVAC Service', due: '21 Mar', status: 'done', dot: '#22c55e' },
+  ];
+
+  const mockWarrantyList = [
+    { id: 'WR-001', system: language === 'th' ? 'ระบบปรับอากาศ' : 'HVAC System', issue: language === 'th' ? 'คอมเพรสเซอร์มีเสียงดัง' : 'Compressor Noise', expiry: '15 Mar 2026', vendor: 'AirCool Co.', status: 'doing', dot: '#3b82f6' },
+    { id: 'WR-002', system: language === 'th' ? 'หลังคาโซน B' : 'Roofing Zone B', issue: language === 'th' ? 'น้ำซึม' : 'Minor Leakage', expiry: '02 Jun 2028', vendor: 'Thai Waterproof Co.', status: 'todo', dot: '#ef4444' },
+    { id: 'WR-003', system: language === 'th' ? 'ลิฟต์ตัวที่ 3' : 'Elevator #3', issue: language === 'th' ? 'เซ็นเซอร์ประตูขัดข้อง' : 'Door Sensor Fault', expiry: '20 Nov 2027', vendor: 'Otis System', status: 'done', dot: '#22c55e' },
+    { id: 'WR-004', system: language === 'th' ? 'ระบบปั๊มน้ำ' : 'Water Pump Set', issue: language === 'th' ? 'แรงดันตก' : 'Pressure Drop', expiry: '10 Jan 2030', vendor: 'PlumbMaster TH', status: 'pending', dot: '#eab308' }
   ];
 
   // Cycle live AI events
@@ -703,38 +735,28 @@ export default function Dashboard() {
 
                 {/* Thai Financial Engine Strip */}
                 <motion.div variants={fadeUp} className="glass-card p-5 border-white/10">
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  <div className="flex flex-col gap-4">
                     <div className="min-w-0">
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
                         {t('financials.engineTitle')}
                       </p>
-                      <p className="text-sm text-slate-300 mt-1 leading-relaxed">
+                      <p className="text-sm text-slate-300 mt-1 mb-4 leading-relaxed">
                         {t('financials.engineDesc')}
                       </p>
-                      <div className="flex flex-wrap items-center gap-2 mt-3">
+                      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 w-full">
                         {[
-                          { label: t('financials.auto'), cls: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' },
-                          { label: t('financials.auto'), cls: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' },
-                          { label: t('financials.connected'), cls: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-200' },
-                          { label: t('financials.tracking'), cls: 'bg-amber-500/10 border-amber-500/20 text-amber-200' },
-                          { label: '100%', cls: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-200' },
-                        ].map((tag, i) => (
-                          <span key={i} className={`px-2 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest ${tag.cls}`}>
-                            {tag.label}
-                          </span>
+                          { title: language === 'th' ? 'WHT 3% (บุคคลธรรมดา)' : 'WHT 3% (Individual)', status: 'AUTO ✓', statusCls: 'text-emerald-400' },
+                          { title: language === 'th' ? 'WHT 1% (นิติบุคคล)' : 'WHT 1% (Corporate)', status: 'AUTO ✓', statusCls: 'text-emerald-400' },
+                          { title: 'E-Tax API', status: 'CONNECTED', statusCls: 'text-cyan-400' },
+                          { title: 'Retention 5%', status: 'TRACKING', statusCls: 'text-amber-500' },
+                          { title: 'Thai Compliance', status: '100%', statusCls: 'text-emerald-400' },
+                        ].map((badge, i) => (
+                          <div key={i} className="flex flex-col bg-[#0f172a] border border-slate-700/50 rounded-xl p-3 shadow-sm hover:border-slate-500/50 transition-colors">
+                            <span className="text-[10px] text-slate-500 font-mono tracking-wider mb-2">{badge.title}</span>
+                            <span className={`text-sm font-black tracking-widest uppercase ${badge.statusCls}`}>{badge.status}</span>
+                          </div>
                         ))}
                       </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 shrink-0">
-                      <button type="button" className="px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-emerald-500/15 border border-emerald-500/25 text-emerald-300 hover:bg-emerald-500/20 transition-colors">
-                        {t('financials.btnWht13')}
-                      </button>
-                      <button type="button" className="px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-slate-900/60 border border-white/10 hover:bg-white/5 transition-colors text-slate-200">
-                        {t('financials.btnWht53')}
-                      </button>
-                      <button type="button" className="px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-slate-900/60 border border-white/10 hover:bg-white/5 transition-colors text-slate-200">
-                        {t('financials.btnETaxSync')}
-                      </button>
                     </div>
                   </div>
 
@@ -774,11 +796,7 @@ export default function Dashboard() {
                     </button>
                   </div>
 
-                  {financialsView !== 'invoices' ? (
-                    <div className="p-8 text-center text-slate-500 text-sm">
-                      {language === 'th' ? 'กำลังพัฒนา...' : 'Coming soon...'}
-                    </div>
-                  ) : (
+                  {financialsView === 'invoices' && (
                     <div className="overflow-x-auto">
                       <table className="w-full min-w-[980px] text-sm">
                         <thead>
@@ -829,6 +847,68 @@ export default function Dashboard() {
                               </tr>
                             );
                           })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {financialsView === 'progress-billing' && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[800px] text-sm">
+                        <thead>
+                          <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                            <th className="text-left py-3 px-3">Period</th>
+                            <th className="text-left py-3 px-3">Project</th>
+                            <th className="text-right py-3 px-3">Claimed</th>
+                            <th className="text-right py-3 px-3">Certified</th>
+                            <th className="text-left py-3 px-3">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {financialsProgressBillingRows.map((r, i) => (
+                            <tr key={i} className="border-t border-white/5 hover:bg-white/[0.02] transition-colors">
+                              <td className="py-3 px-3 text-emerald-300 font-mono text-xs">{r.period}</td>
+                              <td className="py-3 px-3 text-slate-200">{r.project}</td>
+                              <td className="py-3 px-3 text-right font-mono text-slate-300">฿{r.claimedAmount.toFixed(2)}M</td>
+                              <td className="py-3 px-3 text-right font-mono text-emerald-300">฿{r.certifiedAmount.toFixed(2)}M</td>
+                              <td className="py-3 px-3">
+                                <span className={`inline-flex items-center px-2 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest ${r.status === 'paid' ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : r.status === 'approved' ? 'bg-blue-500/10 text-blue-300 border-blue-500/20' : 'bg-amber-500/10 text-amber-200 border-amber-500/20'}`}>
+                                  {r.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {financialsView === 'retention' && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[800px] text-sm">
+                        <thead>
+                          <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                            <th className="text-left py-3 px-3">Project</th>
+                            <th className="text-left py-3 px-3">Vendor</th>
+                            <th className="text-right py-3 px-3">Amount</th>
+                            <th className="text-left py-3 px-3">Release Date</th>
+                            <th className="text-left py-3 px-3">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {financialsRetentionRows.map((r, i) => (
+                            <tr key={i} className="border-t border-white/5 hover:bg-white/[0.02] transition-colors">
+                              <td className="py-3 px-3 text-slate-200">{r.project}</td>
+                              <td className="py-3 px-3 text-cyan-300">{r.vendor}</td>
+                              <td className="py-3 px-3 text-right font-mono text-amber-200">฿{r.retainedAmount.toFixed(3)}M</td>
+                              <td className="py-3 px-3 text-slate-400 font-mono text-xs">{r.releaseDate}</td>
+                              <td className="py-3 px-3">
+                                <span className={`inline-flex items-center px-2 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest ${r.status === 'held' ? 'bg-slate-800/60 text-slate-300 border-white/10' : 'bg-amber-500/10 text-amber-200 border-amber-500/20'}`}>
+                                  {r.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
                     </div>
@@ -952,9 +1032,10 @@ export default function Dashboard() {
 
                   {/* Table Body */}
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white/[0.02]">
+                    {postConMode === 'punch-list' && (
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white/[0.02]">
                           <th className="px-6 py-4">{t('postCon.colId')}</th>
                           <th className="px-6 py-4">{t('postCon.colZone')}</th>
                           <th className="px-6 py-4">{t('postCon.colTask')}</th>
@@ -1004,7 +1085,50 @@ export default function Dashboard() {
                           </tr>
                         ))}
                       </tbody>
-                    </table>
+                      </table>
+                    )}
+                    
+                    {postConMode === 'warranty' && (
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white/[0.02]">
+                            <th className="px-6 py-4">ID</th>
+                            <th className="px-6 py-4">System / Item</th>
+                            <th className="px-6 py-4">Issue Description</th>
+                            <th className="px-6 py-4">Expiry Date</th>
+                            <th className="px-6 py-4">Vendor</th>
+                            <th className="px-6 py-4">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {mockWarrantyList.filter(item => punchListFilter === 'all' || item.status === punchListFilter).map((item) => (
+                            <tr key={item.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
+                              <td className="px-6 py-5 font-mono text-xs text-blue-400/70">{item.id}</td>
+                              <td className="px-6 py-5 font-medium text-slate-200">{item.system}</td>
+                              <td className="px-6 py-5 text-xs text-slate-300">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.dot, boxShadow: `0 0 8px ${item.dot}` }} />
+                                  {item.issue}
+                                </div>
+                              </td>
+                              <td className="px-6 py-5 text-xs text-slate-400 font-mono tracking-tighter">{item.expiry}</td>
+                              <td className="px-6 py-5 text-xs text-slate-400">{item.vendor}</td>
+                              <td className="px-6 py-5 whitespace-nowrap">
+                                <div className="flex items-center gap-2">
+                                  <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border transition-all ${item.status === 'done' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                                      item.status === 'doing' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+                                        item.status === 'pending' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
+                                          'bg-slate-800 border-white/10 text-slate-500'
+                                    }`}>
+                                    {t(item.status === 'done' ? 'postCon.legendDone' : item.status === 'doing' ? 'postCon.legendDoing' : item.status === 'pending' ? 'postCon.waitingApproval' : 'postCon.legendTodo')}
+                                  </span>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 </motion.div>
               </motion.div>
@@ -1081,11 +1205,7 @@ export default function Dashboard() {
                   </div>
 
                   <div className="mt-4 overflow-x-auto">
-                    {preConFilter !== 'boq' ? (
-                      <div className="p-8 text-center text-slate-500 text-sm">
-                        {language === 'th' ? 'กำลังพัฒนา...' : 'Coming soon...'}
-                      </div>
-                    ) : (
+                    {preConFilter === 'boq' && (
                       <table className="w-full min-w-[860px] text-sm">
                         <thead>
                           <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500">
@@ -1123,6 +1243,66 @@ export default function Dashboard() {
                               </tr>
                             );
                           })}
+                        </tbody>
+                      </table>
+                    )}
+                    
+                    {preConFilter === 'vendor' && (
+                      <table className="w-full min-w-[860px] text-sm">
+                        <thead>
+                          <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                            <th className="text-left py-3 px-3">Vendor</th>
+                            <th className="text-left py-3 px-3">Work Type</th>
+                            <th className="text-right py-3 px-3">Bid Amount</th>
+                            <th className="text-right py-3 px-3">AI Score</th>
+                            <th className="text-left py-3 px-3">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {preConVendorRows.map((r, i) => (
+                            <tr key={i} className="border-t border-white/5 hover:bg-white/[0.02] transition-colors">
+                              <td className="py-3 px-3 text-cyan-300">{r.vendor}</td>
+                              <td className="py-3 px-3 text-slate-200">{r.type}</td>
+                              <td className="py-3 px-3 text-right font-mono text-slate-200">฿{r.bidAmount.toFixed(1)}M</td>
+                              <td className="py-3 px-3 text-right font-mono text-emerald-300">{r.score}/100</td>
+                              <td className="py-3 px-3">
+                                <span className={`inline-flex items-center px-2 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest ${r.status === 'awarded' ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : r.status === 'rejected' ? 'bg-rose-500/10 text-rose-300 border-rose-500/20' : 'bg-blue-500/10 text-blue-300 border-blue-500/20'}`}>
+                                  {r.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+
+                    {preConFilter === 'contracts' && (
+                      <table className="w-full min-w-[860px] text-sm">
+                        <thead>
+                          <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                            <th className="text-left py-3 px-3">Contract ID</th>
+                            <th className="text-left py-3 px-3">Vendor</th>
+                            <th className="text-left py-3 px-3">Type</th>
+                            <th className="text-right py-3 px-3">Value</th>
+                            <th className="text-left py-3 px-3">Date</th>
+                            <th className="text-left py-3 px-3">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {preConContractRows.map((r, i) => (
+                            <tr key={i} className="border-t border-white/5 hover:bg-white/[0.02] transition-colors">
+                              <td className="py-3 px-3 font-mono text-xs text-emerald-300">{r.contractId}</td>
+                              <td className="py-3 px-3 text-slate-200">{r.vendor}</td>
+                              <td className="py-3 px-3 text-slate-400">{r.type}</td>
+                              <td className="py-3 px-3 text-right font-mono text-slate-200">฿{r.value.toFixed(1)}M</td>
+                              <td className="py-3 px-3 text-slate-400 font-mono text-xs">{r.signedDate}</td>
+                              <td className="py-3 px-3">
+                                <span className={`inline-flex items-center px-2 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest ${r.status === 'active' ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : r.status === 'draft' ? 'bg-slate-800/60 text-slate-300 border-white/10' : 'bg-amber-500/10 text-amber-200 border-amber-500/20'}`}>
+                                  {r.status.replace('_', ' ')}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
                     )}
